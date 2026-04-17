@@ -1,0 +1,51 @@
+{
+  "name": "cinema-booking-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cinema ticket booking system frontend with Next.js and TypeScript",
+  "author": "Cinema Booking System",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/cinema-booking-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/cinema-booking-system/issues"
+  },
+  "homepage": "https://github.com/yourusername/cinema-booking-system#readme",
+  "keywords": [
+    "cinema",
+    "booking",
+    "nextjs",
+    "typescript",
+    "tailwindcss",
+    "seat-selection",
+    "ticket-booking"
+  ],
+  "scripts": {
+    "dev": "next dev -p 5173",
+    "build": "next build",
+    "start": "next start -p 5173",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@types/qrcode": "^1.5.6",
+    "axios": "^1.6.2",
+    "next": "^14.2.35",
+    "qrcode": "^1.5.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^16.1.0",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.3.3"
+  }
+}
