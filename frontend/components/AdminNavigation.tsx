@@ -7,13 +7,13 @@ export default function AdminNavigation() {
   const pathname = usePathname();
 
   const navItems = [
-    { name: 'Dashboard', path: '/admin', icon: '📊' },
-    { name: 'Customers', path: '/admin/customers', icon: '👥' },
-    { name: 'Movies', path: '/admin/movies', icon: '🎬' },
-    { name: 'Halls', path: '/admin/halls', icon: '🏛️' },
-    { name: 'Sessions', path: '/admin/sessions', icon: '🎭' },
-    { name: 'Reservations', path: '/admin/reservations', icon: '📋' },
-    { name: 'Payments', path: '/admin/payments', icon: '💳' },
+    { name: 'Panel', path: '/admin', icon: '📊' },
+    { name: 'Clientes', path: '/admin/customers', icon: '👥' },
+    { name: 'Películas', path: '/admin/movies', icon: '🎬' },
+    { name: 'Salas', path: '/admin/halls', icon: '🏛️' },
+    { name: 'Funciones', path: '/admin/sessions', icon: '🎭' },
+    { name: 'Reservas', path: '/admin/reservations', icon: '📋' },
+    { name: 'Pagos', path: '/admin/payments', icon: '💳' },
   ];
 
   return (

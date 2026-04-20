@@ -39,7 +39,7 @@ export default function MoviesPage() {
       const response = await moviesApi.getAll();
       setMovies(response.data);
     } catch (error) {
-      toast.error('Failed to fetch movies');
+      toast.error('No se pudieron cargar las películas');
       console.error(error);
     } finally {
       setLoading(false);
@@ -103,16 +103,16 @@ export default function MoviesPage() {
 
       if (selectedMovie) {
         await moviesApi.update(selectedMovie._id, data);
-        toast.success('Movie updated successfully');
+        toast.success('Película actualizada correctamente');
       } else {
         await moviesApi.create(data);
-        toast.success('Movie added successfully');
+        toast.success('Película agregada correctamente');
       }
 
       handleCloseModal();
       fetchMovies();
     } catch (error) {
-      toast.error('Operation failed');
+      toast.error('La operación falló');
       console.error(error);
     }
   };
@@ -127,10 +127,10 @@ export default function MoviesPage() {
 
     try {
       await moviesApi.delete(movieToDelete._id);
-      toast.success('Movie deleted successfully');
+      toast.success('Película eliminada correctamente');
       fetchMovies();
     } catch (error) {
-      toast.error('Failed to delete movie');
+      toast.error('No se pudo eliminar la película');
       console.error(error);
     } finally {
       setIsConfirmOpen(false);
@@ -141,12 +141,12 @@ export default function MoviesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Movies</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Películas</h1>
         <button
           onClick={() => handleOpenModal()}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
-          + Add Movie
+          + Agregar Película
         </button>
       </div>
 
@@ -158,19 +158,19 @@ export default function MoviesPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Movie
+                  Película
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Genre
+                  Género
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Duration
+                  Duración
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Rating
+                  Calificación
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  Acciones
                 </th>
               </tr>
             </thead>
@@ -178,7 +178,7 @@ export default function MoviesPage() {
               {movies.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                    No movies found. Add your first movie!
+                    No se encontraron películas. ¡Agrega tu primera película!
                   </td>
                 </tr>
               ) : (
@@ -218,13 +218,13 @@ export default function MoviesPage() {
                         onClick={() => handleOpenModal(movie)}
                         className="text-blue-600 hover:text-blue-900 mr-4"
                       >
-                        Edit
+                        Editar
                       </button>
                       <button
                         onClick={() => handleDeleteClick(movie)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        Delete
+                        Eliminar
                       </button>
                     </td>
                   </tr>
@@ -239,14 +239,14 @@ export default function MoviesPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={selectedMovie ? 'Edit Movie' : 'Add New Movie'}
+        title={selectedMovie ? 'Editar Película' : 'Agregar Nueva Película'}
         size="xl"
       >
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Movie Name *
+                Nombre de la Película *
               </label>
               <input
                 type="text"
@@ -272,7 +272,7 @@ export default function MoviesPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Genre *
+                Género *
               </label>
               <input
                 type="text"
@@ -280,13 +280,13 @@ export default function MoviesPage() {
                 value={formData.Genre}
                 onChange={(e) => setFormData({ ...formData, Genre: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Action, Drama"
+                placeholder="p. ej., Acción, Drama"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Duration (minutes) *
+                Duración (minutos) *
               </label>
               <input
                 type="number"
@@ -300,7 +300,7 @@ export default function MoviesPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Age Limit *
+                Clasificación por Edad *
               </label>
               <input
                 type="number"
@@ -314,7 +314,7 @@ export default function MoviesPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Rating (0-10) *
+                Calificación (0-10) *
               </label>
               <input
                 type="number"
@@ -330,7 +330,7 @@ export default function MoviesPage() {
 
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cast (comma separated) *
+                Reparto (separado por comas) *
               </label>
               <input
                 type="text"
@@ -344,7 +344,7 @@ export default function MoviesPage() {
 
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Poster URL *
+                URL del Póster *
               </label>
               <input
                 type="url"
@@ -358,7 +358,7 @@ export default function MoviesPage() {
 
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Trailer URL
+                URL del Tráiler
               </label>
               <input
                 type="url"
@@ -371,7 +371,7 @@ export default function MoviesPage() {
 
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description *
+                Descripción *
               </label>
               <textarea
                 required
@@ -389,13 +389,13 @@ export default function MoviesPage() {
               onClick={handleCloseModal}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
             >
-              Cancel
+              Cancelar
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
             >
-              {selectedMovie ? 'Update' : 'Add'} Movie
+              {selectedMovie ? 'Actualizar' : 'Agregar'} Película
             </button>
           </div>
         </form>
@@ -406,10 +406,10 @@ export default function MoviesPage() {
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Movie"
-        message="Are you sure you want to delete this movie? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        title="Eliminar Película"
+        message="¿Estás seguro de que deseas eliminar esta película? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
         type="danger"
       />
     </div>

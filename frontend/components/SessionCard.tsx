@@ -11,13 +11,13 @@ export default function SessionCard({ session }: SessionCardProps) {
   const formatDateTime = (dateTime: string) => {
     const date = new Date(dateTime);
     return {
-      date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-      time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      date: date.toLocaleDateString('es-ES', { weekday: 'short', month: 'short', day: 'numeric' }),
+      time: date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
     };
   };
 
   const { date, time } = formatDateTime(session.SessionDateTime);
-  const hallName = typeof session.HallID === 'object' ? session.HallID.HallName : 'Hall';
+  const hallName = typeof session.HallID === 'object' ? session.HallID.HallName : 'Sala';
 
   return (
     <div className="group relative bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-gray-800 hover:border-red-600 p-6 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-red-500/50 overflow-hidden">
@@ -82,7 +82,7 @@ export default function SessionCard({ session }: SessionCardProps) {
           <svg className="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
           </svg>
-          <span className="relative z-10 text-lg tracking-wider">BOOK NOW</span>
+          <span className="relative z-10 text-lg tracking-wider">RESERVAR YA</span>
         </button>
       </Link>
 

@@ -57,7 +57,7 @@ export default function ReservationDetailPage() {
         setSeats(reservationSeats);
       }
     } catch (error) {
-      toast.error('Failed to fetch reservation details');
+      toast.error('No se pudieron cargar los detalles de la reserva');
       console.error(error);
     } finally {
       setLoading(false);
@@ -65,7 +65,7 @@ export default function ReservationDetailPage() {
   };
 
   const formatDateTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleString('en-US', {
+    return new Date(dateTime).toLocaleString('es-ES', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -80,9 +80,14 @@ export default function ReservationDetailPage() {
       PAID: 'bg-green-100 text-green-800',
       CANCELLED: 'bg-red-100 text-red-800',
     };
+    const labels: Record<string, string> = {
+      CREATED: 'CREADA',
+      PAID: 'PAGADA',
+      CANCELLED: 'CANCELADA',
+    };
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusStyles[status as keyof typeof statusStyles] || 'bg-gray-100 text-gray-800'}`}>
-        {status}
+        {labels[status] || status}
       </span>
     );
   };
@@ -99,12 +104,12 @@ export default function ReservationDetailPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Reservation Not Found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Reserva No Encontrada</h1>
           <button
             onClick={() => router.push('/admin/reservations')}
             className="text-blue-600 hover:text-blue-800"
           >
-            ← Back to Reservations
+            ← Volver a Reservas
           </button>
         </div>
       </div>
@@ -124,10 +129,10 @@ export default function ReservationDetailPage() {
           onClick={() => router.push('/admin/reservations')}
           className="text-blue-600 hover:text-blue-800 mb-2 flex items-center gap-1"
         >
-          ← Back to Reservations
+          ← Volver a Reservas
         </button>
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Reservation Details</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Detalles de la Reserva</h1>
           {getStatusBadge(reservation.Status)}
         </div>
       </div>
@@ -141,25 +146,25 @@ export default function ReservationDetailPage() {
               <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              Customer Information
+              Información del Cliente
             </h2>
             {customer ? (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Name</p>
+                  <p className="text-sm text-gray-600">Nombre</p>
                   <p className="text-base font-medium text-gray-900">{customer.Name} {customer.Surname}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Email</p>
+                  <p className="text-sm text-gray-600">Correo Electrónico</p>
                   <p className="text-base font-medium text-gray-900">{customer.Email}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Phone</p>
+                  <p className="text-sm text-gray-600">Teléfono</p>
                   <p className="text-base font-medium text-gray-900">{customer.PhoneNumber}</p>
                 </div>
               </div>
             ) : (
-              <p className="text-gray-500">Customer information not available</p>
+              <p className="text-gray-500">Información del cliente no disponible</p>
             )}
           </div>
 
@@ -169,7 +174,7 @@ export default function ReservationDetailPage() {
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
               </svg>
-              Movie & Session
+              Película y Función
             </h2>
             {movie && session && hall ? (
               <div className="space-y-4">
@@ -187,19 +192,19 @@ export default function ReservationDetailPage() {
                     <p className="text-sm text-gray-600 mb-2">{movie.Genre} • {movie.Duration} min</p>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
-                        <span className="text-gray-600">Hall:</span>
+                        <span className="text-gray-600">Sala:</span>
                         <span className="ml-2 font-medium">{hall.HallName}</span>
                       </div>
                       <div>
-                        <span className="text-gray-600">Language:</span>
+                        <span className="text-gray-600">Idioma:</span>
                         <span className="ml-2 font-medium">{session.Language}</span>
                       </div>
                       <div>
-                        <span className="text-gray-600">Date & Time:</span>
+                        <span className="text-gray-600">Fecha y Hora:</span>
                         <span className="ml-2 font-medium">{formatDateTime(session.SessionDateTime)}</span>
                       </div>
                       <div>
-                        <span className="text-gray-600">Price per seat:</span>
+                        <span className="text-gray-600">Precio por asiento:</span>
                         <span className="ml-2 font-medium text-green-600">${session.Price}</span>
                       </div>
                     </div>
@@ -207,7 +212,7 @@ export default function ReservationDetailPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-gray-500">Session information not available</p>
+              <p className="text-gray-500">Información de la función no disponible</p>
             )}
           </div>
 
@@ -217,7 +222,7 @@ export default function ReservationDetailPage() {
               <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
               </svg>
-              Selected Seats ({seats.length})
+              Asientos Seleccionados ({seats.length})
             </h2>
             {seats.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -237,7 +242,7 @@ export default function ReservationDetailPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500">No seats selected</p>
+              <p className="text-gray-500">Sin asientos seleccionados</p>
             )}
           </div>
 
@@ -260,41 +265,41 @@ export default function ReservationDetailPage() {
                       key={ticket._id}
                       className="border border-gray-200 rounded-lg p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors"
                     >
-                      {/* QR Code */}
+                      {/* Código QR */}
                       <div className="flex-shrink-0">
                         {ticket.QRCode && (
                           <img
                             src={ticket.QRCode}
-                            alt={`QR Code for ${ticket.TicketCode}`}
+                            alt={`Código QR para ${ticket.TicketCode}`}
                             className="w-24 h-24 border border-gray-300 rounded"
                           />
                         )}
                       </div>
 
-                      {/* Ticket Info */}
+                      {/* Información del Ticket */}
                       <div className="flex-1">
                         <div className="text-sm font-mono font-semibold text-gray-900 mb-1">
                           {ticket.TicketCode}
                         </div>
                         {ticketSeat && (
                           <div className="text-sm text-gray-600">
-                            Seat: <span className="font-medium">{ticketSeat.RowNumber}{ticketSeat.SeatNumber}</span>
+                            Asiento: <span className="font-medium">{ticketSeat.RowNumber}{ticketSeat.SeatNumber}</span>
                           </div>
                         )}
                         <div className="text-xs text-gray-500 mt-1">
-                          Status: {ticket.CheckInStatus ? 
-                            <span className="text-green-600 font-semibold">✓ Checked In</span> : 
-                            <span className="text-yellow-600 font-semibold">○ Not Checked In</span>
+                          Estado: {ticket.CheckInStatus ?
+                            <span className="text-green-600 font-semibold">✓ Registrado</span> :
+                            <span className="text-yellow-600 font-semibold">○ No Registrado</span>
                           }
                         </div>
                       </div>
 
-                      {/* Print Button */}
+                      {/* Botón Ver */}
                       <button
                         onClick={() => window.open(`/my-ticket/${ticket._id}`, '_blank')}
                         className="flex-shrink-0 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
                       >
-                        View Ticket
+                        Ver Ticket
                       </button>
                     </div>
                   );
@@ -302,9 +307,9 @@ export default function ReservationDetailPage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-500 mb-2">No tickets generated yet</p>
+                <p className="text-gray-500 mb-2">Aún no se han generado tickets</p>
                 <p className="text-xs text-gray-400">
-                  Tickets will be generated automatically when payment is marked as "Completed"
+                  Los tickets se generarán automáticamente cuando el pago se marque como "Completado"
                 </p>
               </div>
             )}
@@ -315,34 +320,34 @@ export default function ReservationDetailPage() {
         <div className="space-y-6">
           {/* Reservation Summary */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Summary</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Resumen</h2>
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Reservation ID</span>
+                <span className="text-gray-600">ID de Reserva</span>
                 <span className="font-mono text-xs text-gray-900">{reservation._id.slice(-8)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Created</span>
+                <span className="text-gray-600">Creada</span>
                 <span className="font-medium text-gray-900">{formatDateTime(reservation.CreationTime)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Status</span>
+                <span className="text-gray-600">Estado</span>
                 <span>{getStatusBadge(reservation.Status)}</span>
               </div>
               <hr className="my-3" />
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Number of Seats</span>
+                <span className="text-gray-600">Cantidad de Asientos</span>
                 <span className="font-semibold text-gray-900">{seats.length}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Price per Seat</span>
+                <span className="text-gray-600">Precio por Asiento</span>
                 <span className="font-semibold text-gray-900">
                   ${session ? session.Price : 0}
                 </span>
               </div>
               <hr className="my-3" />
               <div className="flex justify-between text-base">
-                <span className="font-bold text-gray-900">Total Amount</span>
+                <span className="font-bold text-gray-900">Monto Total</span>
                 <span className="font-bold text-green-600">
                   ${session ? (session.Price * seats.length).toFixed(2) : '0.00'}
                 </span>
@@ -352,19 +357,19 @@ export default function ReservationDetailPage() {
 
           {/* Quick Actions */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h2>
             <div className="space-y-2">
               <button
                 onClick={() => router.push('/admin/payments')}
                 className="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
               >
-                Manage Payments
+                Gestionar Pagos
               </button>
               <button
                 onClick={() => router.push('/admin/reservations')}
                 className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors"
               >
-                Back to List
+                Volver al Listado
               </button>
             </div>
           </div>

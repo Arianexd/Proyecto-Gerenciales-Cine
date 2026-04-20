@@ -46,25 +46,25 @@ export default function SeatPreview({
     const previews = {
       Excellent: {
         image: '/previews/view-excellent.svg',
-        description: 'Perfect center view with optimal viewing angle. Screen fills your field of vision ideally.',
+        description: 'Vista central perfecta con ángulo de visión óptimo. La pantalla llena tu campo visual idealmente.',
         angle: '25-30°',
         distance: hallSize === 'small' ? '8-10m' : hallSize === 'medium' ? '12-15m' : '15-20m',
       },
       Good: {
         image: '/previews/view-good.svg',
-        description: 'Good viewing angle with clear screen visibility. Slightly off-center but comfortable.',
+        description: 'Buen ángulo de visión con clara visibilidad de la pantalla. Ligeramente descentrado pero cómodo.',
         angle: '30-40°',
         distance: hallSize === 'small' ? '6-8m' : hallSize === 'medium' ? '10-12m' : '12-15m',
       },
       Average: {
         image: '/previews/view-average.svg',
-        description: 'Acceptable view but may require some head turning. Screen partially off-center.',
+        description: 'Vista aceptable pero puede requerir girar la cabeza. Pantalla parcialmente descentrada.',
         angle: '40-50°',
         distance: hallSize === 'small' ? '5-6m' : hallSize === 'medium' ? '8-10m' : '10-12m',
       },
       Poor: {
         image: '/previews/view-poor.svg',
-        description: 'Limited viewing angle. Too close to screen or extreme side position. May cause neck strain.',
+        description: 'Ángulo de visión limitado. Demasiado cerca de la pantalla o en posición lateral extrema. Puede causar molestias en el cuello.',
         angle: '50-60°',
         distance: hallSize === 'small' ? '3-5m' : hallSize === 'medium' ? '5-8m' : '6-10m',
       },
@@ -77,31 +77,31 @@ export default function SeatPreview({
     const previews = {
       Excellent: {
         icon: '🔊',
-        description: 'Optimal surround sound experience. Balanced audio from all speakers.',
+        description: 'Experiencia de sonido envolvente óptima. Audio balanceado de todos los altavoces.',
         clarity: '95-100%',
-        bass: 'Deep & Clear',
-        surround: '7.1 Optimal',
+        bass: 'Profundo y Claro',
+        surround: '7.1 Óptimo',
       },
       Good: {
         icon: '🔉',
-        description: 'Good sound quality with minor variations. Clear dialogue and effects.',
+        description: 'Buena calidad de sonido con variaciones menores. Diálogos y efectos claros.',
         clarity: '85-95%',
-        bass: 'Good',
-        surround: '5.1 Good',
+        bass: 'Bueno',
+        surround: '5.1 Bueno',
       },
       Average: {
         icon: '🔈',
-        description: 'Acceptable sound but some audio imbalance. Dialogue is clear.',
+        description: 'Sonido aceptable pero con cierto desbalance. Los diálogos son claros.',
         clarity: '70-85%',
-        bass: 'Moderate',
-        surround: '5.1 Average',
+        bass: 'Moderado',
+        surround: '5.1 Regular',
       },
       Poor: {
         icon: '🔇',
-        description: 'Sound quality issues. May have echo or speaker distance problems.',
+        description: 'Problemas de calidad de sonido. Puede haber eco o problemas de distancia con los altavoces.',
         clarity: '50-70%',
-        bass: 'Weak',
-        surround: 'Limited',
+        bass: 'Débil',
+        surround: 'Limitado',
       },
     };
     return previews[acousticQuality];
@@ -119,7 +119,7 @@ export default function SeatPreview({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
-          Screen View Preview
+          Vista de Pantalla
         </h3>
 
         {/* View Diagram */}
@@ -127,7 +127,7 @@ export default function SeatPreview({
           <div className="relative h-32 mb-2">
             {/* Screen representation */}
             <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-2 bg-gray-800 rounded-sm"></div>
-            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-500">SCREEN</div>
+            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-500">PANTALLA</div>
             
             {/* Viewing angle visualization - dynamic position */}
             <div 
@@ -138,7 +138,7 @@ export default function SeatPreview({
               }}
             >
               <div className="w-5 h-5 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div>
-              <div className="text-xs text-center mt-1 text-blue-600 font-bold whitespace-nowrap">YOU</div>
+              <div className="text-xs text-center mt-1 text-blue-600 font-bold whitespace-nowrap">TÚ</div>
             </div>
 
             {/* Angle lines - dynamic based on position */}
@@ -159,26 +159,26 @@ export default function SeatPreview({
 
           <div className="text-center">
             <div className="text-sm text-gray-700 font-medium">
-              Viewing Angle: {viewData.angle}
+              Ángulo de Visión: {viewData.angle}
             </div>
             <div className="text-xs text-gray-500 mt-1">
-              Position: <span className="font-semibold capitalize">{seatPosition}</span> seat, <span className="font-semibold capitalize">{rowPosition}</span> row
+              Posición: asiento <span className="font-semibold capitalize">{seatPosition === 'left' ? 'izquierdo' : seatPosition === 'right' ? 'derecho' : 'central'}</span>, fila <span className="font-semibold capitalize">{rowPosition === 'front' ? 'delantera' : rowPosition === 'middle' ? 'central' : 'trasera'}</span>
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Quality:</span>
+            <span className="text-gray-600">Calidad:</span>
             <span className={`font-semibold ${
               viewQuality === 'Excellent' ? 'text-green-600' :
               viewQuality === 'Good' ? 'text-blue-600' :
               viewQuality === 'Average' ? 'text-yellow-600' :
               'text-red-600'
-            }`}>{viewQuality}</span>
+            }`}>{viewQuality === 'Excellent' ? 'Excelente' : viewQuality === 'Good' ? 'Buena' : viewQuality === 'Average' ? 'Regular' : 'Deficiente'}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Distance:</span>
+            <span className="text-gray-600">Distancia:</span>
             <span className="font-semibold text-gray-900">{viewData.distance}</span>
           </div>
           <p className="text-xs text-gray-600 mt-3 bg-blue-50 p-3 rounded">
@@ -193,7 +193,7 @@ export default function SeatPreview({
           <svg className="w-6 h-6 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.536a5 5 0 001.414 1.414m2.828-9.9a9 9 0 012.828 2.828" />
           </svg>
-          Acoustic Preview
+          Previsualización Acústica
         </h3>
 
         {/* Positional Sound visualization - Like View Preview */}
@@ -229,7 +229,7 @@ export default function SeatPreview({
               }}
             >
               <div className="w-5 h-5 bg-purple-500 rounded-full border-2 border-white shadow-lg"></div>
-              <div className="text-xs text-center mt-1 text-purple-600 font-bold whitespace-nowrap">YOU</div>
+              <div className="text-xs text-center mt-1 text-purple-600 font-bold whitespace-nowrap">TÚ</div>
             </div>
 
             {/* Sound waves from appropriate direction - dynamic based on position */}
@@ -272,39 +272,39 @@ export default function SeatPreview({
 
           <div className="text-center">
             <div className="text-sm text-gray-700 font-medium mb-1">
-              Sound Direction: 
+              Dirección del Sonido:
               <span className="ml-2 font-bold text-purple-600">
-                {seatPosition === 'left' ? 'From Left Speaker' : 
-                 seatPosition === 'right' ? 'From Right Speaker' : 
-                 'Balanced Stereo'}
+                {seatPosition === 'left' ? 'Desde Altavoz Izquierdo' :
+                 seatPosition === 'right' ? 'Desde Altavoz Derecho' :
+                 'Estéreo Balanceado'}
               </span>
             </div>
             <div className="text-xs text-gray-500">
-              Row Position: {rowPosition.charAt(0).toUpperCase() + rowPosition.slice(1)}
+              Posición de Fila: {rowPosition === 'front' ? 'Delantera' : rowPosition === 'middle' ? 'Central' : 'Trasera'}
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Quality:</span>
+            <span className="text-gray-600">Calidad:</span>
             <span className={`font-semibold ${
               acousticQuality === 'Excellent' ? 'text-green-600' :
               acousticQuality === 'Good' ? 'text-blue-600' :
               acousticQuality === 'Average' ? 'text-yellow-600' :
               'text-red-600'
-            }`}>{acousticQuality}</span>
+            }`}>{acousticQuality === 'Excellent' ? 'Excelente' : acousticQuality === 'Good' ? 'Buena' : acousticQuality === 'Average' ? 'Regular' : 'Deficiente'}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Clarity:</span>
+            <span className="text-gray-600">Claridad:</span>
             <span className="font-semibold text-gray-900">{acousticData.clarity}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Bass:</span>
+            <span className="text-gray-600">Graves:</span>
             <span className="font-semibold text-gray-900">{acousticData.bass}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Surround:</span>
+            <span className="text-gray-600">Envolvente:</span>
             <span className="font-semibold text-gray-900">{acousticData.surround}</span>
           </div>
           <p className="text-xs text-gray-600 mt-3 bg-purple-50 p-3 rounded">
@@ -321,11 +321,11 @@ export default function SeatPreview({
                             acousticQuality === 'Good' ? 800 :
                             acousticQuality === 'Average' ? 600 : 400;
             // In a real app, you would play actual audio samples here
-            alert(`Playing ${acousticQuality} quality audio sample (${frequency}Hz)`);
+            alert(`Reproduciendo muestra de audio de calidad ${acousticQuality} (${frequency}Hz)`);
           }}
           className="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors"
         >
-          🎵 Play Acoustic Sample
+          🎵 Reproducir Muestra Acústica
         </button>
       </div>
 
@@ -337,11 +337,11 @@ export default function SeatPreview({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span className="text-sm font-medium text-gray-700">
-              Hall Size: <strong className="text-gray-900 capitalize">{hallSize}</strong> ({hallCapacity} seats)
+              Tamaño de Sala: <strong className="text-gray-900 capitalize">{hallSize === 'small' ? 'pequeña' : hallSize === 'medium' ? 'mediana' : 'grande'}</strong> ({hallCapacity} asientos)
             </span>
           </div>
           <div className="text-xs text-gray-600">
-            Preview based on typical {hallSize} cinema hall acoustics and viewing geometry
+            Previsualización basada en la acústica y geometría típica de una sala de cine {hallSize === 'small' ? 'pequeña' : hallSize === 'medium' ? 'mediana' : 'grande'}
           </div>
         </div>
       </div>

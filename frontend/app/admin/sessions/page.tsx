@@ -43,7 +43,7 @@ export default function SessionsPage() {
       setMovies(moviesRes.data);
       setHalls(hallsRes.data);
     } catch (error) {
-      toast.error('Failed to fetch data');
+      toast.error('No se pudieron cargar los datos');
       console.error(error);
     } finally {
       setLoading(false);
@@ -106,17 +106,17 @@ export default function SessionsPage() {
       if (selectedSession) {
         // Update existing session
         await sessionsApi.update(selectedSession._id, data);
-        toast.success('Session updated successfully');
+        toast.success('Función actualizada correctamente');
       } else {
         // Create new session
         await sessionsApi.create(data);
-        toast.success('Session added successfully');
+        toast.success('Función agregada correctamente');
       }
-      
+
       handleCloseModal();
       fetchData();
     } catch (error) {
-      toast.error(selectedSession ? 'Failed to update session' : 'Failed to add session');
+      toast.error(selectedSession ? 'No se pudo actualizar la función' : 'No se pudo agregar la función');
       console.error(error);
     }
   };
@@ -131,10 +131,10 @@ export default function SessionsPage() {
 
     try {
       await sessionsApi.delete(sessionToDelete._id);
-      toast.success('Session deleted successfully');
+      toast.success('Función eliminada correctamente');
       fetchData();
     } catch (error) {
-      toast.error('Failed to delete session');
+      toast.error('No se pudo eliminar la función');
       console.error(error);
     } finally {
       setIsConfirmOpen(false);
@@ -144,7 +144,7 @@ export default function SessionsPage() {
 
   const formatDateTime = (dateTime: string) => {
     const date = new Date(dateTime);
-    return date.toLocaleString('en-US', {
+    return date.toLocaleString('es-ES', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -156,24 +156,24 @@ export default function SessionsPage() {
   const getMovieName = (movieId: string | Movie) => {
     if (typeof movieId === 'object') return movieId.MovieName;
     const movie = movies.find((m) => m._id === movieId);
-    return movie?.MovieName || 'Unknown';
+    return movie?.MovieName || 'Desconocido';
   };
 
   const getHallName = (hallId: string | Hall) => {
     if (typeof hallId === 'object') return hallId.HallName;
     const hall = halls.find((h) => h._id === hallId);
-    return hall?.HallName || 'Unknown';
+    return hall?.HallName || 'Desconocida';
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Movie Sessions</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Funciones de Películas</h1>
         <button
           onClick={() => handleOpenModal()}
           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
-          + Add Session
+          + Agregar Función
         </button>
       </div>
 
@@ -183,7 +183,7 @@ export default function SessionsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {sessions.length === 0 ? (
             <div className="col-span-full bg-white rounded-lg shadow p-8 text-center text-gray-500">
-              No sessions found. Add your first session!
+              No se encontraron funciones. ¡Agrega tu primera función!
             </div>
           ) : (
             sessions.map((session) => (
@@ -202,20 +202,20 @@ export default function SessionsPage() {
                       onClick={() => handleOpenModal(session)}
                       className="text-blue-600 hover:text-blue-900 text-sm font-medium"
                     >
-                      Edit
+                      Editar
                     </button>
                     <button
                       onClick={() => handleDeleteClick(session)}
                       className="text-red-600 hover:text-red-900 text-sm font-medium"
                     >
-                      Delete
+                      Eliminar
                     </button>
                   </div>
                 </div>
 
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center text-gray-600">
-                    <span className="font-medium w-20">Hall:</span>
+                    <span className="font-medium w-20">Sala:</span>
                     <span>
                       {typeof session.HallID === 'object'
                         ? session.HallID.HallName
@@ -224,22 +224,22 @@ export default function SessionsPage() {
                   </div>
 
                   <div className="flex items-center text-gray-600">
-                    <span className="font-medium w-20">Date:</span>
+                    <span className="font-medium w-20">Fecha:</span>
                     <span>{formatDateTime(session.SessionDateTime)}</span>
                   </div>
 
                   <div className="flex items-center text-gray-600">
-                    <span className="font-medium w-20">Price:</span>
+                    <span className="font-medium w-20">Precio:</span>
                     <span className="font-semibold text-green-600">${session.Price}</span>
                   </div>
 
                   <div className="flex items-center text-gray-600">
-                    <span className="font-medium w-20">Language:</span>
+                    <span className="font-medium w-20">Idioma:</span>
                     <span>{session.Language}</span>
                   </div>
 
                   <div className="flex items-center text-gray-600">
-                    <span className="font-medium w-20">Subtitle:</span>
+                    <span className="font-medium w-20">Subtítulos:</span>
                     <span>{session.SubtitleInfo}</span>
                   </div>
                 </div>
@@ -253,13 +253,13 @@ export default function SessionsPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={selectedSession ? 'Edit Session' : 'Add New Session'}
+        title={selectedSession ? 'Editar Función' : 'Agregar Nueva Función'}
       >
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Movie
+                Película
               </label>
               <select
                 required
@@ -267,7 +267,7 @@ export default function SessionsPage() {
                 onChange={(e) => setFormData({ ...formData, MovieID: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
-                <option value="">Select a movie</option>
+                <option value="">Selecciona una película</option>
                 {movies.map((movie) => (
                   <option key={movie._id} value={movie._id}>
                     {movie.MovieName}
@@ -278,7 +278,7 @@ export default function SessionsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Hall
+                Sala
               </label>
               <select
                 required
@@ -286,10 +286,10 @@ export default function SessionsPage() {
                 onChange={(e) => setFormData({ ...formData, HallID: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
-                <option value="">Select a hall</option>
+                <option value="">Selecciona una sala</option>
                 {halls.map((hall) => (
                   <option key={hall._id} value={hall._id}>
-                    {hall.HallName} (Capacity: {hall.Capacity})
+                    {hall.HallName} (Capacidad: {hall.Capacity})
                   </option>
                 ))}
               </select>
@@ -297,7 +297,7 @@ export default function SessionsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Session Date & Time
+                Fecha y Hora de la Función
               </label>
               <input
                 type="datetime-local"
@@ -310,7 +310,7 @@ export default function SessionsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Price
+                Precio
               </label>
               <input
                 type="number"
@@ -326,7 +326,7 @@ export default function SessionsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Language
+                Idioma
               </label>
               <input
                 type="text"
@@ -334,20 +334,20 @@ export default function SessionsPage() {
                 value={formData.Language}
                 onChange={(e) => setFormData({ ...formData, Language: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="e.g., English, Turkish"
+                placeholder="Ej.: Español, Inglés"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Subtitle Info
+                Información de Subtítulos
               </label>
               <input
                 type="text"
                 value={formData.SubtitleInfo}
                 onChange={(e) => setFormData({ ...formData, SubtitleInfo: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="e.g., Turkish, None"
+                placeholder="Ej.: Español, Ninguno"
               />
             </div>
           </div>
@@ -358,13 +358,13 @@ export default function SessionsPage() {
               onClick={handleCloseModal}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
             >
-              Cancel
+              Cancelar
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md"
             >
-              {selectedSession ? 'Update Session' : 'Add Session'}
+              {selectedSession ? 'Actualizar Función' : 'Agregar Función'}
             </button>
           </div>
         </form>
@@ -375,10 +375,10 @@ export default function SessionsPage() {
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Session"
-        message="Are you sure you want to delete this session? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        title="Eliminar Función"
+        message="¿Estás seguro de que deseas eliminar esta función? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
         type="danger"
       />
     </div>

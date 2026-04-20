@@ -21,10 +21,10 @@ export default function AdminLoginPage() {
       // Set auth token in localStorage
       localStorage.setItem('admin_token', 'authenticated');
       localStorage.setItem('admin_username', 'demo');
-      toast.success('Login successful! Welcome to Admin Panel.');
+      toast.success('¡Inicio de sesión exitoso! Bienvenido al Panel de Administración.');
       router.push('/admin');
     } else {
-      toast.error('Invalid credentials! Use demo/demo');
+      toast.error('¡Credenciales inválidas! Usa demo/demo');
       setLoading(false);
     }
   };
@@ -39,8 +39,8 @@ export default function AdminLoginPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Cinema Admin Panel</h1>
-          <p className="text-gray-600">Sign in to manage your cinema</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Panel de Administración de Cine</h1>
+          <p className="text-gray-600">Inicia sesión para gestionar tu cine</p>
         </div>
 
         {/* Login Card */}
@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Username
+                Usuario
               </label>
               <input
                 type="text"
@@ -56,14 +56,14 @@ export default function AdminLoginPage() {
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                placeholder="Enter username"
+                placeholder="Ingresa el usuario"
                 autoComplete="username"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+                Contraseña
               </label>
               <input
                 type="password"
@@ -71,7 +71,7 @@ export default function AdminLoginPage() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                placeholder="Enter password"
+                placeholder="Ingresa la contraseña"
                 autoComplete="current-password"
               />
             </div>
@@ -81,21 +81,21 @@ export default function AdminLoginPage() {
               disabled={loading}
               className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </button>
           </form>
 
           {/* Demo Credentials Info */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium mb-1">Demo Credentials:</p>
-            <p className="text-sm text-blue-700">Username: <code className="bg-blue-100 px-2 py-1 rounded">demo</code></p>
-            <p className="text-sm text-blue-700">Password: <code className="bg-blue-100 px-2 py-1 rounded">demo</code></p>
+            <p className="text-sm text-blue-800 font-medium mb-1">Credenciales de Demostración:</p>
+            <p className="text-sm text-blue-700">Usuario: <code className="bg-blue-100 px-2 py-1 rounded">demo</code></p>
+            <p className="text-sm text-blue-700">Contraseña: <code className="bg-blue-100 px-2 py-1 rounded">demo</code></p>
           </div>
         </div>
 
         {/* Footer */}
         <p className="text-center text-gray-500 text-sm mt-6">
-          Cinema Booking System © 2024
+          Sistema de Reserva de Cine © 2024
         </p>
       </div>
     </div>

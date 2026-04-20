@@ -70,16 +70,16 @@ export default function Home() {
                     CINEBOOK
                   </h1>
                   <div className="text-yellow-400 text-xl md:text-2xl font-bold tracking-widest mt-2">
-                    PREMIUM CINEMA EXPERIENCE
+                    EXPERIENCIA DE CINE PREMIUM
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <p className="text-2xl md:text-3xl text-gray-300 mb-12 max-w-4xl mx-auto font-semibold leading-relaxed">
-              Experience movies like never before with our
-              <span className="text-red-500 font-black"> revolutionary seat preview </span>
-              technology
+              Vive el cine como nunca antes con nuestra
+              <span className="text-red-500 font-black"> revolucionaria tecnología </span>
+              de previsualización de asientos
             </p>
             
             <div className="flex flex-wrap justify-center gap-6">
@@ -91,13 +91,13 @@ export default function Home() {
                 <svg className="w-7 h-7 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                 </svg>
-                <span className="relative z-10">BOOK TICKETS NOW</span>
+                <span className="relative z-10">RESERVAR ENTRADAS YA</span>
               </Link>
               <Link
                 href="#features"
                 className="px-10 py-5 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-black text-xl rounded-xl border-4 border-yellow-400 transition-all shadow-2xl shadow-yellow-500/50 transform hover:scale-110"
               >
-                EXPLORE FEATURES
+                EXPLORAR CARACTERÍSTICAS
               </Link>
             </div>
           </div>
@@ -117,13 +117,13 @@ export default function Home() {
             <div className="inline-block relative">
               <div className="absolute -inset-4 bg-gradient-to-r from-red-600 via-yellow-500 to-red-600 blur-xl opacity-50 animate-pulse"></div>
               <h2 className="relative text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-400 to-red-500 mb-4 tracking-wider">
-                NOW SHOWING
+                EN CARTELERA
               </h2>
             </div>
             <div className="flex items-center justify-center gap-4 mt-6">
               <div className="h-1 w-20 bg-gradient-to-r from-transparent to-red-500"></div>
               <p className="text-gray-400 text-xl font-bold tracking-widest">
-                ★ FEATURED MOVIES ★
+                ★ PELÍCULAS DESTACADAS ★
               </p>
               <div className="h-1 w-20 bg-gradient-to-l from-transparent to-red-500"></div>
             </div>
@@ -141,7 +141,7 @@ export default function Home() {
           ) : featuredMovies.length === 0 ? (
             <div className="text-center py-20 bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-gray-800">
               <div className="text-6xl mb-4">🎬</div>
-              <p className="text-gray-400 text-xl font-semibold">No movies available at the moment</p>
+              <p className="text-gray-400 text-xl font-semibold">No hay películas disponibles en este momento</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -158,7 +158,7 @@ export default function Home() {
                 href="/movies"
                 className="inline-flex items-center gap-3 px-12 py-4 bg-gradient-to-r from-gray-800 to-black hover:from-red-600 hover:to-red-700 text-white font-black text-lg rounded-xl border-4 border-red-600 transition-all duration-300 shadow-2xl shadow-red-500/30 transform hover:scale-110"
               >
-                <span>VIEW ALL MOVIES</span>
+                <span>VER TODAS LAS PELÍCULAS</span>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -171,27 +171,27 @@ export default function Home() {
         <div id="features" className="container mx-auto px-4 py-20 border-t-4 border-red-600">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-red-500 mb-4">
-              WHY CHOOSE US?
+              ¿POR QUÉ ELEGIRNOS?
             </h2>
-            <p className="text-gray-400 text-xl">The ultimate cinema booking experience</p>
+            <p className="text-gray-400 text-xl">La mejor experiencia de reserva de cine</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
                 icon: '👀',
-                title: 'SCREEN VIEW PREVIEW',
-                description: 'See exactly how the screen looks from your seat before booking'
+                title: 'PREVISUALIZACIÓN DE PANTALLA',
+                description: 'Ve exactamente cómo se ve la pantalla desde tu asiento antes de reservar'
               },
               {
                 icon: '🔊',
-                title: 'ACOUSTIC PREVIEW',
-                description: 'Experience sound quality preview for each seat position'
+                title: 'PREVISUALIZACIÓN ACÚSTICA',
+                description: 'Experimenta la calidad de sonido para cada posición de asiento'
               },
               {
                 icon: '💺',
-                title: 'SMART SEAT SELECTION',
-                description: 'AI-powered seat recommendations based on viewing preferences'
+                title: 'SELECCIÓN INTELIGENTE',
+                description: 'Recomendaciones de asientos impulsadas por IA según tus preferencias'
               }
             ].map((feature, index) => (
               <div
@@ -217,10 +217,10 @@ export default function Home() {
           <div className="container mx-auto px-4 text-center">
             <div className="text-6xl mb-4">🎬</div>
             <p className="text-gray-500 text-sm tracking-widest">
-              © 2025 CINEBOOK - ALL RIGHTS RESERVED
+              © 2025 CINEBOOK - TODOS LOS DERECHOS RESERVADOS
             </p>
             <p className="text-gray-600 text-xs mt-2">
-              Experience Cinema. Experience Life.
+              Vive el Cine. Vive la Vida.
             </p>
           </div>
         </footer>

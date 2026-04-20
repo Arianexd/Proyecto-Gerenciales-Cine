@@ -67,7 +67,7 @@ export default function SeatGrid({
       {/* Screen */}
       <div className="mb-8">
         <div className="bg-gray-800 text-white text-center py-3 rounded-t-3xl mx-auto max-w-2xl">
-          SCREEN
+          PANTALLA
         </div>
       </div>
 
@@ -99,7 +99,7 @@ export default function SeatGrid({
                         ${getSeatColor(seat)}
                         ${isReserved ? 'opacity-50' : ''}
                       `}
-                      title={`Row ${seat.RowNumber}, Seat ${seat.SeatNumber}\nView: ${seat.ScreenViewInfo}\nAcoustic: ${seat.AcousticProfile}`}
+                      title={`Fila ${seat.RowNumber}, Asiento ${seat.SeatNumber}\nVista: ${seat.ScreenViewInfo}\nAcústica: ${seat.AcousticProfile}`}
                     >
                       {seat.SeatNumber}
                     </button>
@@ -115,27 +115,27 @@ export default function SeatGrid({
       <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-blue-500 rounded"></div>
-          <span>Excellent View</span>
+          <span>Vista Excelente</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-blue-400 rounded"></div>
-          <span>Good View</span>
+          <span>Vista Buena</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-blue-300 rounded"></div>
-          <span>Average View</span>
+          <span>Vista Regular</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-gray-400 rounded"></div>
-          <span>Poor View</span>
+          <span>Vista Deficiente</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-green-500 rounded"></div>
-          <span>Selected</span>
+          <span>Seleccionado</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-red-500 rounded opacity-50"></div>
-          <span>Reserved</span>
+          <span>Reservado</span>
         </div>
       </div>
     </div>

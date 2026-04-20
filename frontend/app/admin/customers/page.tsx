@@ -33,7 +33,7 @@ export default function CustomersPage() {
       const response = await customersApi.getAll();
       setCustomers(response.data);
     } catch (error) {
-      toast.error('Failed to fetch customers');
+      toast.error('No se pudieron cargar los clientes');
       console.error(error);
     } finally {
       setLoading(false);
@@ -72,16 +72,16 @@ export default function CustomersPage() {
     try {
       if (selectedCustomer) {
         await customersApi.update(selectedCustomer._id, formData);
-        toast.success('Customer updated successfully');
+        toast.success('Cliente actualizado correctamente');
       } else {
         await customersApi.create(formData);
-        toast.success('Customer added successfully');
+        toast.success('Cliente agregado correctamente');
       }
 
       handleCloseModal();
       fetchCustomers();
     } catch (error) {
-      toast.error('Operation failed');
+      toast.error('La operación falló');
       console.error(error);
     }
   };
@@ -96,10 +96,10 @@ export default function CustomersPage() {
 
     try {
       await customersApi.delete(customerToDelete._id);
-      toast.success('Customer deleted successfully');
+      toast.success('Cliente eliminado correctamente');
       fetchCustomers();
     } catch (error) {
-      toast.error('Failed to delete customer');
+      toast.error('No se pudo eliminar el cliente');
       console.error(error);
     } finally {
       setIsConfirmOpen(false);
@@ -110,12 +110,12 @@ export default function CustomersPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Clientes</h1>
         <button
           onClick={() => handleOpenModal()}
           className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
-          + Add Customer
+          + Agregar Cliente
         </button>
       </div>
 
@@ -127,16 +127,16 @@ export default function CustomersPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
+                  Nombre
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
+                  Correo Electrónico
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Phone
+                  Teléfono
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  Acciones
                 </th>
               </tr>
             </thead>
@@ -144,7 +144,7 @@ export default function CustomersPage() {
               {customers.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                    No customers found. Add your first customer!
+                    No se encontraron clientes. ¡Agrega tu primer cliente!
                   </td>
                 </tr>
               ) : (
@@ -166,13 +166,13 @@ export default function CustomersPage() {
                         onClick={() => handleOpenModal(customer)}
                         className="text-blue-600 hover:text-blue-900 mr-4"
                       >
-                        Edit
+                        Editar
                       </button>
                       <button
                         onClick={() => handleDeleteClick(customer)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        Delete
+                        Eliminar
                       </button>
                     </td>
                   </tr>
@@ -187,13 +187,13 @@ export default function CustomersPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={selectedCustomer ? 'Edit Customer' : 'Add New Customer'}
+        title={selectedCustomer ? 'Editar Cliente' : 'Agregar Nuevo Cliente'}
       >
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
+                Nombre
               </label>
               <input
                 type="text"
@@ -206,7 +206,7 @@ export default function CustomersPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Surname
+                Apellido
               </label>
               <input
                 type="text"
@@ -219,7 +219,7 @@ export default function CustomersPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
+                Correo Electrónico
               </label>
               <input
                 type="email"
@@ -232,7 +232,7 @@ export default function CustomersPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number
+                Número de Teléfono
               </label>
               <input
                 type="tel"
@@ -250,13 +250,13 @@ export default function CustomersPage() {
               onClick={handleCloseModal}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
             >
-              Cancel
+              Cancelar
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md"
             >
-              {selectedCustomer ? 'Update' : 'Add'} Customer
+              {selectedCustomer ? 'Actualizar' : 'Agregar'} Cliente
             </button>
           </div>
         </form>
@@ -267,10 +267,10 @@ export default function CustomersPage() {
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Customer"
-        message="Are you sure you want to delete this customer? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        title="Eliminar Cliente"
+        message="¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
         type="danger"
       />
     </div>

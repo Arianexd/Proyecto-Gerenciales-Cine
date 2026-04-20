@@ -33,7 +33,7 @@ export default function HallsPage() {
       const response = await hallsApi.getAll();
       setHalls(response.data);
     } catch (error) {
-      toast.error('Failed to fetch halls');
+      toast.error('No se pudieron cargar las salas');
       console.error(error);
     } finally {
       setLoading(false);
@@ -73,16 +73,16 @@ export default function HallsPage() {
 
       if (selectedHall) {
         await hallsApi.update(selectedHall._id, data);
-        toast.success('Hall updated successfully');
+        toast.success('Sala actualizada correctamente');
       } else {
         await hallsApi.create(data);
-        toast.success('Hall added successfully');
+        toast.success('Sala agregada correctamente');
       }
 
       handleCloseModal();
       fetchHalls();
     } catch (error) {
-      toast.error('Operation failed');
+      toast.error('La operación falló');
       console.error(error);
     }
   };
@@ -97,10 +97,10 @@ export default function HallsPage() {
 
     try {
       await hallsApi.delete(hallToDelete._id);
-      toast.success('Hall deleted successfully');
+      toast.success('Sala eliminada correctamente');
       fetchHalls();
     } catch (error) {
-      toast.error('Failed to delete hall');
+      toast.error('No se pudo eliminar la sala');
       console.error(error);
     } finally {
       setIsConfirmOpen(false);
@@ -111,12 +111,12 @@ export default function HallsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Cinema Halls</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Salas de Cine</h1>
         <button
           onClick={() => handleOpenModal()}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
-          + Add Hall
+          + Agregar Sala
         </button>
       </div>
 
@@ -126,7 +126,7 @@ export default function HallsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {halls.length === 0 ? (
             <div className="col-span-full bg-white rounded-lg shadow p-8 text-center text-gray-500">
-              No halls found. Add your first hall!
+              No se encontraron salas. ¡Agrega tu primera sala!
             </div>
           ) : (
             halls.map((hall) => (
@@ -154,7 +154,7 @@ export default function HallsPage() {
                         />
                       </svg>
                       <span className="text-lg font-semibold text-indigo-600">
-                        {hall.Capacity} seats
+                        {hall.Capacity} asientos
                       </span>
                     </div>
                   </div>
@@ -165,19 +165,19 @@ export default function HallsPage() {
                     href={`/admin/halls/${hall._id}/seats`}
                     className="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-2 rounded-md text-sm font-medium transition-colors text-center"
                   >
-                    Manage Seats
+                    Gestionar Asientos
                   </Link>
                   <button
                     onClick={() => handleOpenModal(hall)}
                     className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                   >
-                    Edit
+                    Editar
                   </button>
                   <button
                     onClick={() => handleDeleteClick(hall)}
                     className="flex-1 bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                   >
-                    Delete
+                    Eliminar
                   </button>
                 </div>
               </div>
@@ -190,13 +190,13 @@ export default function HallsPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={selectedHall ? 'Edit Hall' : 'Add New Hall'}
+        title={selectedHall ? 'Editar Sala' : 'Agregar Nueva Sala'}
       >
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Hall Name
+                Nombre de la Sala
               </label>
               <input
                 type="text"
@@ -204,13 +204,13 @@ export default function HallsPage() {
                 value={formData.HallName}
                 onChange={(e) => setFormData({ ...formData, HallName: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="e.g., Hall 1, VIP Hall, IMAX"
+                placeholder="p. ej., Sala 1, Sala VIP, IMAX"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Capacity (Total Seats)
+                Capacidad (Total de Asientos)
               </label>
               <input
                 type="number"
@@ -219,13 +219,13 @@ export default function HallsPage() {
                 value={formData.Capacity}
                 onChange={(e) => setFormData({ ...formData, Capacity: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="e.g., 150"
+                placeholder="p. ej., 150"
               />
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-blue-800">
-              <p className="font-medium mb-1">Note:</p>
-              <p>After creating a hall, you can add individual seats through the Seats management section.</p>
+              <p className="font-medium mb-1">Nota:</p>
+              <p>Después de crear una sala, puedes agregar asientos individuales a través de la sección de gestión de asientos.</p>
             </div>
           </div>
 
@@ -235,13 +235,13 @@ export default function HallsPage() {
               onClick={handleCloseModal}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
             >
-              Cancel
+              Cancelar
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md"
             >
-              {selectedHall ? 'Update' : 'Add'} Hall
+              {selectedHall ? 'Actualizar' : 'Agregar'} Sala
             </button>
           </div>
         </form>
@@ -252,10 +252,10 @@ export default function HallsPage() {
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Hall"
-        message={`Are you sure you want to delete "${hallToDelete?.HallName}"? This will also affect any sessions scheduled in this hall.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title="Eliminar Sala"
+        message={`¿Estás seguro de que deseas eliminar "${hallToDelete?.HallName}"? Esto también afectará a las funciones programadas en esta sala.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
         type="danger"
       />
     </div>

@@ -38,7 +38,7 @@ export default function PaymentsPage() {
       setPayments(paymentsRes.data);
       setReservations(reservationsRes.data);
     } catch (error) {
-      toast.error('Failed to fetch data');
+      toast.error('No se pudieron cargar los datos');
       console.error(error);
     } finally {
       setLoading(false);
@@ -98,10 +98,10 @@ export default function PaymentsPage() {
 
       if (selectedPayment) {
         await paymentsApi.update(selectedPayment._id, data);
-        toast.success('Payment updated successfully');
+        toast.success('Pago actualizado correctamente');
       } else {
         await paymentsApi.create(data);
-        toast.success('Payment created successfully');
+        toast.success('Pago creado correctamente');
       }
 
       // If status changed to Completed, update reservation and generate tickets
@@ -126,14 +126,14 @@ export default function PaymentsPage() {
               CheckInStatus: false,
             });
           }
-          toast.success('Tickets generated successfully!');
+          toast.success('¡Tickets generados correctamente!');
         }
       }
 
       handleCloseModal();
       fetchData();
     } catch (error) {
-      toast.error('Operation failed');
+      toast.error('La operación falló');
       console.error(error);
     }
   };
@@ -148,10 +148,10 @@ export default function PaymentsPage() {
 
     try {
       await paymentsApi.delete(paymentToDelete._id);
-      toast.success('Payment deleted successfully');
+      toast.success('Pago eliminado correctamente');
       fetchData();
     } catch (error) {
-      toast.error('Failed to delete payment');
+      toast.error('No se pudo eliminar el pago');
       console.error(error);
     } finally {
       setIsConfirmOpen(false);
@@ -160,7 +160,7 @@ export default function PaymentsPage() {
   };
 
   const formatDateTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleString('en-US', {
+    return new Date(dateTime).toLocaleString('es-ES', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -176,11 +176,27 @@ export default function PaymentsPage() {
       Failed: 'bg-red-100 text-red-800',
       Refunded: 'bg-gray-100 text-gray-800',
     };
+    const labels: Record<string, string> = {
+      Completed: 'Completado',
+      Pending: 'Pendiente',
+      Failed: 'Fallido',
+      Refunded: 'Reembolsado',
+    };
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusStyles[status as keyof typeof statusStyles] || 'bg-gray-100 text-gray-800'}`}>
-        {status}
+        {labels[status] || status}
       </span>
     );
+  };
+
+  const getPaymentMethodLabel = (method: string) => {
+    const labels: Record<string, string> = {
+      'Credit Card': 'Tarjeta de Crédito',
+      'Debit Card': 'Tarjeta de Débito',
+      'Cash': 'Efectivo',
+      'Online': 'En Línea',
+    };
+    return labels[method] || method;
   };
 
   const getCustomerName = (payment: Payment) => {
@@ -188,18 +204,18 @@ export default function PaymentsPage() {
       const customer = payment.ReservationID.CustomerID;
       return `${customer.Name} ${customer.Surname}`;
     }
-    return 'Unknown';
+    return 'Desconocido';
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Payments</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Pagos</h1>
         <button
           onClick={() => handleOpenModal()}
           className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
-          + Process Payment
+          + Procesar Pago
         </button>
       </div>
 
@@ -210,11 +226,11 @@ export default function PaymentsPage() {
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
           </svg>
           <div className="text-sm text-blue-800">
-            <p className="font-semibold mb-1">Payment → Ticket Generation Flow</p>
-            <p>When a payment status changes to "Completed", the system automatically:</p>
+            <p className="font-semibold mb-1">Flujo: Pago → Generación de Tickets</p>
+            <p>Cuando el estado del pago cambia a "Completado", el sistema automáticamente:</p>
             <ul className="list-disc ml-5 mt-1">
-              <li>Updates reservation status to "PAID"</li>
-              <li>Generates tickets with QR codes for each selected seat</li>
+              <li>Actualiza el estado de la reserva a "PAGADA"</li>
+              <li>Genera tickets con códigos QR para cada asiento seleccionado</li>
             </ul>
           </div>
         </div>
@@ -228,22 +244,22 @@ export default function PaymentsPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Customer
+                  Cliente
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Method
+                  Método
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
+                  Monto
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Estado
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
+                  Fecha
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  Acciones
                 </th>
               </tr>
             </thead>
@@ -251,7 +267,7 @@ export default function PaymentsPage() {
               {payments.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    No payments found. Process your first payment!
+                    No se encontraron pagos. ¡Procesa tu primer pago!
                   </td>
                 </tr>
               ) : (
@@ -261,7 +277,7 @@ export default function PaymentsPage() {
                       {getCustomerName(payment)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {payment.PaymentMethod}
+                      {getPaymentMethodLabel(payment.PaymentMethod)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-emerald-600">
                       ${payment.Amount.toFixed(2)}
@@ -277,13 +293,13 @@ export default function PaymentsPage() {
                         onClick={() => handleOpenModal(payment)}
                         className="text-blue-600 hover:text-blue-900 mr-4"
                       >
-                        Edit
+                        Editar
                       </button>
                       <button
                         onClick={() => handleDeleteClick(payment)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        Delete
+                        Eliminar
                       </button>
                     </td>
                   </tr>
@@ -301,13 +317,13 @@ export default function PaymentsPage() {
           setIsModalOpen(false);
           setSelectedPayment(null);
         }} 
-        title={selectedPayment ? 'Edit Payment' : 'Process Payment'}
+        title={selectedPayment ? 'Editar Pago' : 'Procesar Pago'}
       >
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Reservation
+                Reserva
               </label>
               <select
                 required
@@ -325,57 +341,57 @@ export default function PaymentsPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 disabled={!!selectedPayment}
               >
-                <option value="">Select a reservation</option>
+                <option value="">Selecciona una reserva</option>
                 {reservations
                   .filter((r) => r.Status === 'CREATED' || r.Status === 'PAID')
                   .map((reservation) => {
                     const storedSeats = localStorage.getItem(`reservation_${reservation._id}_seats`);
                     const seatCount = storedSeats ? JSON.parse(storedSeats).length : 1;
                     const sessionPrice = typeof reservation.SessionID === 'object' ? reservation.SessionID.Price : 0;
-                    
+
                     return (
                       <option key={reservation._id} value={reservation._id}>
                         {typeof reservation.CustomerID === 'object'
                           ? `${reservation.CustomerID.Name} ${reservation.CustomerID.Surname}`
-                          : 'Customer'}{' '}
+                          : 'Cliente'}{' '}
                         - {typeof reservation.SessionID === 'object' && typeof reservation.SessionID.MovieID === 'object'
                           ? reservation.SessionID.MovieID.MovieName
-                          : 'Movie'}{' '}
-                        ({seatCount} {seatCount === 1 ? 'seat' : 'seats'} × ${sessionPrice})
+                          : 'Película'}{' '}
+                        ({seatCount} {seatCount === 1 ? 'asiento' : 'asientos'} × ${sessionPrice})
                         {reservation.Status === 'PAID' ? ' ✓' : ''}
                       </option>
                     );
                   })}
                 {reservations.filter((r) => r.Status === 'CREATED' || r.Status === 'PAID').length === 0 && (
-                  <option disabled>No reservations available - Create a reservation first</option>
+                  <option disabled>No hay reservas disponibles - Crea una reserva primero</option>
                 )}
               </select>
               {formData.ReservationID && (
                 <p className="text-xs text-gray-500 mt-1">
-                  Auto-calculated based on session price and number of seats. You can override this amount.
+                  Calculado automáticamente según el precio de la función y la cantidad de asientos. Puedes modificar este monto.
                 </p>
               )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Payment Method
+                Método de Pago
               </label>
               <select
                 value={formData.PaymentMethod}
                 onChange={(e) => setFormData({ ...formData, PaymentMethod: e.target.value as any })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
-                <option value="Credit Card">Credit Card</option>
-                <option value="Debit Card">Debit Card</option>
-                <option value="Cash">Cash</option>
-                <option value="Online">Online</option>
+                <option value="Credit Card">Tarjeta de Crédito</option>
+                <option value="Debit Card">Tarjeta de Débito</option>
+                <option value="Cash">Efectivo</option>
+                <option value="Online">En Línea</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Amount ($)
+                Monto ($)
               </label>
               <input
                 type="number"
@@ -391,21 +407,21 @@ export default function PaymentsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Payment Status
+                Estado del Pago
               </label>
               <select
                 value={formData.PaymentStatus}
                 onChange={(e) => setFormData({ ...formData, PaymentStatus: e.target.value as any })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
-                <option value="Pending">Pending</option>
-                <option value="Completed">Completed</option>
-                <option value="Failed">Failed</option>
-                <option value="Refunded">Refunded</option>
+                <option value="Pending">Pendiente</option>
+                <option value="Completed">Completado</option>
+                <option value="Failed">Fallido</option>
+                <option value="Refunded">Reembolsado</option>
               </select>
               {formData.PaymentStatus === 'Completed' && (
                 <p className="text-xs text-green-600 mt-1">
-                  ✓ Will generate tickets and update reservation to PAID
+                  ✓ Se generarán los tickets y la reserva pasará a PAGADA
                 </p>
               )}
             </div>
@@ -417,27 +433,27 @@ export default function PaymentsPage() {
               onClick={handleCloseModal}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
             >
-              Cancel
+              Cancelar
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md"
             >
-              {selectedPayment ? 'Update' : 'Create'} Payment
+              {selectedPayment ? 'Actualizar' : 'Crear'} Pago
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Delete Confirmation */}
+      {/* Confirmación de eliminación */}
       <ConfirmDialog
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Payment"
-        message="Are you sure you want to delete this payment? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        title="Eliminar Pago"
+        message="¿Estás seguro de que deseas eliminar este pago? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
         type="danger"
       />
     </div>

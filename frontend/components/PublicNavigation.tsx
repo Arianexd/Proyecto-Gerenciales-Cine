@@ -7,8 +7,8 @@ export default function PublicNavigation() {
   const pathname = usePathname();
 
   const navItems = [
-    { name: 'HOME', path: '/', icon: '🏠' },
-    { name: 'MOVIES', path: '/movies', icon: '🎬' },
+    { name: 'INICIO', path: '/', icon: '🏠' },
+    { name: 'PELÍCULAS', path: '/movies', icon: '🎬' },
   ];
 
   return (
@@ -27,7 +27,7 @@ export default function PublicNavigation() {
               <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-400 to-red-500 tracking-wider">
                 CINEBOOK
               </span>
-              <span className="text-xs text-yellow-400 tracking-widest font-semibold">PREMIUM CINEMA EXPERIENCE</span>
+              <span className="text-xs text-yellow-400 tracking-widest font-semibold">EXPERIENCIA DE CINE PREMIUM</span>
             </div>
           </Link>
 

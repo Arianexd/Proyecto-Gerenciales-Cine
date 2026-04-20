@@ -9,7 +9,7 @@ import PublicNavigation from '@/components/PublicNavigation';
 export default function MoviesPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedGenre, setSelectedGenre] = useState<string>('All');
+  const [selectedGenre, setSelectedGenre] = useState<string>('Todos');
 
   useEffect(() => {
     fetchMovies();
@@ -27,10 +27,10 @@ export default function MoviesPage() {
     }
   };
 
-  const genres = ['All', ...Array.from(new Set(movies.map(m => m.Genre.split(',')[0].trim())))];
-  
-  const filteredMovies = selectedGenre === 'All' 
-    ? movies 
+  const genres = ['Todos', ...Array.from(new Set(movies.map(m => m.Genre.split(',')[0].trim())))];
+
+  const filteredMovies = selectedGenre === 'Todos'
+    ? movies
     : movies.filter(m => m.Genre.includes(selectedGenre));
 
   return (
@@ -50,11 +50,11 @@ export default function MoviesPage() {
             <div className="relative inline-block">
               <div className="absolute -inset-4 bg-gradient-to-r from-red-600 via-yellow-500 to-red-600 blur-2xl opacity-50 animate-pulse"></div>
               <h1 className="relative text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-400 to-red-500 mb-4 tracking-widest">
-                NOW SHOWING
+                EN CARTELERA
               </h1>
             </div>
             <p className="text-gray-400 text-xl font-bold tracking-wider">
-              ★ BROWSE OUR COLLECTION ★
+              ★ EXPLORA NUESTRA COLECCIÓN ★
             </p>
 
             {/* Film strip decoration bottom */}
@@ -69,7 +69,7 @@ export default function MoviesPage() {
           <div className="mb-12">
             <div className="flex items-center justify-center gap-3 mb-4">
               <div className="h-1 w-16 bg-gradient-to-r from-transparent to-red-500"></div>
-              <h2 className="text-2xl font-black text-yellow-400 tracking-widest">SELECT GENRE</h2>
+              <h2 className="text-2xl font-black text-yellow-400 tracking-widest">SELECCIONA GÉNERO</h2>
               <div className="h-1 w-16 bg-gradient-to-l from-transparent to-red-500"></div>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3">
@@ -102,14 +102,14 @@ export default function MoviesPage() {
                 </div>
               </div>
               <p className="text-yellow-400 text-xl font-bold tracking-widest animate-pulse">
-                LOADING MOVIES...
+                CARGANDO PELÍCULAS...
               </p>
             </div>
           ) : filteredMovies.length === 0 ? (
             <div className="text-center py-20 bg-gradient-to-br from-gray-900 to-black rounded-3xl border-4 border-red-600">
               <div className="text-8xl mb-6 animate-bounce">🎬</div>
-              <h3 className="text-3xl font-black text-white mb-4">NO MOVIES FOUND</h3>
-              <p className="text-gray-400 text-lg">Check back soon for new releases!</p>
+              <h3 className="text-3xl font-black text-white mb-4">NO SE ENCONTRARON PELÍCULAS</h3>
+              <p className="text-gray-400 text-lg">¡Vuelve pronto para ver los nuevos estrenos!</p>
             </div>
           ) : (
             <>
@@ -122,7 +122,7 @@ export default function MoviesPage() {
               {/* Movie Count */}
               <div className="text-center mt-12 pt-8 border-t-2 border-red-600">
                 <p className="text-gray-400 font-bold tracking-widest">
-                  SHOWING <span className="text-red-500 text-2xl mx-2">{filteredMovies.length}</span> MOVIES
+                  MOSTRANDO <span className="text-red-500 text-2xl mx-2">{filteredMovies.length}</span> PELÍCULAS
                 </p>
               </div>
             </>

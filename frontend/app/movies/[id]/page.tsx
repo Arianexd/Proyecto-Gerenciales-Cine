@@ -69,9 +69,9 @@ export default function MovieDetailPage() {
         <div className="min-h-screen bg-black flex items-center justify-center">
           <div className="text-center">
             <div className="text-8xl mb-6">🎬</div>
-            <h2 className="text-3xl font-black text-white mb-4">MOVIE NOT FOUND</h2>
+            <h2 className="text-3xl font-black text-white mb-4">PELÍCULA NO ENCONTRADA</h2>
             <Link href="/movies" className="text-yellow-400 hover:text-yellow-300 font-bold text-lg">
-              ← BACK TO MOVIES
+              ← VOLVER A PELÍCULAS
             </Link>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function MovieDetailPage() {
               <svg className="w-6 h-6 transform group-hover:-translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
               </svg>
-              BACK TO MOVIES
+              VOLVER A PELÍCULAS
             </Link>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -181,12 +181,12 @@ export default function MovieDetailPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">STARRING</h3>
+                    <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">REPARTO</h3>
                     <p className="text-xl text-gray-300 leading-relaxed">{movie.Cast.join(', ')}</p>
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">SYNOPSIS</h3>
+                    <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">SINOPSIS</h3>
                     <p className="text-lg text-gray-300 leading-relaxed">{movie.Description}</p>
                   </div>
                 </div>
@@ -202,7 +202,7 @@ export default function MovieDetailPage() {
                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
                     </svg>
-                    WATCH TRAILER
+                    VER TRÁILER
                   </a>
                 )}
               </div>
@@ -223,13 +223,13 @@ export default function MovieDetailPage() {
             <div className="inline-block relative mb-4">
               <div className="absolute -inset-4 bg-gradient-to-r from-red-600 via-yellow-500 to-red-600 blur-xl opacity-50 animate-pulse"></div>
               <h2 className="relative text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-400 to-red-500 tracking-wider">
-                SHOWTIMES
+                FUNCIONES
               </h2>
             </div>
             <div className="flex items-center justify-center gap-4">
               <div className="h-1 w-20 bg-gradient-to-r from-transparent to-red-500"></div>
               <p className="text-gray-400 text-lg font-bold tracking-widest">
-                ★ SELECT YOUR SESSION ★
+                ★ SELECCIONA TU FUNCIÓN ★
               </p>
               <div className="h-1 w-20 bg-gradient-to-l from-transparent to-red-500"></div>
             </div>
@@ -238,8 +238,8 @@ export default function MovieDetailPage() {
           {sessions.length === 0 ? (
             <div className="bg-gradient-to-br from-gray-900 to-black rounded-3xl shadow-2xl p-16 text-center border-4 border-red-600">
               <div className="text-8xl mb-6">📅</div>
-              <h3 className="text-4xl font-black text-white mb-4">NO SESSIONS AVAILABLE</h3>
-              <p className="text-gray-400 text-xl">Check back later for upcoming showtimes</p>
+              <h3 className="text-4xl font-black text-white mb-4">NO HAY FUNCIONES DISPONIBLES</h3>
+              <p className="text-gray-400 text-xl">Vuelve más tarde para ver próximas funciones</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

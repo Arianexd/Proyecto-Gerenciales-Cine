@@ -21,9 +21,9 @@ export default function TicketDisplay({ ticket }: TicketDisplayProps) {
     ? sessionData.HallID 
     : null;
 
-  const movieName = movieData?.MovieName || 'Movie';
+  const movieName = movieData?.MovieName || 'Película';
   const sessionDateTime = sessionData?.SessionDateTime || new Date().toISOString();
-  const hallName = hallData?.HallName || 'Hall';
+  const hallName = hallData?.HallName || 'Sala';
   const seatRow = seatData?.RowNumber || 'A';
   const seatNumber = seatData?.SeatNumber || 1;
   const viewQuality = seatData?.ScreenViewInfo || 'Good';
@@ -32,8 +32,8 @@ export default function TicketDisplay({ ticket }: TicketDisplayProps) {
   const formatDateTime = (dateTime: string) => {
     const date = new Date(dateTime);
     return {
-      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      date: date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }),
+      time: date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
     };
   };
 
@@ -64,12 +64,12 @@ export default function TicketDisplay({ ticket }: TicketDisplayProps) {
           <div className="flex items-center gap-3">
             <div className="text-4xl">🎬</div>
             <div>
-              <p className="text-white font-black text-lg tracking-wider">CINEMA TICKET</p>
-              <p className="text-yellow-300 text-xs font-bold">PRESENT AT ENTRANCE</p>
+              <p className="text-white font-black text-lg tracking-wider">ENTRADA DE CINE</p>
+              <p className="text-yellow-300 text-xs font-bold">PRESENTAR EN LA ENTRADA</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-yellow-300 text-xs font-bold">CODE</p>
+            <p className="text-yellow-300 text-xs font-bold">CÓDIGO</p>
             <p className="text-white font-mono font-black text-sm">{ticket.TicketCode.slice(-8)}</p>
           </div>
         </div>
@@ -85,22 +85,22 @@ export default function TicketDisplay({ ticket }: TicketDisplayProps) {
           {/* Left Column: Details */}
           <div className="space-y-4">
             <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
-              <p className="text-gray-400 text-xs mb-1 font-bold">DATE</p>
+              <p className="text-gray-400 text-xs mb-1 font-bold">FECHA</p>
               <p className="font-bold text-white">{date}</p>
             </div>
 
             <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
-              <p className="text-gray-400 text-xs mb-1 font-bold">TIME</p>
+              <p className="text-gray-400 text-xs mb-1 font-bold">HORA</p>
               <p className="font-black text-yellow-400 text-xl">{time}</p>
             </div>
 
             <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
-              <p className="text-gray-400 text-xs mb-1 font-bold">HALL</p>
+              <p className="text-gray-400 text-xs mb-1 font-bold">SALA</p>
               <p className="font-bold text-white">{hallName}</p>
             </div>
 
             <div className="bg-gradient-to-r from-red-600/20 to-yellow-600/20 rounded-lg p-3 border-2 border-red-500/50">
-              <p className="text-yellow-400 text-xs mb-1 font-bold">SEAT</p>
+              <p className="text-yellow-400 text-xs mb-1 font-bold">ASIENTO</p>
               <p className="font-black text-white text-2xl">{seatRow}{seatNumber}</p>
             </div>
           </div>
@@ -123,12 +123,12 @@ export default function TicketDisplay({ ticket }: TicketDisplayProps) {
         {/* Seat Quality Info - Cinema Style */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className={`bg-gradient-to-br ${getQualityColor(viewQuality)} px-4 py-3 rounded-lg shadow-lg`}>
-            <p className="text-xs font-bold text-white/80">SCREEN VIEW</p>
-            <p className="font-black text-white">{viewQuality}</p>
+            <p className="text-xs font-bold text-white/80">VISTA</p>
+            <p className="font-black text-white">{viewQuality === 'Excellent' ? 'Excelente' : viewQuality === 'Good' ? 'Buena' : viewQuality === 'Average' ? 'Regular' : 'Deficiente'}</p>
           </div>
           <div className={`bg-gradient-to-br ${getQualityColor(acousticQuality)} px-4 py-3 rounded-lg shadow-lg`}>
-            <p className="text-xs font-bold text-white/80">ACOUSTICS</p>
-            <p className="font-black text-white">{acousticQuality}</p>
+            <p className="text-xs font-bold text-white/80">ACÚSTICA</p>
+            <p className="font-black text-white">{acousticQuality === 'Excellent' ? 'Excelente' : acousticQuality === 'Good' ? 'Buena' : acousticQuality === 'Average' ? 'Regular' : 'Deficiente'}</p>
           </div>
         </div>
 
@@ -139,14 +139,14 @@ export default function TicketDisplay({ ticket }: TicketDisplayProps) {
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span className="font-black">CHECKED IN</span>
+              <span className="font-black">INGRESADO</span>
             </div>
           ) : (
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-500/50">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="font-black">PENDING</span>
+              <span className="font-black">PENDIENTE</span>
             </div>
           )}
         </div>
@@ -158,7 +158,7 @@ export default function TicketDisplay({ ticket }: TicketDisplayProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
-            VIEW FULL TICKET
+            VER ENTRADA COMPLETA
           </button>
         </Link>
       </div>

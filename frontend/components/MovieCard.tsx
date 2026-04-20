@@ -25,7 +25,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
             alt={movie.MovieName}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 group-hover:brightness-110"
             onError={(e) => {
-              e.currentTarget.src = 'https://via.placeholder.com/300x450?text=No+Poster';
+              e.currentTarget.src = 'https://via.placeholder.com/300x450?text=Sin+Poster';
             }}
           />
           
@@ -48,10 +48,10 @@ export default function MovieCard({ movie }: MovieCardProps) {
           {/* Hover Overlay with "NOW SHOWING" */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col items-center justify-end p-6">
             <div className="text-yellow-400 font-black text-sm tracking-widest mb-3 animate-pulse">
-              ★ NOW SHOWING ★
+              ★ EN CARTELERA ★
             </div>
             <button className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-black py-4 rounded-lg transition-all duration-300 shadow-lg shadow-red-500/50 text-lg tracking-wider transform hover:scale-105">
-              VIEW DETAILS & BOOK NOW
+              VER DETALLES Y RESERVAR
             </button>
           </div>
         </div>

@@ -51,7 +51,7 @@ export default function ReservationsPage() {
       setCustomers(customersRes.data);
       setSessions(sessionsRes.data);
     } catch (error) {
-      toast.error('Failed to fetch data');
+      toast.error('No se pudieron cargar los datos');
       console.error(error);
     } finally {
       setLoading(false);
@@ -88,20 +88,20 @@ export default function ReservationsPage() {
     try {
       if (selectedReservation) {
         await reservationsApi.update(selectedReservation._id, formData);
-        toast.success('Reservation updated successfully');
+        toast.success('Reserva actualizada correctamente');
         handleCloseModal();
         fetchData();
       } else {
-        // For new reservations, proceed to seat selection
+        // Para nuevas reservas, continuar con la selección de asientos
         if (!formData.SessionID) {
-          toast.error('Please select a session');
+          toast.error('Por favor selecciona una función');
           return;
         }
-        
-        // Fetch seats for the selected session's hall
+
+        // Obtener asientos de la sala de la función seleccionada
         const session = sessions.find(s => s._id === formData.SessionID);
         if (!session) {
-          toast.error('Session not found');
+          toast.error('Función no encontrada');
           return;
         }
         
@@ -126,7 +126,7 @@ export default function ReservationsPage() {
         setIsSeatSelectionModalOpen(true);
       }
     } catch (error) {
-      toast.error('Operation failed');
+      toast.error('La operación falló');
       console.error(error);
     }
   };
@@ -141,28 +141,28 @@ export default function ReservationsPage() {
 
   const handleConfirmReservation = async () => {
     if (selectedSeats.length === 0) {
-      toast.error('Please select at least one seat');
+      toast.error('Por favor selecciona al menos un asiento');
       return;
     }
 
     try {
-      // Create reservation with selected seats stored
+      // Crear reserva con los asientos seleccionados guardados
       const reservationData = {
         ...formData,
-        selectedSeats: selectedSeats, // Store selected seats for later ticket generation
+        selectedSeats: selectedSeats, // Guardar asientos seleccionados para generar tickets después
       };
-      
+
       const reservationRes = await reservationsApi.create(reservationData);
       const newReservation = reservationRes.data;
-      
-      // Store selected seats in localStorage temporarily (for ticket generation after payment)
+
+      // Guardar asientos seleccionados temporalmente en localStorage (para generar tickets tras el pago)
       localStorage.setItem(`reservation_${newReservation._id}_seats`, JSON.stringify(selectedSeats));
-      
-      toast.success(`Reservation created! Please process payment to generate tickets.`);
+
+      toast.success(`¡Reserva creada! Procesa el pago para generar los tickets.`);
       setIsSeatSelectionModalOpen(false);
       fetchData();
     } catch (error) {
-      toast.error('Failed to complete reservation');
+      toast.error('No se pudo completar la reserva');
       console.error(error);
     }
   };
@@ -177,10 +177,10 @@ export default function ReservationsPage() {
 
     try {
       await reservationsApi.delete(reservationToDelete._id);
-      toast.success('Reservation deleted successfully');
+      toast.success('Reserva eliminada correctamente');
       fetchData();
     } catch (error) {
-      toast.error('Failed to delete reservation');
+      toast.error('No se pudo eliminar la reserva');
       console.error(error);
     } finally {
       setIsConfirmOpen(false);
@@ -195,20 +195,26 @@ export default function ReservationsPage() {
       CANCELLED: 'bg-red-100 text-red-800',
     };
 
+    const labels: Record<string, string> = {
+      CREATED: 'CREADA',
+      PAID: 'PAGADA',
+      CANCELLED: 'CANCELADA',
+    };
+
     return (
       <span
         className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
           styles[status as keyof typeof styles]
         }`}
       >
-        {status}
+        {labels[status] || status}
       </span>
     );
   };
 
   const formatDateTime = (dateTime: string) => {
     const date = new Date(dateTime);
-    return date.toLocaleString('en-US', {
+    return date.toLocaleString('es-ES', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -221,32 +227,32 @@ export default function ReservationsPage() {
     if (typeof customer === 'object') {
       return `${customer.Name} ${customer.Surname}`;
     }
-    return 'Unknown';
+    return 'Desconocido';
   };
 
   const getMovieName = (session: MovieSession | string) => {
     if (typeof session === 'object' && typeof session.MovieID === 'object') {
       return session.MovieID.MovieName;
     }
-    return 'Unknown';
+    return 'Desconocido';
   };
 
   const getSessionDateTime = (session: MovieSession | string) => {
     if (typeof session === 'object') {
       return formatDateTime(session.SessionDateTime);
     }
-    return 'Unknown';
+    return 'Desconocido';
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Reservations</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Reservas</h1>
         <button
           onClick={() => handleOpenModal()}
           className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
-          + Add Reservation
+          + Agregar Reserva
         </button>
       </div>
 
@@ -259,22 +265,22 @@ export default function ReservationsPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer
+                    Cliente
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Movie
+                    Película
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Session Time
+                    Horario de Función
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created
+                    Creada
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    Estado
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    Acciones
                   </th>
                 </tr>
               </thead>
@@ -282,7 +288,7 @@ export default function ReservationsPage() {
                 {reservations.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                      No reservations found. Add your first reservation!
+                      No se encontraron reservas. ¡Agrega tu primera reserva!
                     </td>
                   </tr>
                 ) : (
@@ -308,19 +314,19 @@ export default function ReservationsPage() {
                           href={`/admin/reservations/${reservation._id}`}
                           className="text-purple-600 hover:text-purple-900 mr-4"
                         >
-                          View Details
+                          Ver Detalles
                         </Link>
                         <button
                           onClick={() => handleOpenModal(reservation)}
                           className="text-blue-600 hover:text-blue-900 mr-4"
                         >
-                          Edit
+                          Editar
                         </button>
                         <button
                           onClick={() => handleDeleteClick(reservation)}
                           className="text-red-600 hover:text-red-900"
                         >
-                          Delete
+                          Eliminar
                         </button>
                       </td>
                     </tr>
@@ -336,13 +342,13 @@ export default function ReservationsPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={selectedReservation ? 'Edit Reservation' : 'Add New Reservation'}
+        title={selectedReservation ? 'Editar Reserva' : 'Agregar Nueva Reserva'}
       >
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Customer
+                Cliente
               </label>
               <select
                 required
@@ -351,7 +357,7 @@ export default function ReservationsPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                 disabled={!!selectedReservation}
               >
-                <option value="">Select a customer</option>
+                <option value="">Selecciona un cliente</option>
                 {customers.map((customer) => (
                   <option key={customer._id} value={customer._id}>
                     {customer.Name} {customer.Surname} ({customer.Email})
@@ -362,7 +368,7 @@ export default function ReservationsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Session
+                Función
               </label>
               <select
                 required
@@ -371,10 +377,10 @@ export default function ReservationsPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                 disabled={!!selectedReservation}
               >
-                <option value="">Select a session</option>
+                <option value="">Selecciona una función</option>
                 {sessions.map((session) => (
                   <option key={session._id} value={session._id}>
-                    {typeof session.MovieID === 'object' ? session.MovieID.MovieName : 'Movie'} -{' '}
+                    {typeof session.MovieID === 'object' ? session.MovieID.MovieName : 'Película'} -{' '}
                     {formatDateTime(session.SessionDateTime)}
                   </option>
                 ))}
@@ -383,7 +389,7 @@ export default function ReservationsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status
+                Estado
               </label>
               <select
                 required
@@ -391,9 +397,9 @@ export default function ReservationsPage() {
                 onChange={(e) => setFormData({ ...formData, Status: e.target.value as any })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
-                <option value="CREATED">CREATED</option>
-                <option value="PAID">PAID</option>
-                <option value="CANCELLED">CANCELLED</option>
+                <option value="CREATED">CREADA</option>
+                <option value="PAID">PAGADA</option>
+                <option value="CANCELLED">CANCELADA</option>
               </select>
             </div>
           </div>
@@ -404,13 +410,13 @@ export default function ReservationsPage() {
               onClick={handleCloseModal}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
             >
-              Cancel
+              Cancelar
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md"
             >
-              {selectedReservation ? 'Update' : 'Create'} Reservation
+              {selectedReservation ? 'Actualizar' : 'Crear'} Reserva
             </button>
           </div>
         </form>
@@ -423,23 +429,23 @@ export default function ReservationsPage() {
           setIsSeatSelectionModalOpen(false);
           setHoveredSeat(null);
         }}
-        title={`Select Seats - ${selectedSession && typeof selectedSession.MovieID === 'object' ? selectedSession.MovieID.MovieName : 'Movie'}`}
+        title={`Seleccionar Asientos - ${selectedSession && typeof selectedSession.MovieID === 'object' ? selectedSession.MovieID.MovieName : 'Película'}`}
         size="full"
       >
         <div className="mb-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200">
           <div className="flex justify-between items-center">
             <div>
               <p className="text-gray-700 mb-1">
-                <strong className="text-purple-700">Selected Seats:</strong> {selectedSeats.length}
+                <strong className="text-purple-700">Asientos Seleccionados:</strong> {selectedSeats.length}
               </p>
               <p className="text-sm text-gray-600">
-                Click on available seats to select them. Hover over seats to see view and acoustic previews.
+                Haz clic en los asientos disponibles para seleccionarlos. Pasa el cursor sobre un asiento para ver la vista y el perfil acústico.
               </p>
             </div>
             {selectedSession && typeof selectedSession.HallID === 'object' && (
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-700">{selectedSession.HallID.HallName}</p>
-                <p className="text-xs text-gray-500">Capacity: {selectedSession.HallID.Capacity}</p>
+                <p className="text-xs text-gray-500">Capacidad: {selectedSession.HallID.Capacity}</p>
               </div>
             )}
           </div>
@@ -450,7 +456,7 @@ export default function ReservationsPage() {
           {/* Seat Grid Column */}
           <div className="order-2 lg:order-1 h-full">
             <div className="bg-gray-50 rounded-lg p-4 overflow-y-auto h-full">
-              <h3 className="text-lg font-semibold mb-3 text-gray-900">Select Your Seats</h3>
+              <h3 className="text-lg font-semibold mb-3 text-gray-900">Selecciona tus Asientos</h3>
               <SeatGrid
                 seats={seats}
                 selectedSeats={selectedSeats}
@@ -468,10 +474,10 @@ export default function ReservationsPage() {
                 <>
                   <div className="mb-4 pb-3 border-b border-gray-200">
                     <h4 className="text-xl font-bold text-gray-900">
-                      Row {hoveredSeat.RowNumber}, Seat {hoveredSeat.SeatNumber}
+                      Fila {hoveredSeat.RowNumber}, Asiento {hoveredSeat.SeatNumber}
                     </h4>
                     <p className="text-sm text-gray-600 mt-1">
-                      Hover over seats to compare quality
+                      Pasa el cursor sobre los asientos para comparar la calidad
                     </p>
                   </div>
                   <div>
@@ -491,22 +497,22 @@ export default function ReservationsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  <p className="text-xl font-medium text-gray-700">Seat Preview</p>
+                  <p className="text-xl font-medium text-gray-700">Vista Previa del Asiento</p>
                   <p className="text-sm mt-2 text-center px-4">
-                    Hover over any seat on the left to see detailed view and acoustic quality information
+                    Pasa el cursor sobre cualquier asiento a la izquierda para ver información detallada de la vista y calidad acústica
                   </p>
                   <div className="mt-6 space-y-2 text-left">
                     <div className="flex items-center gap-2 text-sm">
                       <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                      <span>Available seats</span>
+                      <span>Asientos disponibles</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <div className="w-4 h-4 bg-green-500 rounded"></div>
-                      <span>Your selection</span>
+                      <span>Tu selección</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <div className="w-4 h-4 bg-red-500 rounded opacity-50"></div>
-                      <span>Already reserved</span>
+                      <span>Ya reservados</span>
                     </div>
                   </div>
                 </div>
@@ -520,10 +526,10 @@ export default function ReservationsPage() {
           <div className="text-sm text-gray-600">
             {hoveredSeat ? (
               <span className="text-purple-600 font-medium">
-                👆 Hover over seats to see detailed view and acoustic previews
+                👆 Pasa el cursor sobre los asientos para ver la vista y el perfil acústico
               </span>
             ) : (
-              <span>💡 Hover over a seat to preview its quality</span>
+              <span>💡 Pasa el cursor sobre un asiento para previsualizar su calidad</span>
             )}
           </div>
           <div className="flex gap-3">
@@ -535,7 +541,7 @@ export default function ReservationsPage() {
               }}
               className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
             >
-              Cancel
+              Cancelar
             </button>
             <button
               onClick={handleConfirmReservation}
@@ -545,7 +551,7 @@ export default function ReservationsPage() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Confirm Reservation ({selectedSeats.length} seats)
+              Confirmar Reserva ({selectedSeats.length} asientos)
             </button>
           </div>
         </div>
@@ -556,10 +562,10 @@ export default function ReservationsPage() {
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Reservation"
-        message="Are you sure you want to delete this reservation? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        title="Eliminar Reserva"
+        message="¿Estás seguro de que deseas eliminar esta reserva? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
         type="danger"
       />
     </div>

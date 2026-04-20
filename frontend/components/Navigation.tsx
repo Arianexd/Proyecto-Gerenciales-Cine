@@ -7,13 +7,13 @@ export default function Navigation() {
   const pathname = usePathname();
 
   const navItems = [
-    { name: 'Dashboard', path: '/admin' },
-    { name: 'Customers', path: '/admin/customers' },
-    { name: 'Movies', path: '/admin/movies' },
-    { name: 'Halls', path: '/admin/halls' },
-    { name: 'Sessions', path: '/admin/sessions' },
-    { name: 'Reservations', path: '/admin/reservations' },
-    { name: 'Payments', path: '/admin/payments' },
+    { name: 'Panel', path: '/admin' },
+    { name: 'Clientes', path: '/admin/customers' },
+    { name: 'Películas', path: '/admin/movies' },
+    { name: 'Salas', path: '/admin/halls' },
+    { name: 'Funciones', path: '/admin/sessions' },
+    { name: 'Reservas', path: '/admin/reservations' },
+    { name: 'Pagos', path: '/admin/payments' },
   ];
 
   return (
@@ -22,7 +22,7 @@ export default function Navigation() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="text-xl font-bold text-gray-900">
-              Cinema Booking
+              Reserva de Cine
             </Link>
           </div>
           

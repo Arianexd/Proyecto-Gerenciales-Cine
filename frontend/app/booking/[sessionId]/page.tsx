@@ -82,7 +82,7 @@ export default function BookingPage() {
       setReservedSeats(reservedSeatIds);
     } catch (error) {
       console.error('Failed to fetch session data:', error);
-      toast.error('Failed to load session information');
+      toast.error('No se pudo cargar la información de la función');
     } finally {
       setLoading(false);
     }
@@ -100,7 +100,7 @@ export default function BookingPage() {
     e.preventDefault();
 
     if (selectedSeats.length === 0) {
-      toast.error('Please select at least one seat');
+      toast.error('Por favor selecciona al menos un asiento');
       return;
     }
 
@@ -129,14 +129,14 @@ export default function BookingPage() {
 
       localStorage.setItem(`reservation_${reservationId}_seats`, JSON.stringify(selectedSeats));
 
-      toast.success('Reservation created! Redirecting to payment...');
+      toast.success('¡Reserva creada! Redirigiendo al pago...');
       
       setTimeout(() => {
         router.push(`/payment/${reservationId}`);
       }, 1000);
     } catch (error) {
       console.error('Failed to create reservation:', error);
-      toast.error('Failed to create reservation');
+      toast.error('No se pudo crear la reserva');
       setSubmitting(false);
     }
   };
@@ -164,15 +164,15 @@ export default function BookingPage() {
         <div className="min-h-screen bg-black flex items-center justify-center">
           <div className="text-center">
             <div className="text-8xl mb-6">🎬</div>
-            <h2 className="text-3xl font-black text-white mb-4">SESSION NOT FOUND</h2>
+            <h2 className="text-3xl font-black text-white mb-4">FUNCIÓN NO ENCONTRADA</h2>
           </div>
         </div>
       </>
     );
   }
 
-  const movieName = typeof session.MovieID === 'object' ? session.MovieID.MovieName : 'Movie';
-  const hallName = typeof session.HallID === 'object' ? session.HallID.HallName : 'Hall';
+  const movieName = typeof session.MovieID === 'object' ? session.MovieID.MovieName : 'Película';
+  const hallName = typeof session.HallID === 'object' ? session.HallID.HallName : 'Sala';
   const hallCapacity = typeof session.HallID === 'object' ? session.HallID.Capacity : 100;
   const totalPrice = selectedSeats.length * session.Price;
 
@@ -195,19 +195,19 @@ export default function BookingPage() {
             </h1>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-gray-800/50 rounded-lg px-4 py-3 border border-gray-700">
-                <span className="text-gray-400 text-sm block mb-1">HALL</span>
+                <span className="text-gray-400 text-sm block mb-1">SALA</span>
                 <span className="text-white font-black text-lg">{hallName}</span>
               </div>
               <div className="bg-gray-800/50 rounded-lg px-4 py-3 border border-gray-700">
-                <span className="text-gray-400 text-sm block mb-1">DATE</span>
-                <span className="text-yellow-400 font-black text-lg">{new Date(session.SessionDateTime).toLocaleDateString()}</span>
+                <span className="text-gray-400 text-sm block mb-1">FECHA</span>
+                <span className="text-yellow-400 font-black text-lg">{new Date(session.SessionDateTime).toLocaleDateString('es-ES')}</span>
               </div>
               <div className="bg-gray-800/50 rounded-lg px-4 py-3 border border-gray-700">
-                <span className="text-gray-400 text-sm block mb-1">TIME</span>
-                <span className="text-yellow-400 font-black text-lg">{new Date(session.SessionDateTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                <span className="text-gray-400 text-sm block mb-1">HORA</span>
+                <span className="text-yellow-400 font-black text-lg">{new Date(session.SessionDateTime).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'})}</span>
               </div>
               <div className="bg-gray-800/50 rounded-lg px-4 py-3 border border-gray-700">
-                <span className="text-gray-400 text-sm block mb-1">PRICE/SEAT</span>
+                <span className="text-gray-400 text-sm block mb-1">PRECIO/ASIENTO</span>
                 <span className="text-green-400 font-black text-lg">${session.Price}</span>
               </div>
             </div>
@@ -226,14 +226,14 @@ export default function BookingPage() {
             <div className="lg:col-span-2 bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-gray-800 p-6">
               <div className="mb-6">
                 <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-400 mb-3 tracking-wider">
-                  SELECT YOUR SEATS
+                  SELECCIONA TUS ASIENTOS
                 </h2>
                 <div className="bg-yellow-500/10 border-2 border-yellow-500/30 rounded-lg p-4">
                   <p className="text-yellow-400 font-semibold flex items-center gap-2">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
-                    Hover over seats to preview screen view and acoustic quality
+                    Pasa el cursor sobre los asientos para previsualizar la vista de pantalla y la calidad acústica
                   </p>
                 </div>
               </div>
@@ -251,12 +251,12 @@ export default function BookingPage() {
               {/* Seat Preview - Cinema Style */}
               <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-purple-600 p-6">
                 <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-4">
-                  SEAT PREVIEW
+                  VISTA PREVIA
                 </h3>
                 {hoveredSeat ? (
                   <div>
                     <p className="text-gray-400 font-bold mb-4 text-center bg-gray-800 rounded-lg py-2">
-                      Row {hoveredSeat.RowNumber} • Seat {hoveredSeat.SeatNumber}
+                      Fila {hoveredSeat.RowNumber} • Asiento {hoveredSeat.SeatNumber}
                     </p>
                     <SeatPreview
                       viewQuality={hoveredSeat.ScreenViewInfo}
@@ -273,21 +273,21 @@ export default function BookingPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
-                    <p className="text-sm font-semibold">Hover over a seat</p>
+                    <p className="text-sm font-semibold">Pasa el cursor sobre un asiento</p>
                   </div>
                 )}
               </div>
 
               {/* Order Summary - Cinema Ticket Style */}
               <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-yellow-500 p-6">
-                <h3 className="text-2xl font-black text-yellow-400 mb-4">ORDER SUMMARY</h3>
+                <h3 className="text-2xl font-black text-yellow-400 mb-4">RESUMEN DEL PEDIDO</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                    <span className="text-gray-400 font-semibold">Selected Seats</span>
+                    <span className="text-gray-400 font-semibold">Asientos Seleccionados</span>
                     <span className="text-white font-black text-lg">{selectedSeats.length}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                    <span className="text-gray-400 font-semibold">Price per Seat</span>
+                    <span className="text-gray-400 font-semibold">Precio por Asiento</span>
                     <span className="text-white font-black text-lg">${session.Price}</span>
                   </div>
                   <div className="flex justify-between items-center py-3 bg-gradient-to-r from-yellow-500/20 to-red-500/20 rounded-lg px-4 border-2 border-yellow-500/30">
@@ -299,7 +299,7 @@ export default function BookingPage() {
                 {selectedSeats.length > 0 && (
                   <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                     <p className="text-green-400 text-sm font-semibold text-center">
-                      ✓ {selectedSeats.length} {selectedSeats.length === 1 ? 'seat' : 'seats'} selected
+                      ✓ {selectedSeats.length} {selectedSeats.length === 1 ? 'asiento seleccionado' : 'asientos seleccionados'}
                     </p>
                   </div>
                 )}
@@ -310,13 +310,13 @@ export default function BookingPage() {
           {/* Guest Form - Cinema Ticket Checkout Style */}
           <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-red-600 p-8">
             <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-400 mb-6 tracking-wider">
-              GUEST CHECKOUT
+              REGISTRO DE INVITADO
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-yellow-400 font-black text-sm mb-2 tracking-wider">
-                    FIRST NAME
+                    NOMBRE
                   </label>
                   <input
                     type="text"
@@ -324,13 +324,13 @@ export default function BookingPage() {
                     value={guestInfo.name}
                     onChange={(e) => setGuestInfo({ ...guestInfo, name: e.target.value })}
                     className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white font-semibold focus:outline-none focus:border-red-500 transition-colors"
-                    placeholder="Enter your first name"
+                    placeholder="Ingresa tu nombre"
                   />
                 </div>
 
                 <div>
                   <label className="block text-yellow-400 font-black text-sm mb-2 tracking-wider">
-                    LAST NAME
+                    APELLIDO
                   </label>
                   <input
                     type="text"
@@ -338,13 +338,13 @@ export default function BookingPage() {
                     value={guestInfo.surname}
                     onChange={(e) => setGuestInfo({ ...guestInfo, surname: e.target.value })}
                     className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white font-semibold focus:outline-none focus:border-red-500 transition-colors"
-                    placeholder="Enter your last name"
+                    placeholder="Ingresa tu apellido"
                   />
                 </div>
 
                 <div>
                   <label className="block text-yellow-400 font-black text-sm mb-2 tracking-wider">
-                    EMAIL
+                    CORREO ELECTRÓNICO
                   </label>
                   <input
                     type="email"
@@ -352,13 +352,13 @@ export default function BookingPage() {
                     value={guestInfo.email}
                     onChange={(e) => setGuestInfo({ ...guestInfo, email: e.target.value })}
                     className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white font-semibold focus:outline-none focus:border-red-500 transition-colors"
-                    placeholder="your.email@example.com"
+                    placeholder="tu.correo@ejemplo.com"
                   />
                 </div>
 
                 <div>
                   <label className="block text-yellow-400 font-black text-sm mb-2 tracking-wider">
-                    PHONE
+                    TELÉFONO
                   </label>
                   <input
                     type="tel"
@@ -366,7 +366,7 @@ export default function BookingPage() {
                     value={guestInfo.phone}
                     onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })}
                     className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white font-semibold focus:outline-none focus:border-red-500 transition-colors"
-                    placeholder="+1 (555) 123-4567"
+                    placeholder="+591 70000000"
                   />
                 </div>
               </div>
@@ -379,14 +379,14 @@ export default function BookingPage() {
                 {submitting ? (
                   <>
                     <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                    PROCESSING...
+                    PROCESANDO...
                   </>
                 ) : (
                   <>
                     <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                     </svg>
-                    PROCEED TO PAYMENT
+                    CONTINUAR AL PAGO
                   </>
                 )}
               </button>

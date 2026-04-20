@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Cinema Booking System',
-  description: 'Advanced cinema ticket booking system with seat preview technology',
+  title: 'Sistema de Reserva de Cine',
+  description: 'Sistema avanzado de reserva de entradas de cine con tecnología de previsualización de asientos',
 }
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body className={inter.className}>
         {children}
       </body>

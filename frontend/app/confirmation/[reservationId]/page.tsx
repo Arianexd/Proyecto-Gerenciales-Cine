@@ -70,7 +70,7 @@ export default function ConfirmationPage() {
         <div className="min-h-screen bg-black flex items-center justify-center">
           <div className="text-center">
             <div className="text-8xl mb-6">🎬</div>
-            <h2 className="text-3xl font-black text-white mb-4">RESERVATION NOT FOUND</h2>
+            <h2 className="text-3xl font-black text-white mb-4">RESERVA NO ENCONTRADA</h2>
           </div>
         </div>
       </>
@@ -79,7 +79,7 @@ export default function ConfirmationPage() {
 
   const movieName = typeof reservation.SessionID === 'object' && typeof reservation.SessionID.MovieID === 'object'
     ? reservation.SessionID.MovieID.MovieName
-    : 'Movie';
+    : 'Película';
 
   const moviePoster = typeof reservation.SessionID === 'object' && typeof reservation.SessionID.MovieID === 'object'
     ? reservation.SessionID.MovieID.PosterURL
@@ -106,16 +106,16 @@ export default function ConfirmationPage() {
               <div className="inline-block relative mb-4">
                 <div className="absolute -inset-4 bg-gradient-to-r from-green-600 via-yellow-500 to-green-600 blur-2xl opacity-50 animate-pulse"></div>
                 <h1 className="relative text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-500 via-yellow-400 to-green-500 tracking-wider">
-                  BOOKING CONFIRMED!
+                  ¡RESERVA CONFIRMADA!
                 </h1>
               </div>
             </div>
 
             <p className="text-2xl text-gray-300 font-bold mb-4">
-              Your tickets are ready!
+              ¡Tus entradas están listas!
             </p>
             <p className="text-gray-400 text-lg">
-              Show the QR code at the entrance to collect your tickets
+              Muestra el código QR en la entrada para obtener tus entradas
             </p>
           </div>
 
@@ -147,10 +147,10 @@ export default function ConfirmationPage() {
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
-                      CONFIRMED
+                      CONFIRMADA
                     </div>
                     <div className="text-gray-400 text-lg">
-                      <span className="font-semibold">{tickets.length}</span> {tickets.length === 1 ? 'Ticket' : 'Tickets'}
+                      <span className="font-semibold">{tickets.length}</span> {tickets.length === 1 ? 'Entrada' : 'Entradas'}
                     </div>
                   </div>
                 </div>
@@ -169,15 +169,15 @@ export default function ConfirmationPage() {
           <div className="mb-12">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-400 mb-2 tracking-wider">
-                YOUR TICKETS
+                TUS ENTRADAS
               </h2>
-              <p className="text-gray-400">Save or print these tickets for entry</p>
+              <p className="text-gray-400">Guarda o imprime estas entradas para el ingreso</p>
             </div>
 
             {tickets.length === 0 ? (
               <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-red-600 p-12 text-center">
                 <div className="text-6xl mb-4">🎟️</div>
-                <p className="text-gray-400 text-lg">No tickets generated yet</p>
+                <p className="text-gray-400 text-lg">Aún no se han generado entradas</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -192,12 +192,12 @@ export default function ConfirmationPage() {
           <div className="flex flex-wrap justify-center gap-6">
             <Link href="/">
               <button className="px-10 py-4 bg-gradient-to-r from-gray-800 to-black hover:from-gray-700 hover:to-gray-900 text-white font-black text-lg rounded-xl border-4 border-gray-700 hover:border-yellow-500 transition-all duration-300 shadow-lg transform hover:scale-105 tracking-wider">
-                ← BACK TO HOME
+                ← VOLVER AL INICIO
               </button>
             </Link>
             <Link href="/movies">
               <button className="px-10 py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-black text-lg rounded-xl transition-all duration-300 shadow-2xl shadow-red-500/50 transform hover:scale-105 tracking-wider">
-                BOOK MORE TICKETS
+                RESERVAR MÁS ENTRADAS
               </button>
             </Link>
           </div>
@@ -208,24 +208,24 @@ export default function ConfirmationPage() {
               <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              IMPORTANT INFORMATION
+              INFORMACIÓN IMPORTANTE
             </h3>
             <ul className="space-y-3 text-gray-300">
               <li className="flex items-start gap-3">
                 <span className="text-yellow-400 mt-1">•</span>
-                <span>Please arrive at least <strong className="text-white">15 minutes before</strong> the showtime</span>
+                <span>Por favor llega al menos <strong className="text-white">15 minutos antes</strong> de la función</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-yellow-400 mt-1">•</span>
-                <span>Show your QR code at the entrance for quick check-in</span>
+                <span>Muestra tu código QR en la entrada para un ingreso rápido</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-yellow-400 mt-1">•</span>
-                <span>Latecomers may not be admitted after the movie starts</span>
+                <span>Puede que no se permita el ingreso después de que comience la película</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-yellow-400 mt-1">•</span>
-                <span>Please keep your tickets safe and do not share the QR codes</span>
+                <span>Mantén tus entradas seguras y no compartas los códigos QR</span>
               </li>
             </ul>
           </div>

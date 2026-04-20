@@ -52,8 +52,8 @@ export default function MyTicketPage() {
       <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="text-center text-white">
           <div className="text-8xl mb-6">🎟️</div>
-          <h2 className="text-3xl font-black mb-4">TICKET NOT FOUND</h2>
-          <p className="text-gray-400">This ticket may have been deleted or doesn't exist.</p>
+          <h2 className="text-3xl font-black mb-4">ENTRADA NO ENCONTRADA</h2>
+          <p className="text-gray-400">Esta entrada puede haber sido eliminada o no existe.</p>
         </div>
       </div>
     );
@@ -71,9 +71,9 @@ export default function MyTicketPage() {
     ? sessionData.HallID 
     : null;
 
-  const movieName = movieData?.MovieName || 'Movie';
+  const movieName = movieData?.MovieName || 'Película';
   const sessionDateTime = sessionData?.SessionDateTime || new Date().toISOString();
-  const hallName = hallData?.HallName || 'Hall';
+  const hallName = hallData?.HallName || 'Sala';
   const seatRow = seatData?.RowNumber || 'A';
   const seatNumber = seatData?.SeatNumber || 1;
   const viewQuality = seatData?.ScreenViewInfo || 'Good';
@@ -82,8 +82,8 @@ export default function MyTicketPage() {
   const formatDateTime = (dateTime: string) => {
     const date = new Date(dateTime);
     return {
-      date: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
-      time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      date: date.toLocaleDateString('es-ES', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+      time: date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
     };
   };
 
@@ -129,7 +129,7 @@ export default function MyTicketPage() {
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
               </svg>
-              PRINT TICKET
+              IMPRIMIR ENTRADA
             </button>
           </div>
 
@@ -146,8 +146,8 @@ export default function MyTicketPage() {
             <div className="bg-gradient-to-r from-red-600 via-yellow-500 to-red-600 px-10 py-8 text-center relative mt-4">
               <div className="mb-4">
                 <div className="text-7xl mb-3 animate-pulse">🎬</div>
-                <h1 className="text-4xl font-black text-black tracking-wider mb-2">CINEMA TICKET</h1>
-                <p className="text-black text-sm font-bold tracking-widest">CINEBOOK PREMIUM EXPERIENCE</p>
+                <h1 className="text-4xl font-black text-black tracking-wider mb-2">ENTRADA DE CINE</h1>
+                <p className="text-black text-sm font-bold tracking-widest">EXPERIENCIA CINEBOOK PREMIUM</p>
               </div>
             </div>
 
@@ -160,18 +160,18 @@ export default function MyTicketPage() {
               {/* Session Details - Cinema Style Grid */}
               <div className="space-y-6 mb-10">
                 <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-2xl p-6 border-2 border-yellow-500/50">
-                  <p className="text-xs text-yellow-400 mb-2 font-black tracking-widest">DATE & TIME</p>
+                  <p className="text-xs text-yellow-400 mb-2 font-black tracking-widest">FECHA Y HORA</p>
                   <p className="font-bold text-gray-300 text-lg">{date}</p>
                   <p className="text-3xl font-black text-white mt-2">{time}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border-2 border-red-500/50">
-                    <p className="text-xs text-red-400 mb-2 font-black tracking-widest">HALL</p>
+                    <p className="text-xs text-red-400 mb-2 font-black tracking-widest">SALA</p>
                     <p className="text-3xl font-black text-white">{hallName}</p>
                   </div>
                   <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border-2 border-green-500/50">
-                    <p className="text-xs text-green-400 mb-2 font-black tracking-widest">SEAT</p>
+                    <p className="text-xs text-green-400 mb-2 font-black tracking-widest">ASIENTO</p>
                     <p className="text-3xl font-black text-white">
                       {seatRow}{seatNumber}
                     </p>
@@ -183,7 +183,7 @@ export default function MyTicketPage() {
               <div className="mb-10">
                 <div className="bg-gradient-to-br from-yellow-500/10 to-red-500/10 rounded-3xl p-8 border-4 border-yellow-500/50">
                   <p className="text-center text-sm text-yellow-400 mb-6 font-black tracking-widest">
-                    SCAN QR CODE AT ENTRANCE
+                    ESCANEA EL CÓDIGO QR EN LA ENTRADA
                   </p>
                   <div className="flex justify-center mb-6">
                     <div className="relative">
@@ -211,9 +211,9 @@ export default function MyTicketPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
-                    <p className="font-black text-2xl">{viewQuality}</p>
+                    <p className="font-black text-2xl">{viewQuality === 'Excellent' ? 'Excelente' : viewQuality === 'Good' ? 'Buena' : viewQuality === 'Average' ? 'Regular' : 'Deficiente'}</p>
                   </div>
-                  <p className="text-sm text-gray-400 font-bold tracking-wider">SCREEN VIEW</p>
+                  <p className="text-sm text-gray-400 font-bold tracking-wider">VISTA DE PANTALLA</p>
                 </div>
 
                 <div className="text-center">
@@ -221,9 +221,9 @@ export default function MyTicketPage() {
                     <svg className="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.536a5 5 0 001.414 1.414m2.828-9.9a9 9 0 012.828 0" />
                     </svg>
-                    <p className="font-black text-2xl">{acousticQuality}</p>
+                    <p className="font-black text-2xl">{acousticQuality === 'Excellent' ? 'Excelente' : acousticQuality === 'Good' ? 'Buena' : acousticQuality === 'Average' ? 'Regular' : 'Deficiente'}</p>
                   </div>
-                  <p className="text-sm text-gray-400 font-bold tracking-wider">ACOUSTICS</p>
+                  <p className="text-sm text-gray-400 font-bold tracking-wider">ACÚSTICA</p>
                 </div>
               </div>
 
@@ -234,14 +234,14 @@ export default function MyTicketPage() {
                     <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    CHECKED IN
+                    INGRESADO
                   </div>
                 ) : (
                   <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-10 py-4 rounded-full font-black text-xl shadow-2xl shadow-blue-500/50">
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    READY FOR CHECK-IN
+                    LISTO PARA INGRESAR
                   </div>
                 )}
               </div>
@@ -249,18 +249,18 @@ export default function MyTicketPage() {
               {/* Important Notes - Cinema Alert Style */}
               <div className="bg-gradient-to-r from-yellow-500/10 to-red-500/10 border-4 border-yellow-500/30 rounded-2xl p-6 text-center">
                 <p className="text-lg text-yellow-400 font-black mb-2 tracking-wider">
-                  ⚠️ ARRIVE 15 MINUTES EARLY
+                  ⚠️ LLEGA 15 MINUTOS ANTES
                 </p>
                 <p className="text-sm text-gray-400 font-semibold">
-                  Latecomers may not be admitted after showtime
+                  Puede que no se permita el ingreso después del inicio de la función
                 </p>
               </div>
             </div>
 
             {/* Footer - Cinema Credits */}
             <div className="bg-gradient-to-r from-gray-900 to-black px-10 py-6 text-center border-t-4 border-yellow-500/30">
-              <p className="text-gray-400 font-bold mb-1">Thank you for choosing CINEBOOK</p>
-              <p className="text-gray-500 text-sm tracking-wider">ENJOY YOUR MOVIE! 🍿</p>
+              <p className="text-gray-400 font-bold mb-1">Gracias por elegir CINEBOOK</p>
+              <p className="text-gray-500 text-sm tracking-wider">¡DISFRUTA TU PELÍCULA! 🍿</p>
             </div>
 
             {/* Film strip perforations bottom */}

@@ -47,19 +47,19 @@ export default function AdminDashboard() {
   };
 
   const navItems = [
-    { name: 'Customers', path: '/admin/customers', icon: '👥', color: 'orange', count: stats.customers },
-    { name: 'Movies', path: '/admin/movies', icon: '🎬', color: 'blue', count: stats.movies },
-    { name: 'Halls', path: '/admin/halls', icon: '🏛️', color: 'indigo', count: stats.halls },
-    { name: 'Sessions', path: '/admin/sessions', icon: '🎭', color: 'green', count: stats.sessions },
-    { name: 'Reservations', path: '/admin/reservations', icon: '📋', color: 'purple', count: stats.reservations },
-    { name: 'Payments', path: '/admin/payments', icon: '💳', color: 'emerald', count: stats.payments },
+    { name: 'Clientes', path: '/admin/customers', icon: '👥', color: 'orange', count: stats.customers },
+    { name: 'Películas', path: '/admin/movies', icon: '🎬', color: 'blue', count: stats.movies },
+    { name: 'Salas', path: '/admin/halls', icon: '🏛️', color: 'indigo', count: stats.halls },
+    { name: 'Funciones', path: '/admin/sessions', icon: '🎭', color: 'green', count: stats.sessions },
+    { name: 'Reservas', path: '/admin/reservations', icon: '📋', color: 'purple', count: stats.reservations },
+    { name: 'Pagos', path: '/admin/payments', icon: '💳', color: 'emerald', count: stats.payments },
   ];
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
-        <p className="text-gray-600">Welcome to Cinema Management System</p>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Panel</h1>
+        <p className="text-gray-600">Bienvenido al Sistema de Gestión de Cine</p>
       </div>
 
       {/* Quick Stats Grid */}
@@ -82,62 +82,62 @@ export default function AdminDashboard() {
       {/* Management Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 shadow-md">
-          <h3 className="text-lg font-bold text-orange-900 mb-2">👥 Customer Management</h3>
+          <h3 className="text-lg font-bold text-orange-900 mb-2">👥 Gestión de Clientes</h3>
           <p className="text-orange-700 text-sm mb-4">
-            Manage customer accounts, contact information, and booking history.
+            Administra las cuentas de clientes, información de contacto e historial de reservas.
           </p>
           <Link href="/admin/customers" className="inline-block bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            Manage Customers →
+            Gestionar Clientes →
           </Link>
         </div>
 
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-md">
-          <h3 className="text-lg font-bold text-blue-900 mb-2">🎬 Movie Catalog</h3>
+          <h3 className="text-lg font-bold text-blue-900 mb-2">🎬 Catálogo de Películas</h3>
           <p className="text-blue-700 text-sm mb-4">
-            Add, edit, and manage your movie catalog with detailed information.
+            Agrega, edita y gestiona tu catálogo de películas con información detallada.
           </p>
           <Link href="/admin/movies" className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            Manage Movies →
+            Gestionar Películas →
           </Link>
         </div>
 
         <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-6 shadow-md">
-          <h3 className="text-lg font-bold text-indigo-900 mb-2">🏛️ Halls & Seats</h3>
+          <h3 className="text-lg font-bold text-indigo-900 mb-2">🏛️ Salas y Asientos</h3>
           <p className="text-indigo-700 text-sm mb-4">
-            Configure cinema halls with seating matrix, view quality, and acoustics.
+            Configura las salas de cine con matriz de asientos, calidad de vista y acústica.
           </p>
           <Link href="/admin/halls" className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            Manage Halls →
+            Gestionar Salas →
           </Link>
         </div>
 
         <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 shadow-md">
-          <h3 className="text-lg font-bold text-green-900 mb-2">🎭 Session Scheduling</h3>
+          <h3 className="text-lg font-bold text-green-900 mb-2">🎭 Programación de Funciones</h3>
           <p className="text-green-700 text-sm mb-4">
-            Schedule movie sessions across different halls and time slots.
+            Programa funciones de películas en diferentes salas y horarios.
           </p>
           <Link href="/admin/sessions" className="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            Manage Sessions →
+            Gestionar Funciones →
           </Link>
         </div>
 
         <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 shadow-md">
-          <h3 className="text-lg font-bold text-purple-900 mb-2">📋 Reservations</h3>
+          <h3 className="text-lg font-bold text-purple-900 mb-2">📋 Reservas</h3>
           <p className="text-purple-700 text-sm mb-4">
-            Create reservations with seat selection and generate tickets with QR codes.
+            Crea reservas con selección de asientos y genera entradas con códigos QR.
           </p>
           <Link href="/admin/reservations" className="inline-block bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            Manage Reservations →
+            Gestionar Reservas →
           </Link>
         </div>
 
         <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-6 shadow-md">
-          <h3 className="text-lg font-bold text-emerald-900 mb-2">💳 Payment Processing</h3>
+          <h3 className="text-lg font-bold text-emerald-900 mb-2">💳 Procesamiento de Pagos</h3>
           <p className="text-emerald-700 text-sm mb-4">
-            Process and track payments for reservations and update booking status.
+            Procesa y realiza seguimiento de los pagos de reservas y actualiza el estado de las reservas.
           </p>
           <Link href="/admin/payments" className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            Manage Payments →
+            Gestionar Pagos →
           </Link>
         </div>
       </div>
