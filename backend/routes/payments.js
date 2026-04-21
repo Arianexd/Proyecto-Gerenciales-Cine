@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Payment = require('../models/Payment');
-const { requireAuth, requireAdmin, isOwnerOrAdmin } = require('../middleware/auth');
+const { requireAuth, requireAdmin, requireAdminOrCajero, isOwnerOrAdmin } = require('../middleware/auth');
 
 // GET all payments
-router.get('/', requireAuth, requireAdmin, async (req, res) => {
+router.get('/', requireAuth, requireAdminOrCajero, async (req, res) => {
   try {
     const payments = await Payment.find()
       .populate({
@@ -45,7 +45,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // POST create new payment
-router.post('/', requireAuth, requireAdmin, async (req, res) => {
+router.post('/', requireAuth, requireAdminOrCajero, async (req, res) => {
   try {
     const payment = new Payment(req.body);
     await payment.save();
@@ -64,7 +64,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // PUT update payment
-router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.put('/:id', requireAuth, requireAdminOrCajero, async (req, res) => {
   try {
     const payment = await Payment.findByIdAndUpdate(
       req.params.id,

@@ -2,30 +2,39 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User } from '@/lib/types';
+import { useEffect, useState } from 'react';
+import { getStoredSession, subscribeToAuthChanges } from '@/lib/auth';
 
-export default function AdminNavigation({ user }: { user: User }) {
+const navItems = [
+  { name: 'Dashboard', path: '/admin', icon: '📊', roles: ['ADMIN'] },
+  { name: 'Clientes', path: '/admin/customers', icon: '👥', roles: ['ADMIN', 'CAJERO'] },
+  { name: 'Películas', path: '/admin/movies', icon: '🎬', roles: ['ADMIN'] },
+  { name: 'Salas', path: '/admin/halls', icon: '🏛️', roles: ['ADMIN'] },
+  { name: 'Funciones', path: '/admin/sessions', icon: '🎭', roles: ['ADMIN'] },
+  { name: 'Reservas', path: '/admin/reservations', icon: '📋', roles: ['ADMIN', 'CAJERO'] },
+  { name: 'Pagos', path: '/admin/payments', icon: '💳', roles: ['ADMIN', 'CAJERO'] },
+];
+
+export default function AdminNavigation() {
   const pathname = usePathname();
+  const [role, setRole] = useState<string>('');
 
-  // Definimos qué puede ver cada rol
-  const navItems = [
-    { name: 'Dashboard', path: '/admin', icon: '📊', roles: ['admin', 'cajero'] },
-    { name: 'Customers', path: '/admin/customers', icon: '👥', roles: ['admin', 'cajero'] },
-    { name: 'Movies', path: '/admin/movies', icon: '🎬', roles: ['admin'] },
-    { name: 'Halls', path: '/admin/halls', icon: '🏛️', roles: ['admin'] },
-    { name: 'Sessions', path: '/admin/sessions', icon: '🎭', roles: ['admin'] },
-    { name: 'Reservations', path: '/admin/reservations', icon: '📋', roles: ['admin', 'cajero'] },
-    { name: 'Payments', path: '/admin/payments', icon: '💳', roles: ['admin', 'cajero'] },
-  ];
+  useEffect(() => {
+    const sync = () => {
+      const session = getStoredSession();
+      setRole(session?.user.Role ?? '');
+    };
+    sync();
+    return subscribeToAuthChanges(sync);
+  }, []);
 
-  // Filtramos los items según el rol del usuario actual
-  const filteredItems = navItems.filter(item => item.roles.includes(user.Role));
+  const filtered = navItems.filter(item => item.roles.includes(role));
 
   return (
     <div className="bg-white border-b border-gray-200 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex overflow-x-auto space-x-2">
-          {filteredItems.map((item) => (
+          {filtered.map((item) => (
             <Link
               key={item.path}
               href={item.path}

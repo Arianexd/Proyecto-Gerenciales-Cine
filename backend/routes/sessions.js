@@ -5,12 +5,6 @@ const Reservation = require('../models/Reservation');
 const Ticket = require('../models/Ticket');
 const { requireAdmin } = require('../middleware/auth');
 
-// Solo el ADMIN puede crear salas
-router.post('/', checkRole(['admin']), hallController.create);
-
-// El ADMIN y el CAJERO pueden ver las salas
-router.get('/', checkRole(['admin', 'cajero']), hallController.getAll);
-
 // GET all sessions with populated movie and hall data
 router.get('/', async (req, res) => {
   try {

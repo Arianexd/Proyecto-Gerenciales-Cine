@@ -112,7 +112,7 @@ function isOwnerOrAdmin(customerId, req) {
     return false;
   }
 
-  if (req.user.Role === 'ADMIN') {
+  if (req.user.Role === 'ADMIN' || req.user.Role === 'CAJERO') {
     return true;
   }
 
@@ -126,6 +126,7 @@ module.exports = {
   requireAuth,
   requireRole,
   requireAdmin: requireRole('ADMIN'),
+  requireAdminOrCajero: requireRole('ADMIN', 'CAJERO'),
   requireCustomer: requireRole('CUSTOMER'),
   isOwnerOrAdmin
 };

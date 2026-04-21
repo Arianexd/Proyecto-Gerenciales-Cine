@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { customersApi, moviesApi, hallsApi, sessionsApi, reservationsApi, paymentsApi } from '@/lib/api';
+import { getStoredSession } from '@/lib/auth';
 import Link from 'next/link';
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [stats, setStats] = useState({
     customers: 0,
     movies: 0,
@@ -16,8 +19,13 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const session = getStoredSession();
+    if (session?.user.Role === 'CAJERO') {
+      router.replace('/admin/reservations');
+      return;
+    }
     fetchStats();
-  }, []);
+  }, [router]);
 
   const fetchStats = async () => {
     try {

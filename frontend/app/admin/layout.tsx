@@ -16,11 +16,13 @@ export default function AdminLayout({
   const router = useRouter();
   const isLoginPage = pathname === '/admin/login';
   const [username, setUsername] = useState('');
+  const [role, setRole] = useState('');
 
   useEffect(() => {
     const syncUser = () => {
       const session = getStoredSession();
       setUsername(getUserDisplayName(session?.user || null));
+      setRole(session?.user.Role ?? '');
     };
 
     syncUser();
@@ -47,7 +49,14 @@ export default function AdminLayout({
                 <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                <span className="text-xl font-bold text-gray-900">Panel de Administración de Cine</span>
+                <div>
+                  <span className="text-xl font-bold text-gray-900">Panel de Administración de Cine</span>
+                  {role === 'CAJERO' && (
+                    <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Cajero
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center gap-4">

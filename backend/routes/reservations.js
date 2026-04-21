@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Reservation = require('../models/Reservation');
-const { requireAuth, requireAdmin, isOwnerOrAdmin } = require('../middleware/auth');
+const { requireAuth, requireAdmin, requireAdminOrCajero, isOwnerOrAdmin } = require('../middleware/auth');
 
 // GET all reservations with populated data
-router.get('/', requireAuth, requireAdmin, async (req, res) => {
+router.get('/', requireAuth, requireAdminOrCajero, async (req, res) => {
   try {
     const reservations = await Reservation.find()
       .populate('CustomerID', 'Name Surname Email')
@@ -49,7 +49,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // POST create new reservation
-router.post('/', requireAuth, requireAdmin, async (req, res) => {
+router.post('/', requireAuth, requireAdminOrCajero, async (req, res) => {
   try {
     const reservation = new Reservation(req.body);
     await reservation.save();
@@ -70,7 +70,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // PUT update reservation (mainly for status updates)
-router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.put('/:id', requireAuth, requireAdminOrCajero, async (req, res) => {
   try {
     const reservation = await Reservation.findByIdAndUpdate(
       req.params.id,

@@ -86,9 +86,15 @@ const seedDatabase = async () => {
         Email: 'admin@cinebook.local',
         PasswordHash: await bcrypt.hash('demo', 10),
         Role: 'ADMIN'
+      },
+      {
+        Username: 'cajero',
+        Email: 'cajero@cinebook.local',
+        PasswordHash: await bcrypt.hash('cajero123', 10),
+        Role: 'CAJERO'
       }
     ]);
-    console.log('Seeded users: 4');
+    console.log('Seeded users: 5');
 
     // INSERT MOVIES (3 records with poster URLs and details)
     const movies = await Movie.insertMany([
@@ -425,6 +431,7 @@ const seedDatabase = async () => {
     console.log(`Tickets: ${tickets.length}`);
     console.log(`Reviews: ${reviews.length}`);
     console.log('Admin login: demo / demo');
+    console.log('Cajero login: cajero / cajero123');
     console.log('Customer login example: ahmet@email.com / demo123');
 
     process.exit(0);
