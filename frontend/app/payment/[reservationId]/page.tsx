@@ -203,7 +203,7 @@ export default function PaymentPage() {
                     Precio por Asiento
                   </span>
                   <span className="text-white font-black text-lg md:text-xl">
-                    $
+                    Bs 
                     {seatCount > 0
                       ? (totalAmount / seatCount).toFixed(2)
                       : "0.00"}
@@ -214,7 +214,7 @@ export default function PaymentPage() {
                     TOTAL
                   </span>
                   <span className="text-yellow-400 font-black text-3xl md:text-4xl">
-                    ${totalAmount.toFixed(2)}
+                    Bs {totalAmount.toFixed(2)}
                   </span>
                 </div>
               </div>

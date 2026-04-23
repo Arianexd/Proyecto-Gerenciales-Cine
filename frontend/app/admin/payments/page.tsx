@@ -219,7 +219,7 @@ export default function PaymentsPage() {
           onClick={() => handleOpenModal()}
           className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
-          + Procesar Pago
+          + Gestionar Pago
         </button>
       </div>
 
@@ -284,7 +284,7 @@ export default function PaymentsPage() {
                       {getPaymentMethodLabel(payment.PaymentMethod)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-emerald-600">
-                      ${payment.Amount.toFixed(2)}
+                      Bs {payment.Amount.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {getStatusBadge(payment.PaymentStatus)}
@@ -321,7 +321,7 @@ export default function PaymentsPage() {
           setIsModalOpen(false);
           setSelectedPayment(null);
         }} 
-        title={selectedPayment ? 'Editar Pago' : 'Procesar Pago'}
+        title={selectedPayment ? 'Editar Pago' : 'Gestionar Pago'}
       >
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
@@ -361,7 +361,7 @@ export default function PaymentsPage() {
                         - {typeof reservation.SessionID === 'object' && typeof reservation.SessionID.MovieID === 'object'
                           ? reservation.SessionID.MovieID.MovieName
                           : 'Película'}{' '}
-                        ({seatCount} {seatCount === 1 ? 'asiento' : 'asientos'} × ${sessionPrice})
+                        ({seatCount} {seatCount === 1 ? 'asiento' : 'asientos'} × Bs {sessionPrice})
                         {reservation.Status === 'PAID' ? ' ✓' : ''}
                       </option>
                     );
@@ -395,7 +395,7 @@ export default function PaymentsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Monto ($)
+                Monto (Bs)
               </label>
               <input
                 type="number"
