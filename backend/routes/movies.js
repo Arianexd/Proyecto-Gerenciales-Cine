@@ -57,16 +57,22 @@ function getMissingMovieFields(movieData = {}) {
   return missingFields;
 }
 
-// GET all movies
+// GET all movies (con soporte opcional para filtros)
 router.get('/', async (req, res) => {
   try {
-    const movies = await Movie.find().sort({ createdAt: -1 });
+    const { genre } = req.query; // Capturamos el género de la URL
+    let query = {};
+    
+    if (genre && genre !== 'All') {
+      query.Genre = genre; // Filtramos por el campo Genre definido en Movie.js
+    }
+
+    const movies = await Movie.find(query).sort({ createdAt: -1 });
     res.json(movies);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-
 // GET single movie
 router.get('/:id', async (req, res) => {
   try {
