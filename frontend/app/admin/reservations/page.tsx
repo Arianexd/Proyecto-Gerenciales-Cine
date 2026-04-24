@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { reservationsApi, customersApi, sessionsApi, seatsApi, ticketsApi } from '@/lib/api';
 import { Reservation, Customer, MovieSession, Seat } from '@/lib/types';
 import Modal from '@/components/Modal';
@@ -28,6 +28,12 @@ export default function ReservationsPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [reservationToDelete, setReservationToDelete] = useState<Reservation | null>(null);
+  const [clientSearch, setClientSearch] = useState('');
+  const [showClientSugg, setShowClientSugg] = useState(false);
+  const [sessionSearch, setSessionSearch] = useState('');
+  const [showSessionSugg, setShowSessionSugg] = useState(false);
+  const clientAutocompleteRef = useRef<HTMLDivElement | null>(null);
+  const sessionAutocompleteRef = useRef<HTMLDivElement | null>(null);
 
   const [formData, setFormData] = useState({
     CustomerID: '',
@@ -38,6 +44,46 @@ export default function ReservationsPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (clientAutocompleteRef.current && !clientAutocompleteRef.current.contains(target)) {
+        setShowClientSugg(false);
+      }
+      if (sessionAutocompleteRef.current && !sessionAutocompleteRef.current.contains(target)) {
+        setShowSessionSugg(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (selectedReservation) {
+      const customer = selectedReservation.CustomerID;
+      const session = selectedReservation.SessionID;
+
+      if (customer && typeof customer === 'object') {
+        setClientSearch(`${customer.Name} ${customer.Surname}`);
+      } else {
+        setClientSearch('');
+      }
+
+      if (session && typeof session === 'object' && typeof session.MovieID === 'object') {
+        setSessionSearch(`${session.MovieID.MovieName} - ${formatDateTime(session.SessionDateTime)}`);
+      } else {
+        setSessionSearch('');
+      }
+    } else {
+      setClientSearch('');
+      setSessionSearch('');
+    }
+
+    setShowClientSugg(false);
+    setShowSessionSugg(false);
+  }, [selectedReservation]);
 
   const fetchData = async () => {
     try {
@@ -73,13 +119,19 @@ export default function ReservationsPage() {
         SessionID: '',
         Status: 'CREATED',
       });
+      setClientSearch('');
+      setSessionSearch('');
     }
+    setShowClientSugg(false);
+    setShowSessionSugg(false);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedReservation(null);
+    setShowClientSugg(false);
+    setShowSessionSugg(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -347,45 +399,91 @@ export default function ReservationsPage() {
       >
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cliente
-              </label>
-              <select
-                required
-                value={formData.CustomerID}
-                onChange={(e) => setFormData({ ...formData, CustomerID: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+            <div className="relative" ref={clientAutocompleteRef}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+              <input
+                type="text"
+                placeholder="Buscar cliente por nombre o apellido..."
+                value={clientSearch}
+                onChange={(e) => {
+                  setClientSearch(e.target.value);
+                  setShowClientSugg(true);
+                }}
+                onFocus={() => setShowClientSugg(true)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 outline-none"
                 disabled={!!selectedReservation}
-              >
-                <option value="">Selecciona un cliente</option>
-                {customers.map((customer) => (
-                  <option key={customer._id} value={customer._id}>
-                    {customer.Name} {customer.Surname} ({customer.Email})
-                  </option>
-                ))}
-              </select>
+                required
+              />
+
+              {showClientSugg && !selectedReservation && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {customers
+                    .filter((c) => `${c.Name} ${c.Surname}`.toLowerCase().includes(clientSearch.toLowerCase()))
+                    .map((customer) => (
+                      <div
+                        key={customer._id}
+                        className="px-4 py-2 hover:bg-emerald-50 cursor-pointer text-sm border-b last:border-none"
+                        onClick={() => {
+                          setFormData({ ...formData, CustomerID: customer._id });
+                          setClientSearch(`${customer.Name} ${customer.Surname}`);
+                          setShowClientSugg(false);
+                        }}
+                      >
+                        <span className="font-medium">{customer.Name} {customer.Surname}</span>
+                        <div className="text-xs text-gray-400">{customer.Email}</div>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Función
-              </label>
-              <select
-                required
-                value={formData.SessionID}
-                onChange={(e) => setFormData({ ...formData, SessionID: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+            <div className="relative" ref={sessionAutocompleteRef}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Funcion (Pelicula y Horario)</label>
+              <input
+                type="text"
+                placeholder="Buscar por nombre de pelicula..."
+                value={sessionSearch}
+                onChange={(e) => {
+                  setSessionSearch(e.target.value);
+                  setShowSessionSugg(true);
+                }}
+                onFocus={() => setShowSessionSugg(true)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 outline-none"
                 disabled={!!selectedReservation}
-              >
-                <option value="">Selecciona una función</option>
-                {sessions.map((session) => (
-                  <option key={session._id} value={session._id}>
-                    {typeof session.MovieID === 'object' ? session.MovieID.MovieName : 'Película'} -{' '}
-                    {formatDateTime(session.SessionDateTime)}
-                  </option>
-                ))}
-              </select>
+                required
+              />
+
+              {showSessionSugg && !selectedReservation && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {sessions
+                    .filter((s) => {
+                      const movieName = typeof s.MovieID === 'object' ? s.MovieID.MovieName : '';
+                      return movieName.toLowerCase().includes(sessionSearch.toLowerCase());
+                    })
+                    .map((session) => {
+                      const movieName = typeof session.MovieID === 'object' ? session.MovieID.MovieName : 'Pelicula';
+                      const time = formatDateTime(session.SessionDateTime);
+
+                      return (
+                        <div
+                          key={session._id}
+                          className="px-4 py-2 hover:bg-emerald-50 cursor-pointer text-sm border-b last:border-none"
+                          onClick={() => {
+                            setFormData({ ...formData, SessionID: session._id });
+                            setSessionSearch(`${movieName} - ${time}`);
+                            setShowSessionSugg(false);
+                            setSelectedSeats([]);
+                          }}
+                        >
+                          <div className="font-semibold">{movieName}</div>
+                          <div className="text-xs text-emerald-600 font-medium">
+                            {time} - {typeof session.HallID === 'object' ? session.HallID.HallName : 'Sala'}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
             </div>
 
             <div>

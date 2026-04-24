@@ -12,10 +12,13 @@ export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [formData, setFormData] = useState({
     ReservationID: '',
@@ -27,6 +30,21 @@ export default function PaymentsPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (selectedPayment && selectedPayment.ReservationID && typeof selectedPayment.ReservationID === 'object') {
+      const r = selectedPayment.ReservationID;
+      const name = typeof r.CustomerID === 'object' ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : 'Cliente';
+      setSearchTerm(name);
+    } else {
+      setSearchTerm('');
+    }
+    setShowSuggestions(false);
+  }, [selectedPayment]);
 
   const fetchData = async () => {
     try {
@@ -73,7 +91,9 @@ export default function PaymentsPage() {
         Amount: '',
         PaymentStatus: 'Pending',
       });
+      setSearchTerm('');
     }
+    setShowSuggestions(false);
     setIsModalOpen(true);
   };
 
@@ -211,6 +231,10 @@ export default function PaymentsPage() {
     return 'Desconocido';
   };
 
+  if (!mounted) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -320,59 +344,77 @@ export default function PaymentsPage() {
         onClose={() => {
           setIsModalOpen(false);
           setSelectedPayment(null);
+          setShowSuggestions(false);
         }} 
         title={selectedPayment ? 'Editar Pago' : 'Gestionar Pago'}
       >
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Reserva
+                Buscar Reserva (Cliente o Pelicula)
               </label>
-              <select
-                required
-                value={formData.ReservationID}
-                onChange={(e) => {
-                  const reservationId = e.target.value;
-                  setFormData({ ...formData, ReservationID: reservationId });
-                  
-                  // Auto-calculate price when reservation is selected
-                  if (reservationId && !selectedPayment) {
-                    const totalPrice = calculateTotalPrice(reservationId);
-                    setFormData(prev => ({ ...prev, Amount: totalPrice.toString() }));
-                  }
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                disabled={!!selectedPayment}
-              >
-                <option value="">Selecciona una reserva</option>
-                {reservations
-                  .filter((r) => r.Status === 'CREATED' || r.Status === 'PAID')
-                  .map((reservation) => {
-                    const storedSeats = localStorage.getItem(`reservation_${reservation._id}_seats`);
-                    const seatCount = storedSeats ? JSON.parse(storedSeats).length : reservation.SeatIDs?.length || 1;
-                    const sessionPrice = typeof reservation.SessionID === 'object' ? reservation.SessionID.Price : 0;
 
-                    return (
-                      <option key={reservation._id} value={reservation._id}>
-                        {typeof reservation.CustomerID === 'object'
-                          ? `${reservation.CustomerID.Name} ${reservation.CustomerID.Surname}`
-                          : 'Cliente'}{' '}
-                        - {typeof reservation.SessionID === 'object' && typeof reservation.SessionID.MovieID === 'object'
-                          ? reservation.SessionID.MovieID.MovieName
-                          : 'Película'}{' '}
-                        ({seatCount} {seatCount === 1 ? 'asiento' : 'asientos'} × Bs {sessionPrice})
-                        {reservation.Status === 'PAID' ? ' ✓' : ''}
-                      </option>
-                    );
-                  })}
-                {reservations.filter((r) => r.Status === 'CREATED' || r.Status === 'PAID').length === 0 && (
-                  <option disabled>No hay reservas disponibles - Crea una reserva primero</option>
-                )}
-              </select>
+              <input
+                type="text"
+                placeholder="Escribe para buscar..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none"
+                disabled={!!selectedPayment}
+              />
+
+              {showSuggestions && !selectedPayment && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {reservations
+                    .filter((r) => r.Status === 'CREATED' || r.Status === 'PAID')
+                    .filter((r) => {
+                      const name = typeof r.CustomerID === 'object' ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : '';
+                      const movie = typeof r.SessionID === 'object' && typeof r.SessionID.MovieID === 'object' ? r.SessionID.MovieID.MovieName : '';
+                      return (name + movie).toLowerCase().includes(searchTerm.toLowerCase());
+                    })
+                    .map((reservation) => {
+                      const clientName = typeof reservation.CustomerID === 'object' ? `${reservation.CustomerID.Name} ${reservation.CustomerID.Surname}` : 'Cliente';
+                      const movieName = typeof reservation.SessionID === 'object' && typeof reservation.SessionID.MovieID === 'object' ? reservation.SessionID.MovieID.MovieName : 'Pelicula';
+
+                      return (
+                        <div
+                          key={reservation._id}
+                          className="px-4 py-2 hover:bg-emerald-50 cursor-pointer border-b last:border-none text-sm"
+                          onClick={() => {
+                            setFormData({ ...formData, ReservationID: reservation._id });
+                            setSearchTerm(`${clientName} - ${movieName}`);
+                            setShowSuggestions(false);
+
+                            const totalPrice = calculateTotalPrice(reservation._id);
+                            setFormData((prev) => ({ ...prev, Amount: totalPrice.toString() }));
+                          }}
+                        >
+                          <div className="font-semibold">{clientName}</div>
+                          <div className="text-gray-500 text-xs">{movieName}</div>
+                        </div>
+                      );
+                    })}
+                  {searchTerm &&
+                    reservations
+                      .filter((r) => r.Status === 'CREATED' || r.Status === 'PAID')
+                      .filter((r) => {
+                        const name = typeof r.CustomerID === 'object' ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : '';
+                        const movie = typeof r.SessionID === 'object' && typeof r.SessionID.MovieID === 'object' ? r.SessionID.MovieID.MovieName : '';
+                        return (name + movie).toLowerCase().includes(searchTerm.toLowerCase());
+                      }).length === 0 && (
+                      <div className="px-4 py-2 text-gray-500 text-sm">No se encontraron reservas</div>
+                    )}
+                </div>
+              )}
+
               {formData.ReservationID && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Calculado automáticamente según el precio de la función y la cantidad de asientos. Puedes modificar este monto.
+                <p className="text-xs text-emerald-600 mt-1 font-medium">
+                  ✓ Reserva seleccionada correctamente.
                 </p>
               )}
             </div>
