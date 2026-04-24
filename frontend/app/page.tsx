@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { moviesApi } from '@/lib/api';
 import { getStoredSession } from '@/lib/auth';
@@ -10,8 +10,9 @@ import Link from 'next/link';
 
 export default function Home() {
   const router = useRouter();
-  const [featuredMovies, setFeaturedMovies] = useState<Movie[]>([]);
+  const [allMovies, setAllMovies] = useState<Movie[]>([]); // Cambiado para manejar el catálogo completo
   const [loading, setLoading] = useState(true);
+  const [selectedGenre, setSelectedGenre] = useState('Todos'); // Estado para el filtro instantáneo
 
   useEffect(() => {
     const session = getStoredSession();
@@ -19,20 +20,32 @@ export default function Home() {
       router.push('/admin');
       return;
     }
-    fetchFeaturedMovies();
+    fetchAllMovies();
   }, [router]);
 
-  const fetchFeaturedMovies = async () => {
+  const fetchAllMovies = async () => {
     try {
       setLoading(true);
       const response = await moviesApi.getAll();
-      setFeaturedMovies(response.data.slice(0, 6));
+      // Cargamos todas las películas para permitir el filtrado en el cliente
+      setAllMovies(response.data);
     } catch (error) {
       console.error('Failed to fetch movies:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Lógica de filtrado instantáneo (CA2)
+  const genres = useMemo(() => {
+    const extracted = allMovies.map(m => m.Genre);
+    return ['Todos', ...Array.from(new Set(extracted))];
+  }, [allMovies]);
+
+  const filteredMovies = useMemo(() => {
+    if (selectedGenre === 'Todos') return allMovies;
+    return allMovies.filter(movie => movie.Genre === selectedGenre);
+  }, [allMovies, selectedGenre]);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -41,7 +54,6 @@ export default function Home() {
       {/* ── Hero ── */}
       <section className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 flex flex-col md:flex-row items-center gap-12">
-          {/* Copy */}
           <div className="flex-1 text-center md:text-left">
             <span className="inline-block mb-4 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold tracking-widest uppercase border border-red-100">
               Reserva online · Sin colas
@@ -72,7 +84,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Stats pill row */}
           <div className="flex-shrink-0 flex flex-col gap-4 md:gap-5 w-full md:w-auto">
             {[
               { label: 'Películas en cartelera', value: '20+', icon: '🎬' },
@@ -115,28 +126,34 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Now Showing ── */}
+      {/* ── Now Showing / Catálogo con Filtros ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900">En cartelera</h2>
-            <p className="text-gray-400 text-sm mt-1">Las mejores películas disponibles ahora</p>
+            <p className="text-gray-400 text-sm mt-1">Explora nuestras películas disponibles</p>
           </div>
-          <Link
-            href="/movies"
-            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors"
-          >
-            Ver todas
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
+
+          {/* Filtros de Género (Integración de CA2 con nuevos estilos) */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+            {genres.map((genre) => (
+              <button
+                key={genre}
+                onClick={() => setSelectedGenre(genre)}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+                  selectedGenre === genre
+                    ? 'bg-red-600 text-white shadow-md shadow-red-100'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-red-300'
+                }`}
+              >
+                {genre}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Grid */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="rounded-2xl overflow-hidden bg-gray-200 animate-pulse">
                 <div className="aspect-[2/3]" />
@@ -147,32 +164,18 @@ export default function Home() {
               </div>
             ))}
           </div>
-        ) : featuredMovies.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+        ) : filteredMovies.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-gray-400 text-center">
             <svg className="w-12 h-12 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
             </svg>
-            <p className="text-sm font-medium">No hay películas disponibles en este momento</p>
+            <p className="text-sm font-medium">No se encontraron películas para este género</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6">
-            {featuredMovies.map((movie) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+            {filteredMovies.map((movie) => (
               <MovieCard key={movie._id} movie={movie} />
             ))}
-          </div>
-        )}
-
-        {featuredMovies.length > 0 && (
-          <div className="mt-10 sm:hidden text-center">
-            <Link
-              href="/movies"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors"
-            >
-              Ver todas las películas
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
           </div>
         )}
       </section>
@@ -195,11 +198,13 @@ export default function Home() {
   );
 }
 
+// MovieCard actualizado con todas las mejoras visuales de tus compañeros
 function MovieCard({ movie }: { movie: Movie }) {
   const hasUserRating = Boolean(movie.UserRatingCount && movie.UserRatingCount > 0);
   const posterSrc =
     movie.PosterURL ||
     `https://placehold.co/300x450/111827/f9fafb?text=${encodeURIComponent(movie.MovieName)}`;
+  
   const ratingValue = hasUserRating
     ? movie.UserRatingAverage?.toFixed(1) || '0.0'
     : typeof movie.Rating === 'number' && movie.Rating > 0
@@ -209,7 +214,6 @@ function MovieCard({ movie }: { movie: Movie }) {
   return (
     <Link href={`/movies/${movie._id}`} className="group block">
       <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-        {/* Poster */}
         <div className="relative aspect-[2/3] overflow-hidden bg-gray-100">
           <img
             src={posterSrc}
@@ -219,20 +223,16 @@ function MovieCard({ movie }: { movie: Movie }) {
               e.currentTarget.src = 'https://via.placeholder.com/300x450/f3f4f6/d1d5db?text=Sin+poster';
             }}
           />
-          {/* Gradient overlay */}
           <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent" />
-          {/* Age badge */}
           <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-gray-900/80 text-white text-xs font-bold backdrop-blur-sm">
             {movie.AgeLimit}+
           </div>
-          {/* Rating badge */}
           <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-400 text-yellow-900">
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
             <span className="text-xs font-bold">{ratingValue}</span>
           </div>
-          {/* Hover CTA */}
           <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
             <span className="block w-full py-2 rounded-lg bg-red-600 text-white text-xs font-bold text-center">
               Reservar entrada
@@ -240,7 +240,6 @@ function MovieCard({ movie }: { movie: Movie }) {
           </div>
         </div>
 
-        {/* Info */}
         <div className="p-3.5">
           <h3 className="text-gray-900 text-sm font-bold mb-1.5 line-clamp-1 group-hover:text-red-600 transition-colors">
             {movie.MovieName}
