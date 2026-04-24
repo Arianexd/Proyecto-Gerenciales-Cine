@@ -17,9 +17,11 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const hall = await Hall.findById(req.params.id);
+
     if (!hall) {
       return res.status(404).json({ error: 'Hall not found' });
     }
+
     res.json(hall);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -29,28 +31,71 @@ router.get('/:id', async (req, res) => {
 // POST create new hall
 router.post('/', requireAdmin, async (req, res) => {
   try {
-    const hall = new Hall(req.body);
+    const { HallName, Capacity } = req.body;
+
+    if (!HallName || !Capacity) {
+      return res.status(400).json({
+        error: 'El nombre de la sala y la capacidad son obligatorios'
+      });
+    }
+
+    const hall = new Hall({
+      HallName,
+      Capacity
+    });
+
     await hall.save();
+
     res.status(201).json(hall);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error(error);
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        error: 'Ya existe una sala con ese nombre'
+      });
+    }
+
+    res.status(400).json({
+      error: error.message
+    });
   }
 });
 
 // PUT update hall
 router.put('/:id', requireAdmin, async (req, res) => {
   try {
+    const { HallName, Capacity } = req.body;
+
     const hall = await Hall.findByIdAndUpdate(
       req.params.id,
-      req.body,
-      { new: true, runValidators: true }
+      {
+        HallName,
+        Capacity
+      },
+      {
+        new: true,
+        runValidators: true
+      }
     );
+
     if (!hall) {
       return res.status(404).json({ error: 'Hall not found' });
     }
+
     res.json(hall);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error(error);
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        error: 'Ya existe una sala con ese nombre'
+      });
+    }
+
+    res.status(400).json({
+      error: error.message
+    });
   }
 });
 
@@ -58,9 +103,11 @@ router.put('/:id', requireAdmin, async (req, res) => {
 router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     const hall = await Hall.findByIdAndDelete(req.params.id);
+
     if (!hall) {
       return res.status(404).json({ error: 'Hall not found' });
     }
+
     res.json({ message: 'Hall deleted successfully', hall });
   } catch (error) {
     res.status(500).json({ error: error.message });
