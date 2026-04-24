@@ -4,11 +4,11 @@ export interface Movie {
   Genre: string;
   Duration: number;
   AgeLimit: number;
-  Description: string;
-  PosterURL: string;
-  Director: string;
-  Cast: string[];
-  Rating: number;
+  Description?: string;
+  PosterURL?: string;
+  Director?: string;
+  Cast?: string[];
+  Rating?: number;
   UserRatingAverage?: number;
   UserRatingCount?: number;
   TrailerURL?: string;
