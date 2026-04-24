@@ -55,6 +55,14 @@ router.get('/:id/availability', async (req, res) => {
 // POST create new session
 router.post('/', requireAdmin, async (req, res) => {
   try {
+    const { HallID, SessionDateTime } = req.body;
+
+    // Check for existing session in the same hall at the same time
+    const existingSession = await MovieSession.findOne({ HallID, SessionDateTime });
+    if (existingSession) {
+      return res.status(400).json({ error: 'Ya existe una función programada en esta sala para el horario seleccionado.' });
+    }
+
     const session = new MovieSession(req.body);
     await session.save();
     const populatedSession = await MovieSession.findById(session._id)
@@ -69,6 +77,20 @@ router.post('/', requireAdmin, async (req, res) => {
 // PUT update session
 router.put('/:id', requireAdmin, async (req, res) => {
   try {
+    const { HallID, SessionDateTime } = req.body;
+
+    if (HallID && SessionDateTime) {
+      // Check for existing session in the same hall at the same time (excluding current session)
+      const existingSession = await MovieSession.findOne({
+        HallID,
+        SessionDateTime,
+        _id: { $ne: req.params.id }
+      });
+      if (existingSession) {
+        return res.status(400).json({ error: 'Ya existe otra función programada en esta sala para el horario seleccionado.' });
+      }
+    }
+
     const session = await MovieSession.findByIdAndUpdate(
       req.params.id,
       req.body,

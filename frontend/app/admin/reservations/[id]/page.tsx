@@ -32,7 +32,7 @@ export default function ReservationDetailPage() {
       // Fetch tickets for this reservation
       const ticketsRes = await ticketsApi.getAll();
       const reservationTickets = ticketsRes.data.filter((ticket: Ticket) => 
-        (typeof ticket.ReservationID === 'object' ? ticket.ReservationID._id : ticket.ReservationID) === reservationId
+        (typeof ticket.ReservationID === 'object' && ticket.ReservationID ? ticket.ReservationID._id : (ticket.ReservationID as string)) === reservationId
       );
       setTickets(reservationTickets);
 
@@ -214,7 +214,7 @@ export default function ReservationDetailPage() {
                       </div>
                       <div>
                         <span className="text-gray-600">Precio por asiento:</span>
-                        <span className="ml-2 font-medium text-green-600">${session.Price}</span>
+                        <span className="ml-2 font-medium text-green-600">Bs {session.Price}</span>
                       </div>
                     </div>
                   </div>
@@ -351,14 +351,14 @@ export default function ReservationDetailPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Precio por Asiento</span>
                 <span className="font-semibold text-gray-900">
-                  ${session ? session.Price : 0}
+                  Bs {session ? session.Price : 0}
                 </span>
               </div>
               <hr className="my-3" />
               <div className="flex justify-between text-base">
                 <span className="font-bold text-gray-900">Monto Total</span>
                 <span className="font-bold text-green-600">
-                  ${session ? (session.Price * seats.length).toFixed(2) : '0.00'}
+                  Bs {session ? (session.Price * seats.length).toFixed(2) : '0.00'}
                 </span>
               </div>
             </div>

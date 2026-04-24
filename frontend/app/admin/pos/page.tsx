@@ -337,7 +337,7 @@ export default function PosPage() {
                         <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
                           {isToday ? 'HOY' : dt.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}
                         </span>
-                        <span className="text-lg font-bold text-green-600">${session.Price.toFixed(2)}</span>
+                        <span className="text-lg font-bold text-green-600">Bs {session.Price.toFixed(2)}</span>
                       </div>
                       <h3 className="font-bold text-gray-900 text-lg leading-tight mb-1">
                         {session.MovieID.MovieName}
@@ -431,7 +431,7 @@ export default function PosPage() {
                         )}
                         <div className="text-3xl mb-2 text-center">{categoryEmoji(p.Category?.Name)}</div>
                         <div className="text-sm font-semibold text-gray-900 leading-tight mb-1">{p.Name}</div>
-                        <div className="text-base font-bold text-green-600">${p.Price.toFixed(2)}</div>
+                        <div className="text-base font-bold text-green-600">Bs {p.Price.toFixed(2)}</div>
                         <div className={`text-xs mt-1 ${p.Stock <= 5 ? 'text-orange-500' : 'text-gray-400'}`}>
                           {outOfStock ? 'Sin stock' : `Stock: ${p.Stock}`}
                         </div>
@@ -486,7 +486,7 @@ export default function PosPage() {
                     })}
                   </p>
                   <p className="text-orange-800 text-xs font-semibold mt-1">
-                    ${selectedSession.Price.toFixed(2)} / asiento
+                    Bs {selectedSession.Price.toFixed(2)} / asiento
                   </p>
                 </div>
 
@@ -507,8 +507,8 @@ export default function PosPage() {
                         ))}
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">{selectedSeatIds.length} boleto{selectedSeatIds.length !== 1 ? 's' : ''} × ${selectedSession.Price.toFixed(2)}</span>
-                      <span className="font-bold text-gray-900">${ticketSubtotal.toFixed(2)}</span>
+                      <span className="text-gray-500">{selectedSeatIds.length} boleto{selectedSeatIds.length !== 1 ? 's' : ''} × Bs {selectedSession.Price.toFixed(2)}</span>
+                      <span className="font-bold text-gray-900">Bs {ticketSubtotal.toFixed(2)}</span>
                     </div>
                   </>
                 )}
@@ -533,7 +533,7 @@ export default function PosPage() {
                           <div key={item.product._id} className="flex items-center gap-2">
                             <div className="flex-1 min-w-0">
                               <div className="text-sm font-medium text-gray-900 truncate">{item.product.Name}</div>
-                              <div className="text-xs text-gray-400">${item.product.Price.toFixed(2)} c/u</div>
+                              <div className="text-xs text-gray-400">Bs {item.product.Price.toFixed(2)} c/u</div>
                             </div>
                             <div className="flex items-center gap-1">
                               <button onClick={() => updateQty(item.product._id, item.quantity - 1)} className="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-xs font-bold">−</button>
@@ -541,7 +541,7 @@ export default function PosPage() {
                               <button onClick={() => updateQty(item.product._id, item.quantity + 1)} className="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-xs font-bold">+</button>
                             </div>
                             <div className="text-sm font-bold text-gray-900 w-12 text-right">
-                              ${(item.product.Price * item.quantity).toFixed(2)}
+                              Bs {(item.product.Price * item.quantity).toFixed(2)}
                             </div>
                             <button onClick={() => setCart(prev => prev.filter(i => i.product._id !== item.product._id))} className="text-gray-300 hover:text-red-500">✕</button>
                           </div>
@@ -549,7 +549,7 @@ export default function PosPage() {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">{cart.reduce((s, i) => s + i.quantity, 0)} producto{cart.reduce((s, i) => s + i.quantity, 0) !== 1 ? 's' : ''}</span>
-                        <span className="font-bold text-gray-900">${snackSubtotal.toFixed(2)}</span>
+                        <span className="font-bold text-gray-900">Bs {snackSubtotal.toFixed(2)}</span>
                       </div>
                     </>
                   )}
@@ -661,18 +661,18 @@ export default function PosPage() {
             {selectedSeatIds.length > 0 && (
               <div className="flex justify-between text-xs text-gray-500">
                 <span>Boletos ({selectedSeatIds.length})</span>
-                <span>${ticketSubtotal.toFixed(2)}</span>
+                <span>Bs {ticketSubtotal.toFixed(2)}</span>
               </div>
             )}
             {cart.length > 0 && (
               <div className="flex justify-between text-xs text-gray-500">
                 <span>Snacks ({cart.reduce((s, i) => s + i.quantity, 0)})</span>
-                <span>${snackSubtotal.toFixed(2)}</span>
+                <span>Bs {snackSubtotal.toFixed(2)}</span>
               </div>
             )}
             <div className="flex items-center justify-between pt-1">
               <span className="text-sm font-bold text-gray-900">Total</span>
-              <span className="text-2xl font-bold text-gray-900">${grandTotal.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-gray-900">Bs {grandTotal.toFixed(2)}</span>
             </div>
           </div>
 
@@ -681,7 +681,7 @@ export default function PosPage() {
             disabled={!selectedSession || selectedSeatIds.length === 0 || processing}
             className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-4 rounded-xl transition-colors text-lg"
           >
-            {processing ? 'Procesando...' : `Cobrar $${grandTotal.toFixed(2)}`}
+            {processing ? 'Procesando...' : `Cobrar Bs ${grandTotal.toFixed(2)}`}
           </button>
         </div>
       </div>
@@ -840,7 +840,7 @@ export default function PosPage() {
 function SaleSuccess({ result, onNew }: { result: SaleResult; onNew: () => void }) {
   const { tickets, snacks } = result;
   const ticketTotal = tickets?.totalAmount ?? 0;
-  const snackTotal = snacks?.items.reduce((s, i) => s + i.price * i.qty, 0) ?? 0;
+  const snackTotal = snacks?.items?.reduce((s, i) => s + i.price * i.qty, 0) ?? 0;
   const grandTotal = ticketTotal + snackTotal;
 
   return (
@@ -876,7 +876,7 @@ function SaleSuccess({ result, onNew }: { result: SaleResult; onNew: () => void 
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Subtotal boletos</span>
-                  <span className="font-bold text-gray-900">${ticketTotal.toFixed(2)}</span>
+                  <span className="font-bold text-gray-900">Bs {ticketTotal.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -900,12 +900,12 @@ function SaleSuccess({ result, onNew }: { result: SaleResult; onNew: () => void 
                 {snacks.items.map((item, i) => (
                   <div key={i} className="flex justify-between text-sm">
                     <span className="text-gray-600">{item.name} × {item.qty}</span>
-                    <span className="font-semibold text-gray-900">${(item.price * item.qty).toFixed(2)}</span>
+                    <span className="font-semibold text-gray-900">Bs {(item.price * item.qty).toFixed(2)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Subtotal snacks</span>
-                  <span className="font-bold text-gray-900">${snackTotal.toFixed(2)}</span>
+                  <span className="font-bold text-gray-900">Bs {snackTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -914,7 +914,7 @@ function SaleSuccess({ result, onNew }: { result: SaleResult; onNew: () => void 
           {/* Grand total */}
           <div className="flex justify-between text-sm pt-3 border-t border-gray-200">
             <span className="font-bold text-gray-900 text-base">Total cobrado</span>
-            <span className="font-bold text-green-600 text-xl">${grandTotal.toFixed(2)}</span>
+            <span className="font-bold text-green-600 text-xl">Bs {grandTotal.toFixed(2)}</span>
           </div>
         </div>
 

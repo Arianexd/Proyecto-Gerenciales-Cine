@@ -29,7 +29,7 @@ export default function SessionCard({ session }: SessionCardProps) {
           <div className="text-xs text-yellow-400 font-bold tracking-wider uppercase">{date}</div>
         </div>
         <div className="bg-yellow-500 text-black px-5 py-2.5 rounded-xl font-black text-xl shadow-md shadow-yellow-500/25">
-          ${session.Price}
+          Bs {session.Price}
         </div>
       </div>
 

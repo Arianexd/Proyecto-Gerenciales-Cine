@@ -67,8 +67,8 @@ export default function SessionsPage() {
       }
       
       setFormData({
-        MovieID: typeof session.MovieID === 'object' ? session.MovieID._id : session.MovieID,
-        HallID: typeof session.HallID === 'object' ? session.HallID._id : session.HallID,
+        MovieID: (typeof session.MovieID === 'object' && session.MovieID) ? session.MovieID._id : (session.MovieID as string || ''),
+        HallID: (typeof session.HallID === 'object' && session.HallID) ? session.HallID._id : (session.HallID as string || ''),
         SessionDateTime: formattedDate,
         Price: session.Price?.toString() || '0',
         Language: session.Language || '',
@@ -230,7 +230,7 @@ export default function SessionsPage() {
 
                   <div className="flex items-center text-gray-600">
                     <span className="font-medium w-20">Precio:</span>
-                    <span className="font-semibold text-green-600">${session.Price}</span>
+                    <span className="font-semibold text-green-600">Bs {session.Price}</span>
                   </div>
 
                   <div className="flex items-center text-gray-600">
