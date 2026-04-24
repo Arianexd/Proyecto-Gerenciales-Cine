@@ -197,9 +197,14 @@ export default function Home() {
 
 function MovieCard({ movie }: { movie: Movie }) {
   const hasUserRating = Boolean(movie.UserRatingCount && movie.UserRatingCount > 0);
+  const posterSrc =
+    movie.PosterURL ||
+    `https://placehold.co/300x450/111827/f9fafb?text=${encodeURIComponent(movie.MovieName)}`;
   const ratingValue = hasUserRating
-    ? movie.UserRatingAverage?.toFixed(1)
-    : (movie.Rating / 2).toFixed(1);
+    ? movie.UserRatingAverage?.toFixed(1) || '0.0'
+    : typeof movie.Rating === 'number' && movie.Rating > 0
+      ? (movie.Rating / 2).toFixed(1)
+      : 'Nuevo';
 
   return (
     <Link href={`/movies/${movie._id}`} className="group block">
@@ -207,7 +212,7 @@ function MovieCard({ movie }: { movie: Movie }) {
         {/* Poster */}
         <div className="relative aspect-[2/3] overflow-hidden bg-gray-100">
           <img
-            src={movie.PosterURL}
+            src={posterSrc}
             alt={movie.MovieName}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={(e) => {

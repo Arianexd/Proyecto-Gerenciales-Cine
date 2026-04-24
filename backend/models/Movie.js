@@ -23,26 +23,26 @@ const movieSchema = new mongoose.Schema({
   },
   Description: {
     type: String,
-    required: true,
-    trim: true
+    trim: true,
+    default: ''
   },
   PosterURL: {
     type: String,
-    required: true,
-    trim: true
+    trim: true,
+    default: ''
   },
   Director: {
     type: String,
-    required: true,
-    trim: true
+    trim: true,
+    default: ''
   },
   Cast: {
     type: [String],
-    required: true
+    default: []
   },
   Rating: {
     type: Number,
-    required: true,
+    default: 0,
     min: 0,
     max: 10
   },
@@ -64,15 +64,41 @@ const movieSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-// Lógica para evitar datos huérfanos (HU-Catálogo)
+
 movieSchema.pre('findOneAndDelete', async function(next) {
-  const movie = await this.model.findOne(this.getQuery());
+  const movie = await this.model.findOne(this.getQuery()).select('_id');
+
   if (movie) {
-    // Elimina todas las sesiones de esta película
-    await mongoose.model('MovieSession').deleteMany({ MovieID: movie._id });
-    // Nota: Las reservas y tickets dependen de la sesión, 
-    // podrías extender esto a los otros modelos.
+    const movieId = movie._id;
+    const MovieSession = mongoose.model('MovieSession');
+    const Reservation = mongoose.model('Reservation');
+    const Payment = mongoose.model('Payment');
+    const Ticket = mongoose.model('Ticket');
+    const Review = mongoose.model('Review');
+    const sessions = await MovieSession.find({ MovieID: movieId }).select('_id');
+    const sessionIds = sessions.map((session) => session._id);
+
+    if (sessionIds.length > 0) {
+      const reservations = await Reservation.find({ SessionID: { $in: sessionIds } }).select('_id');
+      const reservationIds = reservations.map((reservation) => reservation._id);
+      const deleteOperations = [
+        Reservation.deleteMany({ SessionID: { $in: sessionIds } }),
+        MovieSession.deleteMany({ MovieID: movieId })
+      ];
+
+      if (reservationIds.length > 0) {
+        deleteOperations.unshift(
+          Payment.deleteMany({ ReservationID: { $in: reservationIds } }),
+          Ticket.deleteMany({ ReservationID: { $in: reservationIds } })
+        );
+      }
+
+      await Promise.all(deleteOperations);
+    }
+
+    await Review.deleteMany({ MovieID: movieId });
   }
+
   next();
 });
 
