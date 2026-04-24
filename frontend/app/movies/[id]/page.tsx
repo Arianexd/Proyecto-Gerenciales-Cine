@@ -149,7 +149,19 @@ export default function MovieDetailPage() {
   }
 
   const hasUserRating = Boolean(movie.UserRatingCount && movie.UserRatingCount > 0);
-  const displayRating = hasUserRating ? `${movie.UserRatingAverage?.toFixed(1)}/5` : `${movie.Rating}/10`;
+  const displayRating = hasUserRating
+    ? `${movie.UserRatingAverage?.toFixed(1) || '0.0'}/5`
+    : typeof movie.Rating === 'number' && movie.Rating > 0
+      ? `${movie.Rating.toFixed(1)}/10`
+      : 'Sin puntaje';
+  const posterSrc =
+    movie.PosterURL ||
+    `https://placehold.co/300x450/111827/f9fafb?text=${encodeURIComponent(movie.MovieName)}`;
+  const castList = movie.Cast && movie.Cast.length > 0
+    ? movie.Cast.join(', ')
+    : 'Reparto no registrado';
+  const movieDescription = movie.Description || 'Sin sinopsis disponible.';
+  const movieDirector = movie.Director || 'Direccion no registrada';
 
   return (
     <>
@@ -164,7 +176,7 @@ export default function MovieDetailPage() {
 
           <div className="absolute inset-0 opacity-20 overflow-hidden">
             <img
-              src={movie.PosterURL}
+              src={posterSrc}
               alt=""
               className="w-full h-full object-cover blur-md scale-110"
               onError={(e) => {
@@ -186,7 +198,7 @@ export default function MovieDetailPage() {
               <div className="md:col-span-1">
                 <div className="relative bg-gradient-to-br from-gray-900 to-black p-3 md:p-4 rounded-2xl border-2 md:border-4 border-yellow-500">
                   <img
-                    src={movie.PosterURL}
+                    src={posterSrc}
                     alt={movie.MovieName}
                     className="w-full rounded-xl shadow-2xl"
                     onError={(e) => {
@@ -228,17 +240,17 @@ export default function MovieDetailPage() {
                 <div className="space-y-5 md:space-y-6 bg-gradient-to-br from-gray-900/80 to-black/80 backdrop-blur-sm p-5 md:p-8 rounded-2xl border-2 border-gray-800">
                   <div>
                     <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">DIRECTOR</h3>
-                    <p className="text-xl md:text-2xl font-bold text-white">{movie.Director}</p>
+                    <p className="text-xl md:text-2xl font-bold text-white">{movieDirector}</p>
                   </div>
 
                   <div>
                     <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">REPARTO</h3>
-                    <p className="text-base md:text-xl text-gray-300 leading-relaxed">{movie.Cast.join(', ')}</p>
+                    <p className="text-base md:text-xl text-gray-300 leading-relaxed">{castList}</p>
                   </div>
 
                   <div>
                     <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">SINOPSIS</h3>
-                    <p className="text-base md:text-lg text-gray-300 leading-relaxed">{movie.Description}</p>
+                    <p className="text-base md:text-lg text-gray-300 leading-relaxed">{movieDescription}</p>
                   </div>
                 </div>
 

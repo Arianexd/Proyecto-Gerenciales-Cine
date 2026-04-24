@@ -88,9 +88,9 @@ const seedDatabase = async () => {
         CustomerID: customers[1]._id
       },
       {
-        Username: 'mehmet',
+        Username: 'cliente',
         Email: customers[2].Email,
-        PasswordHash: customerPasswordHash,
+        PasswordHash: await bcrypt.hash('cliente', 10),
         Role: 'CUSTOMER',
         CustomerID: customers[2]._id
       },
