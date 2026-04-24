@@ -61,32 +61,60 @@ export default function HallsPage() {
     setIsModalOpen(false);
     setSelectedHall(null);
   };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const hallName = formData.HallName.trim();
+  const capacity = Number(formData.Capacity);
 
-    try {
-      const data = {
-        HallName: formData.HallName,
-        Capacity: parseInt(formData.Capacity),
-      };
+  if (!hallName) {
+    toast.error("El nombre de la sala es obligatorio");
+    return;
+  }
 
-      if (selectedHall) {
-        await hallsApi.update(selectedHall._id, data);
-        toast.success('Sala actualizada correctamente');
-      } else {
-        await hallsApi.create(data);
-        toast.success('Sala agregada correctamente');
-      }
+  if (!capacity || capacity <= 0) {
+    toast.error("La capacidad debe ser mayor a 0");
+    return;
+  }
 
-      handleCloseModal();
-      fetchHalls();
-    } catch (error) {
-      toast.error('La operación falló');
-      console.error(error);
+  try {
+    const data = {
+      HallName: hallName,
+      Capacity: capacity,
+    };
+
+    if (selectedHall) {
+      await hallsApi.update(selectedHall._id, data);
+      toast.success("Sala actualizada correctamente");
+    } else {
+      await hallsApi.create(data);
+      toast.success("Sala agregada correctamente");
     }
-  };
 
+    handleCloseModal();
+    fetchHalls();
+
+  } catch (error: any) {
+    console.error("Status:", error.response?.status);
+    console.error("Data:", error.response?.data);
+
+    const message =
+      error.response?.data?.error ||
+      error.response?.data?.message;
+
+    if (error.response?.status === 409) {
+      toast.error(message || "Ya existe una sala con ese nombre");
+      return;
+    }
+
+    if (error.response?.status === 400) {
+      toast.error(message || "Datos inválidos. Revisa el nombre y la capacidad.");
+      return;
+    }
+
+    toast.error("La operación falló");
+  }
+};
   const handleDeleteClick = (hall: Hall) => {
     setHallToDelete(hall);
     setIsConfirmOpen(true);
