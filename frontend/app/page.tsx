@@ -15,11 +15,6 @@ export default function Home() {
   const [selectedGenre, setSelectedGenre] = useState('Todos'); // Estado para el filtro instantáneo
 
   useEffect(() => {
-    const session = getStoredSession();
-    if (session?.user.Role === 'ADMIN') {
-      router.push('/admin');
-      return;
-    }
     fetchAllMovies();
   }, [router]);
 
