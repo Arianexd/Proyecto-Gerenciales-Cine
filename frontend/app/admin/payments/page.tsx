@@ -38,7 +38,7 @@ export default function PaymentsPage() {
   useEffect(() => {
     if (selectedPayment && selectedPayment.ReservationID && typeof selectedPayment.ReservationID === 'object') {
       const r = selectedPayment.ReservationID;
-      const name = typeof r.CustomerID === 'object' ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : 'Cliente';
+      const name = (r.CustomerID && typeof r.CustomerID === 'object') ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : 'Cliente';
       setSearchTerm(name);
     } else {
       setSearchTerm('');
@@ -224,7 +224,7 @@ export default function PaymentsPage() {
   };
 
   const getCustomerName = (payment: Payment) => {
-    if (typeof payment.ReservationID === 'object' && typeof payment.ReservationID.CustomerID === 'object') {
+    if (typeof payment.ReservationID === 'object' && payment.ReservationID?.CustomerID && typeof payment.ReservationID.CustomerID === 'object') {
       const customer = payment.ReservationID.CustomerID;
       return `${customer.Name} ${customer.Surname}`;
     }
@@ -373,12 +373,12 @@ export default function PaymentsPage() {
                   {reservations
                     .filter((r) => r.Status === 'CREATED' || r.Status === 'PAID')
                     .filter((r) => {
-                      const name = typeof r.CustomerID === 'object' ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : '';
+                      const name = (r.CustomerID && typeof r.CustomerID === 'object') ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : '';
                       const movie = typeof r.SessionID === 'object' && typeof r.SessionID.MovieID === 'object' ? r.SessionID.MovieID.MovieName : '';
                       return (name + movie).toLowerCase().includes(searchTerm.toLowerCase());
                     })
                     .map((reservation) => {
-                      const clientName = typeof reservation.CustomerID === 'object' ? `${reservation.CustomerID.Name} ${reservation.CustomerID.Surname}` : 'Cliente';
+                      const clientName = (reservation.CustomerID && typeof reservation.CustomerID === 'object') ? `${reservation.CustomerID.Name} ${reservation.CustomerID.Surname}` : 'Cliente';
                       const movieName = typeof reservation.SessionID === 'object' && typeof reservation.SessionID.MovieID === 'object' ? reservation.SessionID.MovieID.MovieName : 'Pelicula';
 
                       return (
