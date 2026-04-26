@@ -255,6 +255,7 @@ export default function BookingPage() {
                 onSeatClick={handleSeatClick}
                 onSeatHover={setHoveredSeat}
                 reservedSeats={reservedSeats}
+                showCategories={true}
               />
             </div>
 
