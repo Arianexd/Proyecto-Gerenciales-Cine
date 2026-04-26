@@ -15,6 +15,9 @@ const customerSchema = new mongoose.Schema({
     enum: ['Male', 'Female', 'Other'], 
     default: 'Other' 
   },
+  BirthDate: {
+    type: Date,
+  },
   Age: { 
     type: Number, 
     min: 0 

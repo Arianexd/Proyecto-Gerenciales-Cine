@@ -30,6 +30,7 @@ export interface Customer {
   Surname: string;
   CI: string;                                     // Añadido
   Gender: 'Male' | 'Female' | 'Other';            // Añadido
+  BirthDate?: string;
   Age: number;                                    // Añadido
   Email: string;
   PhoneNumber: string;
