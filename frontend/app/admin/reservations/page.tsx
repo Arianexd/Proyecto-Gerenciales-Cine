@@ -41,6 +41,10 @@ export default function ReservationsPage() {
     Status: 'CREATED' as 'CREATED' | 'PAID' | 'CANCELLED',
   });
 
+  // Nuevos estados para filtros y búsqueda
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [globalSearch, setGlobalSearch] = useState('');
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -283,12 +287,33 @@ export default function ReservationsPage() {
     return 'Sin cliente';
   };
 
+  // Función para detectar expiración (Mejora 3)
+  const isExpired = (creationTime: string) => {
+    const diff = (new Date().getTime() - new Date(creationTime).getTime()) / 60000;
+    return diff > 15; // 15 minutos
+  };
+
   const getMovieName = (session: MovieSession | string | null | undefined) => {
     if (session && typeof session === 'object' && 'MovieID' in session && session.MovieID && typeof session.MovieID === 'object' && 'MovieName' in session.MovieID) {
       return (session.MovieID as any).MovieName;
     }
     return 'Sin película';
   };
+
+  // Lógica de filtrado y búsqueda (Mejoras 1, 3 y 4)
+  const filteredReservations = reservations.filter((r) => {
+    // Filtro por Estado (Mejora 1)
+    const matchesStatus = statusFilter === 'ALL' ? true : r.Status === statusFilter;
+    
+    // Buscador Global (Mejora 4)
+    const q = globalSearch.toLowerCase();
+    const customerName = getCustomerName(r.CustomerID).toLowerCase();
+    const movieName = getMovieName(r.SessionID).toLowerCase();
+    const ci = typeof r.CustomerID === 'object' ? (r.CustomerID.CI || '').toLowerCase() : '';
+    const matchesSearch = customerName.includes(q) || movieName.includes(q) || ci.includes(q);
+
+    return matchesStatus && matchesSearch;
+  });
 
   const getSessionDateTime = (session: MovieSession | string | null | undefined) => {
     if (session && typeof session === 'object' && 'SessionDateTime' in session) {
@@ -313,6 +338,43 @@ export default function ReservationsPage() {
         <LoadingSpinner />
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
+          {/* Nueva Interfaz de Filtros y Búsqueda */}
+          <div className="bg-white p-4 rounded-t-lg border-b flex flex-col md:flex-row justify-between gap-4">
+            {/* Filtros de Estado */}
+            <div className="flex gap-2">
+              {[
+                { value: 'ALL', label: 'TODAS' },
+                { value: 'CREATED', label: 'CREADA' },
+                { value: 'PAID', label: 'PAGADA' },
+                { value: 'CANCELLED', label: 'CANCELADA' }
+              ].map((filter) => (
+                <button
+                  key={filter.value}
+                  onClick={() => setStatusFilter(filter.value)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    statusFilter === filter.value ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Buscador Global */}
+            <div className="relative w-full md:w-64">
+              <input
+                type="text"
+                placeholder="Buscar por cliente, CI o película..."
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+              />
+              <svg className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -338,14 +400,14 @@ export default function ReservationsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {reservations.length === 0 ? (
+                {filteredReservations.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                      No se encontraron reservas. ¡Agrega tu primera reserva!
+                      {reservations.length === 0 ? 'No se encontraron reservas. ¡Agrega tu primera reserva!' : 'No se encontraron reservas con los filtros actuales.'}
                     </td>
                   </tr>
                 ) : (
-                  reservations.map((reservation) => (
+                  filteredReservations.map((reservation) => (
                     <tr key={reservation._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {getCustomerName(reservation.CustomerID)}
@@ -361,6 +423,11 @@ export default function ReservationsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {getStatusBadge(reservation.Status)}
+                        {reservation.Status === 'CREATED' && isExpired(reservation.CreationTime) && (
+                          <span className="ml-2 animate-pulse inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-600 text-white">
+                            ⚠️ EXPIRADA
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <Link
