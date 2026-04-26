@@ -124,25 +124,30 @@ export default function SeatGrid({
         })}
       </div>
 
-      {/* Dynamic Legend based on display mode */}
-      <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-        {showCategories ? (
-          <>
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-amber-500 rounded border border-amber-300/80"></div>
-              <span>VIP (Premium)</span>
+      {/* Legend */}
+      <div className="mt-8 text-sm space-y-4">
+        {showCategories && (
+          <div>
+            <p className="text-gray-400 font-semibold mb-2">Categoría de Asiento</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 bg-amber-500 rounded border border-amber-300/80"></div>
+                <span>VIP (+15 Bs)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 bg-blue-500 rounded border border-blue-300/80"></div>
+                <span>Premium (+5 Bs)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 bg-gray-500 rounded border border-gray-300/80"></div>
+                <span>Estándar</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-blue-500 rounded border border-blue-300/80"></div>
-              <span>Premium</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-gray-500 rounded border border-gray-300/80"></div>
-              <span>Estándar</span>
-            </div>
-          </>
-        ) : (
-          <>
+          </div>
+        )}
+        <div>
+          {showCategories && <p className="text-gray-400 font-semibold mb-2">Calidad de Vista</p>}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 bg-sky-500 rounded border border-sky-300/80"></div>
               <span>Vista Excelente</span>
@@ -159,15 +164,15 @@ export default function SeatGrid({
               <div className="w-5 h-5 bg-gray-500 rounded border border-gray-300/50"></div>
               <span>Vista Deficiente</span>
             </div>
-          </>
-        )}
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-emerald-500 rounded border border-emerald-300"></div>
-          <span>Seleccionado</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-red-500/70 rounded border border-red-400/60 opacity-70"></div>
-          <span>Reservado</span>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-emerald-500 rounded border border-emerald-300"></div>
+              <span>Seleccionado</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-red-500/70 rounded border border-red-400/60 opacity-70"></div>
+              <span>Reservado</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
