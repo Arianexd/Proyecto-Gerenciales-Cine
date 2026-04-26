@@ -9,6 +9,7 @@ interface SeatGridProps {
   onSeatHover?: (seat: Seat | null) => void;
   reservedSeats?: string[];
   readOnly?: boolean;
+  showCategories?: boolean;
 }
 
 export default function SeatGrid({ 
@@ -17,7 +18,8 @@ export default function SeatGrid({
   onSeatClick,
   onSeatHover,
   reservedSeats = [],
-  readOnly = false 
+  readOnly = false,
+  showCategories = false
 }: SeatGridProps) {
   
   // Group seats by row
@@ -42,7 +44,21 @@ export default function SeatGrid({
       return 'bg-emerald-500 border-emerald-300 text-white hover:bg-emerald-400 cursor-pointer';
     }
     
-    // Color by view quality
+    // Priority: Category over view quality if showCategories is true
+    if (showCategories && seat.Category) {
+      switch (seat.Category) {
+        case 'VIP':
+          return 'bg-amber-500/90 border-amber-300/80 text-white hover:bg-amber-400 cursor-pointer';
+        case 'Premium':
+          return 'bg-blue-500/90 border-blue-300/80 text-white hover:bg-blue-400 cursor-pointer';
+        case 'Standard':
+          return 'bg-gray-500/90 border-gray-300/80 text-white hover:bg-gray-400 cursor-pointer';
+        default:
+          return 'bg-gray-400/80 border-gray-200/50 text-white hover:bg-gray-300 cursor-pointer';
+      }
+    }
+    
+    // Color by view quality (fallback)
     switch (seat.ScreenViewInfo) {
       case 'Excellent':
         return 'bg-sky-500/90 border-sky-300/80 text-white hover:bg-sky-400 cursor-pointer';
@@ -96,7 +112,7 @@ export default function SeatGrid({
                         ${getSeatColor(seat)}
                         ${isReserved ? 'opacity-50' : ''}
                       `}
-                      title={`Fila ${seat.RowNumber}, Asiento ${seat.SeatNumber}\nVista: ${seat.ScreenViewInfo}\nAcústica: ${seat.AcousticProfile}`}
+                      title={`Fila ${seat.RowNumber}, Asiento ${seat.SeatNumber}\nVista: ${seat.ScreenViewInfo}\nAcústica: ${seat.AcousticProfile}${showCategories && seat.Category ? `\nCategoría: ${seat.Category}${seat.PriceModifier ? ` (+${seat.PriceModifier} Bs)` : ''}` : ''}`}
                     >
                       {seat.SeatNumber}
                     </button>
@@ -108,23 +124,43 @@ export default function SeatGrid({
         })}
       </div>
 
+      {/* Dynamic Legend based on display mode */}
       <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-sky-500 rounded border border-sky-300/80"></div>
-          <span>Vista Excelente</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-sky-400 rounded border border-sky-200/70"></div>
-          <span>Vista Buena</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-indigo-400 rounded border border-indigo-200/70"></div>
-          <span>Vista Regular</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-gray-500 rounded border border-gray-300/50"></div>
-          <span>Vista Deficiente</span>
-        </div>
+        {showCategories ? (
+          <>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-amber-500 rounded border border-amber-300/80"></div>
+              <span>VIP (Premium)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-blue-500 rounded border border-blue-300/80"></div>
+              <span>Premium</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-gray-500 rounded border border-gray-300/80"></div>
+              <span>Estándar</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-sky-500 rounded border border-sky-300/80"></div>
+              <span>Vista Excelente</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-sky-400 rounded border border-sky-200/70"></div>
+              <span>Vista Buena</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-indigo-400 rounded border border-indigo-200/70"></div>
+              <span>Vista Regular</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-gray-500 rounded border border-gray-300/50"></div>
+              <span>Vista Deficiente</span>
+            </div>
+          </>
+        )}
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 bg-emerald-500 rounded border border-emerald-300"></div>
           <span>Seleccionado</span>

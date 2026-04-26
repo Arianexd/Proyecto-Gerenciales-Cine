@@ -44,6 +44,8 @@ export interface Seat {
   SeatNumber: number;
   ScreenViewInfo: 'Excellent' | 'Good' | 'Average' | 'Poor';
   AcousticProfile: 'Excellent' | 'Good' | 'Average' | 'Poor';
+  Category: 'Standard' | 'Premium' | 'VIP';
+  PriceModifier: number;
   createdAt?: string;
   updatedAt?: string;
 }

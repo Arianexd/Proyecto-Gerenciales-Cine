@@ -25,6 +25,16 @@ const seatSchema = new mongoose.Schema({
     type: String,
     enum: ['Excellent', 'Good', 'Average', 'Poor'],
     default: 'Good'
+  },
+  Category: {
+    type: String,
+    enum: ['Standard', 'Premium', 'VIP'],
+    default: 'Standard'
+  },
+  PriceModifier: {
+    type: Number,
+    default: 0,
+    min: 0
   }
 }, {
   timestamps: true

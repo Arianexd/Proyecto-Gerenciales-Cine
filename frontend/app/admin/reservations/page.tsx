@@ -546,12 +546,19 @@ export default function ReservationsPage() {
                 Haz clic en los asientos disponibles para seleccionarlos. Pasa el cursor sobre un asiento para ver la vista y el perfil acústico.
               </p>
             </div>
-            {selectedSession && typeof selectedSession.HallID === 'object' && (
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-700">{selectedSession.HallID.HallName}</p>
-                <p className="text-xs text-gray-500">Capacidad: {selectedSession.HallID.Capacity}</p>
-              </div>
-            )}
+            <div className="text-right">
+              {selectedSession && (
+                <div className="text-sm font-medium text-gray-700">
+                  <div>Precio Base: {selectedSession.Price} Bs</div>
+                  <div className="text-lg font-bold text-purple-700">
+                    Total: {(selectedSession.Price * selectedSeats.length) + selectedSeats.reduce((sum, seatId) => {
+                      const seat = seats.find(s => s._id === seatId);
+                      return sum + (seat?.PriceModifier || 0);
+                    }, 0)} Bs
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -567,6 +574,7 @@ export default function ReservationsPage() {
                 onSeatClick={handleSeatClick}
                 onSeatHover={setHoveredSeat}
                 reservedSeats={reservedSeats}
+                showCategories={true}
               />
             </div>
           </div>
@@ -592,6 +600,9 @@ export default function ReservationsPage() {
                       seatRow={hoveredSeat.RowNumber}
                       seatNumber={hoveredSeat.SeatNumber}
                       totalSeatsInRow={seats.filter(s => s.RowNumber === hoveredSeat.RowNumber).length}
+                      category={hoveredSeat.Category}
+                      priceModifier={hoveredSeat.PriceModifier}
+                      sessionPrice={selectedSession && typeof selectedSession === 'object' ? selectedSession.Price : 0}
                     />
                   </div>
                 </>

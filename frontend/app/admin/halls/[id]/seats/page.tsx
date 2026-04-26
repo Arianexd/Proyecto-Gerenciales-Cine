@@ -30,6 +30,8 @@ export default function HallSeatsPage() {
     SeatNumber: '',
     ScreenViewInfo: '',
     AcousticProfile: '',
+    Category: 'Standard',
+    PriceModifier: 0,
   });
 
   useEffect(() => {
@@ -63,6 +65,8 @@ export default function HallSeatsPage() {
         SeatNumber: seat.SeatNumber.toString(),
         ScreenViewInfo: seat.ScreenViewInfo,
         AcousticProfile: seat.AcousticProfile,
+        Category: seat.Category || 'Standard',
+        PriceModifier: seat.PriceModifier || 0,
       });
     } else {
       setSelectedSeat(null);
@@ -71,6 +75,8 @@ export default function HallSeatsPage() {
         SeatNumber: '',
         ScreenViewInfo: '',
         AcousticProfile: '',
+        Category: 'Standard',
+        PriceModifier: 0,
       });
     }
     setIsModalOpen(true);
@@ -91,6 +97,8 @@ export default function HallSeatsPage() {
         SeatNumber: parseInt(formData.SeatNumber),
         ScreenViewInfo: formData.ScreenViewInfo,
         AcousticProfile: formData.AcousticProfile,
+        Category: formData.Category,
+        PriceModifier: parseFloat(formData.PriceModifier.toString()),
       };
 
       if (selectedSeat) {
@@ -448,6 +456,12 @@ export default function HallSeatsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Perfil Acústico
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Categoría
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Recargo
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Acciones
                   </th>
@@ -456,7 +470,7 @@ export default function HallSeatsPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {seats.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                       No se encontraron asientos. ¡Agrega tu primer asiento!
                     </td>
                   </tr>
@@ -480,6 +494,20 @@ export default function HallSeatsPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-600">{seat.AcousticProfile}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            seat.Category === 'VIP' ? 'bg-amber-100 text-amber-800' :
+                            seat.Category === 'Premium' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {seat.Category === 'VIP' ? 'VIP' : seat.Category === 'Premium' ? 'Premium' : 'Estándar'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {seat.PriceModifier > 0 ? `+${seat.PriceModifier} Bs` : '0 Bs'}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
@@ -577,6 +605,48 @@ export default function HallSeatsPage() {
                 <option value="Average">Regular</option>
                 <option value="Poor">Deficiente</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Categoría de Asiento
+              </label>
+              <select
+                required
+                value={formData.Category}
+                onChange={(e) => {
+                  const newCategory = e.target.value as 'Standard' | 'Premium' | 'VIP';
+                  const defaultModifiers = { Standard: 0, Premium: 5, VIP: 15 };
+                  setFormData({ 
+                    ...formData, 
+                    Category: newCategory,
+                    PriceModifier: defaultModifiers[newCategory]
+                  });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="Standard">Estándar (Precio Base)</option>
+                <option value="Premium">Premium (+5 Bs)</option>
+                <option value="VIP">VIP (+15 Bs)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Modificador de Precio (Bs)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.PriceModifier}
+                onChange={(e) => setFormData({ ...formData, PriceModifier: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="0"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Valor adicional que se sumará al precio base de la función
+              </p>
             </div>
           </div>
 
