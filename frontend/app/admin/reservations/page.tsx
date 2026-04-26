@@ -66,7 +66,7 @@ export default function ReservationsPage() {
       const session = selectedReservation.SessionID;
 
       if (customer && typeof customer === 'object') {
-        setClientSearch(`${customer.Name} ${customer.Surname}`);
+        setClientSearch(`${customer.Name} ${customer.Surname} - CI: ${customer.CI || 'N/A'}`);
       } else {
         setClientSearch('');
       }
@@ -403,7 +403,7 @@ export default function ReservationsPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
               <input
                 type="text"
-                placeholder="Buscar cliente por nombre o apellido..."
+                placeholder="Buscar cliente por nombre, apellido o CI..."
                 value={clientSearch}
                 onChange={(e) => {
                   setClientSearch(e.target.value);
@@ -418,19 +418,24 @@ export default function ReservationsPage() {
               {showClientSugg && !selectedReservation && (
                 <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
                   {customers
-                    .filter((c) => `${c.Name} ${c.Surname}`.toLowerCase().includes(clientSearch.toLowerCase()))
+                    .filter((c) => {
+                      const q = clientSearch.toLowerCase();
+                      const fullName = `${c.Name} ${c.Surname}`.toLowerCase();
+                      const ci = (c.CI || '').toLowerCase();
+                      return fullName.includes(q) || ci.includes(q);
+                    })
                     .map((customer) => (
                       <div
                         key={customer._id}
                         className="px-4 py-2 hover:bg-emerald-50 cursor-pointer text-sm border-b last:border-none"
                         onClick={() => {
                           setFormData({ ...formData, CustomerID: customer._id });
-                          setClientSearch(`${customer.Name} ${customer.Surname}`);
+                          setClientSearch(`${customer.Name} ${customer.Surname} - CI: ${customer.CI}`);
                           setShowClientSugg(false);
                         }}
                       >
                         <span className="font-medium">{customer.Name} {customer.Surname}</span>
-                        <div className="text-xs text-gray-400">{customer.Email}</div>
+                        <div className="text-xs text-gray-400">CI: {customer.CI} | {customer.Email}</div>
                       </div>
                     ))}
                 </div>
@@ -488,7 +493,7 @@ export default function ReservationsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Estado
+                Estado de Reserva
               </label>
               <select
                 required
