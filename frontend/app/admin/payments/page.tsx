@@ -17,6 +17,7 @@ export default function PaymentsPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
+  const [paymentSearch, setPaymentSearch] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -231,6 +232,26 @@ export default function PaymentsPage() {
     return 'Desconocido';
   };
 
+  const getCustomerCI = (payment: Payment) => {
+    if (
+      typeof payment.ReservationID === 'object' &&
+      payment.ReservationID?.CustomerID &&
+      typeof payment.ReservationID.CustomerID === 'object'
+    ) {
+      return payment.ReservationID.CustomerID.CI || '';
+    }
+    return '';
+  };
+
+  const normalizedPaymentSearch = paymentSearch.trim().toLowerCase();
+  const filteredPayments = normalizedPaymentSearch
+    ? payments.filter((payment) => {
+        const name = getCustomerName(payment).toLowerCase();
+        const ci = getCustomerCI(payment).toLowerCase();
+        return name.includes(normalizedPaymentSearch) || ci.includes(normalizedPaymentSearch);
+      })
+    : payments;
+
   if (!mounted) {
     return <LoadingSpinner />;
   }
@@ -245,6 +266,15 @@ export default function PaymentsPage() {
         >
           + Gestionar Pago
         </button>
+      </div>
+
+      <div className="mb-4">
+        <input
+          value={paymentSearch}
+          onChange={(e) => setPaymentSearch(e.target.value)}
+          placeholder="Buscar por Nombre o CI..."
+          className="w-full md:w-[420px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+        />
       </div>
 
       {/* Info Box */}
@@ -268,11 +298,15 @@ export default function PaymentsPage() {
         <LoadingSpinner />
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+          <div className="overflow-x-auto">
+            <table className="min-w-[900px] w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Cliente
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  CI
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Método
@@ -292,17 +326,20 @@ export default function PaymentsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {payments.length === 0 ? (
+              {filteredPayments.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    No se encontraron pagos. ¡Procesa tu primer pago!
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                    No se encontraron pagos.
                   </td>
                 </tr>
               ) : (
-                payments.map((payment) => (
+                filteredPayments.map((payment) => (
                   <tr key={payment._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {getCustomerName(payment)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {getCustomerCI(payment) || '—'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {getPaymentMethodLabel(payment.PaymentMethod)}
@@ -335,6 +372,7 @@ export default function PaymentsPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
@@ -374,11 +412,13 @@ export default function PaymentsPage() {
                     .filter((r) => r.Status === 'CREATED' || r.Status === 'PAID')
                     .filter((r) => {
                       const name = (r.CustomerID && typeof r.CustomerID === 'object') ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : '';
+                      const ci = (r.CustomerID && typeof r.CustomerID === 'object') ? (r.CustomerID.CI || '') : '';
                       const movie = typeof r.SessionID === 'object' && typeof r.SessionID.MovieID === 'object' ? r.SessionID.MovieID.MovieName : '';
-                      return (name + movie).toLowerCase().includes(searchTerm.toLowerCase());
+                      return (name + ci + movie).toLowerCase().includes(searchTerm.toLowerCase());
                     })
                     .map((reservation) => {
                       const clientName = (reservation.CustomerID && typeof reservation.CustomerID === 'object') ? `${reservation.CustomerID.Name} ${reservation.CustomerID.Surname}` : 'Cliente';
+                      const clientCI = (reservation.CustomerID && typeof reservation.CustomerID === 'object') ? (reservation.CustomerID.CI || '') : '';
                       const movieName = typeof reservation.SessionID === 'object' && typeof reservation.SessionID.MovieID === 'object' ? reservation.SessionID.MovieID.MovieName : 'Pelicula';
 
                       return (
@@ -387,14 +427,16 @@ export default function PaymentsPage() {
                           className="px-4 py-2 hover:bg-emerald-50 cursor-pointer border-b last:border-none text-sm"
                           onClick={() => {
                             setFormData({ ...formData, ReservationID: reservation._id });
-                            setSearchTerm(`${clientName} - ${movieName}`);
+                            setSearchTerm(`${clientName}${clientCI ? ` (${clientCI})` : ''} - ${movieName}`);
                             setShowSuggestions(false);
 
                             const totalPrice = calculateTotalPrice(reservation._id);
                             setFormData((prev) => ({ ...prev, Amount: totalPrice.toString() }));
                           }}
                         >
-                          <div className="font-semibold">{clientName}</div>
+                          <div className="font-semibold">
+                            {clientName} {clientCI ? <span className="text-xs text-gray-500">({clientCI})</span> : null}
+                          </div>
                           <div className="text-gray-500 text-xs">{movieName}</div>
                         </div>
                       );
@@ -404,8 +446,9 @@ export default function PaymentsPage() {
                       .filter((r) => r.Status === 'CREATED' || r.Status === 'PAID')
                       .filter((r) => {
                         const name = typeof r.CustomerID === 'object' ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : '';
+                        const ci = typeof r.CustomerID === 'object' ? (r.CustomerID.CI || '') : '';
                         const movie = typeof r.SessionID === 'object' && typeof r.SessionID.MovieID === 'object' ? r.SessionID.MovieID.MovieName : '';
-                        return (name + movie).toLowerCase().includes(searchTerm.toLowerCase());
+                        return (name + ci + movie).toLowerCase().includes(searchTerm.toLowerCase());
                       }).length === 0 && (
                       <div className="px-4 py-2 text-gray-500 text-sm">No se encontraron reservas</div>
                     )}

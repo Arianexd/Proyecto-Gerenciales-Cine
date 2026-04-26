@@ -10,7 +10,7 @@ router.get('/', requireAuth, requireAdminOrCajero, async (req, res) => {
       .populate({
         path: 'ReservationID',
         populate: [
-          { path: 'CustomerID', select: 'Name Surname' },
+          { path: 'CustomerID', select: 'Name Surname CI' },
           { path: 'SessionID' }
         ]
       })
