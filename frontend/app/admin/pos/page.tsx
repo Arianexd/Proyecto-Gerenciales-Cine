@@ -254,7 +254,12 @@ export default function PosPage() {
 
   // ── Totals ─────────────────────────────────────────────────────────────
 
-  const ticketSubtotal = saleMode === 'ticketsAndSnacks' ? selectedSeatIds.length * (selectedSession?.Price || 0) : 0;
+  const ticketSubtotal = saleMode === 'ticketsAndSnacks' 
+    ? selectedSeatIds.reduce((sum, id) => {
+        const seat = seats.find(s => s._id === id);
+        return sum + (selectedSession?.Price || 0) + (seat?.PriceModifier || 0);
+      }, 0)
+    : 0;
   const snackSubtotal = cart.reduce((sum, i) => sum + i.product.Price * i.quantity, 0);
   const grandTotal = ticketSubtotal + snackSubtotal;
   const formatBs = (amount: number) => `Bs ${amount.toFixed(2)}`;
@@ -791,6 +796,7 @@ export default function PosPage() {
                     )}
                     onSeatHover={setHoveredSeat}
                     reservedSeats={soldSeatIds}
+                    showCategories={true}
                   />
                 </div>
               </div>
@@ -815,6 +821,9 @@ export default function PosPage() {
                         seatRow={hoveredSeat.RowNumber}
                         seatNumber={hoveredSeat.SeatNumber}
                         totalSeatsInRow={seats.filter(s => s.RowNumber === hoveredSeat.RowNumber).length}
+                        category={hoveredSeat.Category}
+                        priceModifier={hoveredSeat.PriceModifier}
+                        sessionPrice={selectedSession?.Price}
                       />
                     </>
                   ) : (

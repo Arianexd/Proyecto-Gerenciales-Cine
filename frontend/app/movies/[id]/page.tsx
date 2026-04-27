@@ -45,9 +45,11 @@ export default function MovieDetailPage() {
         reviewsApi.getMovieReviews(movieId),
       ]);
 
+      const now = new Date();
       const movieSessions = sessionsRes.data.filter((session: MovieSession) => {
         const sessionMovieId = typeof session.MovieID === 'object' ? session.MovieID._id : session.MovieID;
-        return sessionMovieId === movieId;
+        const sessionDate = new Date(session.SessionDateTime);
+        return sessionMovieId === movieId && sessionDate > now;
       });
 
       setMovie(movieRes.data);

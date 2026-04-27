@@ -45,31 +45,31 @@ export default function SeatGrid({
     }
     
     // Priority: Category over view quality if showCategories is true
-    if (showCategories && seat.Category) {
-      switch (seat.Category) {
+    if (showCategories) {
+      const category = seat.Category || 'Standard';
+      switch (category) {
         case 'VIP':
-          return 'bg-amber-500/90 border-amber-300/80 text-white hover:bg-amber-400 cursor-pointer';
+          return 'bg-amber-500 border-amber-300 text-white hover:bg-amber-400 cursor-pointer';
         case 'Premium':
-          return 'bg-blue-500/90 border-blue-300/80 text-white hover:bg-blue-400 cursor-pointer';
+          return 'bg-blue-500 border-blue-300 text-white hover:bg-blue-400 cursor-pointer';
         case 'Standard':
-          return 'bg-gray-500/90 border-gray-300/80 text-white hover:bg-gray-400 cursor-pointer';
         default:
-          return 'bg-gray-400/80 border-gray-200/50 text-white hover:bg-gray-300 cursor-pointer';
+          return 'bg-gray-500 border-gray-300 text-white hover:bg-gray-400 cursor-pointer';
       }
     }
     
     // Color by view quality (fallback)
     switch (seat.ScreenViewInfo) {
       case 'Excellent':
-        return 'bg-sky-500/90 border-sky-300/80 text-white hover:bg-sky-400 cursor-pointer';
+        return 'bg-sky-500 border-sky-300 text-white hover:bg-sky-400 cursor-pointer';
       case 'Good':
-        return 'bg-sky-400/90 border-sky-200/70 text-white hover:bg-sky-300 cursor-pointer';
+        return 'bg-sky-400 border-sky-200 text-white hover:bg-sky-300 cursor-pointer';
       case 'Average':
-        return 'bg-indigo-400/80 border-indigo-200/70 text-white hover:bg-indigo-300 cursor-pointer';
+        return 'bg-indigo-400 border-indigo-200 text-white hover:bg-indigo-300 cursor-pointer';
       case 'Poor':
-        return 'bg-gray-500/80 border-gray-300/50 text-white hover:bg-gray-400 cursor-pointer';
+        return 'bg-gray-500 border-gray-300 text-white hover:bg-gray-400 cursor-pointer';
       default:
-        return 'bg-gray-400/80 border-gray-200/50 text-white hover:bg-gray-300 cursor-pointer';
+        return 'bg-gray-400 border-gray-200 text-white hover:bg-gray-300 cursor-pointer';
     }
   };
 

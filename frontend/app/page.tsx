@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { moviesApi } from '@/lib/api';
+import { moviesApi, sessionsApi } from '@/lib/api';
 import { getStoredSession } from '@/lib/auth';
 import { Movie } from '@/lib/types';
 import PublicNavigation from '@/components/PublicNavigation';
@@ -21,9 +21,20 @@ export default function Home() {
   const fetchAllMovies = async () => {
     try {
       setLoading(true);
-      const response = await moviesApi.getAll();
-      // Cargamos todas las películas para permitir el filtrado en el cliente
-      setAllMovies(response.data);
+      const [moviesRes, sessionsRes] = await Promise.all([
+        moviesApi.getAll(),
+        sessionsApi.getAll()
+      ]);
+      
+      const now = new Date();
+      const activeSessions = sessionsRes.data.filter((s: any) => new Date(s.SessionDateTime) > now);
+      const activeMovieIds = new Set(activeSessions.map((s: any) => 
+        typeof s.MovieID === 'object' ? s.MovieID._id : s.MovieID
+      ));
+
+      // Filtramos las películas que tienen al menos una función futura
+      const activeMovies = moviesRes.data.filter((m: Movie) => activeMovieIds.has(m._id));
+      setAllMovies(activeMovies);
     } catch (error) {
       console.error('Failed to fetch movies:', error);
     } finally {
