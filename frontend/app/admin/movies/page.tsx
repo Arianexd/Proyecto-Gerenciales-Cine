@@ -19,6 +19,7 @@ type MovieFormData = {
   Cast: string;
   Rating: string;
   TrailerURL: string;
+  ReleaseDate: string;
 };
 
 const emptyFormData: MovieFormData = {
@@ -32,6 +33,7 @@ const emptyFormData: MovieFormData = {
   Cast: '',
   Rating: '',
   TrailerURL: '',
+  ReleaseDate: '',
 };
 
 export default function MoviesPage() {
@@ -74,6 +76,7 @@ export default function MoviesPage() {
         Cast: movie.Cast?.join(', ') || '',
         Rating: typeof movie.Rating === 'number' && movie.Rating > 0 ? movie.Rating.toString() : '',
         TrailerURL: movie.TrailerURL || '',
+        ReleaseDate: movie.ReleaseDate ? new Date(movie.ReleaseDate).toISOString().split('T')[0] : '',
       });
     } else {
       setSelectedMovie(null);
@@ -109,6 +112,7 @@ export default function MoviesPage() {
         Cast: cast,
         Rating: formData.Rating.trim() ? parseFloat(formData.Rating) : 0,
         TrailerURL: formData.TrailerURL.trim(),
+        ReleaseDate: formData.ReleaseDate || null,
       };
 
       if (selectedMovie) {
@@ -381,6 +385,18 @@ export default function MoviesPage() {
                 onChange={(e) => setFormData({ ...formData, TrailerURL: e.target.value })}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="https://www.youtube.com/..."
+              />
+            </div>
+
+            <div className="col-span-2">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Fecha de Estreno (Opcional)
+              </label>
+              <input
+                type="date"
+                value={formData.ReleaseDate}
+                onChange={(e) => setFormData({ ...formData, ReleaseDate: e.target.value })}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 

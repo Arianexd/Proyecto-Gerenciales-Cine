@@ -60,6 +60,10 @@ const movieSchema = new mongoose.Schema({
   TrailerURL: {
     type: String,
     trim: true
+  },
+  ReleaseDate: {
+    type: Date,
+    required: false
   }
 }, {
   timestamps: true

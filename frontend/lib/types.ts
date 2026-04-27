@@ -12,6 +12,7 @@ export interface Movie {
   UserRatingAverage?: number;
   UserRatingCount?: number;
   TrailerURL?: string;
+  ReleaseDate?: string;
   createdAt?: string;
   updatedAt?: string;
 }
