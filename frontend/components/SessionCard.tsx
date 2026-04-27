@@ -32,22 +32,7 @@ export default function SessionCard({ session }: SessionCardProps) {
             <p className="text-xl font-extrabold text-red-600">${session.Price}</p>
             <p className="text-xs text-gray-400">por entrada</p>
           </div>
-<<<<<<< HEAD
-=======
-          <div className="text-xs text-yellow-400 font-bold tracking-wider uppercase">{date}</div>
-        </div>
-        <div className="bg-yellow-500 text-black px-5 py-2.5 rounded-xl font-black text-xl shadow-md shadow-yellow-500/25">
-          Bs {session.Price}
-        </div>
-      </div>
 
-      <div className="space-y-3 mb-5">
-        <div className="flex items-center gap-2 text-gray-300 bg-gray-800/40 rounded-lg px-4 py-2 border border-gray-700">
-          <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-          </svg>
-          <span className="font-bold text-white">{hallName}</span>
->>>>>>> 8b92dbb7e776e81780a8938fa72038bc4559b760
         </div>
 
         {/* Hall & Language */}
