@@ -74,7 +74,10 @@ export default function MoviesPage() {
         PosterURL: movie.PosterURL || '',
         Director: movie.Director || '',
         Cast: movie.Cast?.join(', ') || '',
-        Rating: typeof movie.Rating === 'number' && movie.Rating > 0 ? movie.Rating.toString() : '',
+        Rating:
+          typeof movie.Rating === 'number' && movie.Rating > 0
+            ? movie.Rating.toString()
+            : '',
         TrailerURL: movie.TrailerURL || '',
         ReleaseDate: movie.ReleaseDate ? new Date(movie.ReleaseDate).toISOString().split('T')[0] : '',
       });
@@ -124,9 +127,14 @@ export default function MoviesPage() {
       }
 
       handleCloseModal();
-      fetchMovies();
-    } catch (error) {
-      const message = (error as any)?.response?.data?.error || 'La operacion fallo';
+      await fetchMovies();
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const message =
+        error?.response?.data?.error ||
+        (status === 401
+          ? 'Tu sesion expiro. Inicia sesion otra vez.'
+          : 'La operacion fallo');
       toast.error(message);
       console.error(error);
     }
@@ -145,9 +153,15 @@ export default function MoviesPage() {
     try {
       await moviesApi.delete(movieToDelete._id);
       toast.success('Pelicula eliminada correctamente');
-      fetchMovies();
-    } catch (error) {
-      const message = (error as any)?.response?.data?.error || 'No se pudo eliminar la pelicula';
+      await fetchMovies();
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const message =
+        error?.response?.data?.error ||
+        (status === 401
+          ? 'Tu sesion expiro. Inicia sesion otra vez.'
+          : 'No se pudo eliminar la pelicula');
+
       toast.error(message);
       console.error(error);
     } finally {
@@ -233,7 +247,7 @@ export default function MoviesPage() {
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="text-sm font-semibold text-yellow-600">
                         {typeof movie.Rating === 'number' && movie.Rating > 0
-                          ? `⭐ ${movie.Rating.toFixed(1)}`
+                          ? `* ${movie.Rating.toFixed(1)}`
                           : 'Sin calificacion'}
                       </div>
                     </td>
@@ -275,7 +289,9 @@ export default function MoviesPage() {
                 type="text"
                 required
                 value={formData.MovieName}
-                onChange={(e) => setFormData({ ...formData, MovieName: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, MovieName: e.target.value })
+                }
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -287,7 +303,9 @@ export default function MoviesPage() {
               <input
                 type="text"
                 value={formData.Director}
-                onChange={(e) => setFormData({ ...formData, Director: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, Director: e.target.value })
+                }
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -300,7 +318,9 @@ export default function MoviesPage() {
                 type="text"
                 required
                 value={formData.Genre}
-                onChange={(e) => setFormData({ ...formData, Genre: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, Genre: e.target.value })
+                }
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Ej. Accion, Drama"
               />
@@ -315,7 +335,9 @@ export default function MoviesPage() {
                 required
                 min="1"
                 value={formData.Duration}
-                onChange={(e) => setFormData({ ...formData, Duration: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, Duration: e.target.value })
+                }
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -329,7 +351,9 @@ export default function MoviesPage() {
                 required
                 min="0"
                 value={formData.AgeLimit}
-                onChange={(e) => setFormData({ ...formData, AgeLimit: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, AgeLimit: e.target.value })
+                }
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -344,7 +368,9 @@ export default function MoviesPage() {
                 max="10"
                 step="0.1"
                 value={formData.Rating}
-                onChange={(e) => setFormData({ ...formData, Rating: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, Rating: e.target.value })
+                }
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -369,7 +395,9 @@ export default function MoviesPage() {
               <input
                 type="url"
                 value={formData.PosterURL}
-                onChange={(e) => setFormData({ ...formData, PosterURL: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, PosterURL: e.target.value })
+                }
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="https://image.tmdb.org/..."
               />
@@ -382,7 +410,9 @@ export default function MoviesPage() {
               <input
                 type="url"
                 value={formData.TrailerURL}
-                onChange={(e) => setFormData({ ...formData, TrailerURL: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, TrailerURL: e.target.value })
+                }
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="https://www.youtube.com/..."
               />
@@ -407,7 +437,9 @@ export default function MoviesPage() {
               <textarea
                 rows={3}
                 value={formData.Description}
-                onChange={(e) => setFormData({ ...formData, Description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, Description: e.target.value })
+                }
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

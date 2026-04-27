@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { moviesApi, reviewsApi, sessionsApi } from '@/lib/api';
-import { getStoredSession } from '@/lib/auth';
+import { getStoredSession, useAuthSession } from '@/lib/auth';
 import { Movie, MovieSession, Review } from '@/lib/types';
 import SessionCard from '@/components/SessionCard';
 import PublicNavigation from '@/components/PublicNavigation';
@@ -18,8 +18,7 @@ interface ReviewSummary {
 export default function MovieDetailPage() {
   const params = useParams();
   const movieId = params.id as string;
-
-  const [isMounted, setIsMounted] = useState(false);
+  const authSession = useAuthSession();
 
   const [movie, setMovie] = useState<Movie | null>(null);
   const [sessions, setSessions] = useState<MovieSession[]>([]);
@@ -76,12 +75,12 @@ export default function MovieDetailPage() {
           }
         } catch {
           setCanReview(false);
-          setReviewReason('Inicia sesión como cliente para valorar esta película.');
+          setReviewReason('Inicia sesion como cliente para valorar esta pelicula.');
         }
       } else {
         setCanReview(false);
         setMyReview(null);
-        setReviewReason('Inicia sesión como cliente para valorar esta película.');
+        setReviewReason('Inicia sesion como cliente para valorar esta pelicula.');
       }
     } catch (error) {
       console.error('Failed to fetch movie details:', error);
@@ -98,7 +97,7 @@ export default function MovieDetailPage() {
       const response = await reviewsApi.saveMovieReview(movieId, reviewForm);
       setMyReview(response.data.review);
       setReviewSummary(response.data.summary);
-      toast.success(myReview ? 'Valoración actualizada correctamente' : 'Valoración enviada correctamente');
+      toast.success(myReview ? 'Valoracion actualizada correctamente' : 'Valoracion enviada correctamente');
 
       const latestReviews = await reviewsApi.getMovieReviews(movieId);
       setReviews(latestReviews.data.reviews);
@@ -112,7 +111,7 @@ export default function MovieDetailPage() {
           : current
       );
     } catch (error: any) {
-      const message = error?.response?.data?.error || 'No se pudo guardar tu valoración';
+      const message = error?.response?.data?.error || 'No se pudo guardar tu valoracion';
       toast.error(message);
     } finally {
       setSubmittingReview(false);
@@ -126,7 +125,7 @@ export default function MovieDetailPage() {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <div className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-gray-400 text-sm font-medium">Cargando película...</p>
+            <p className="text-gray-400 text-sm font-medium">Cargando pelicula...</p>
           </div>
         </div>
       </>
@@ -142,9 +141,9 @@ export default function MovieDetailPage() {
             <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
             </svg>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Película no encontrada</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Pelicula no encontrada</h2>
             <Link href="/movies" className="text-red-600 hover:text-red-700 text-sm font-semibold">
-              ← Volver a películas
+              ← Volver a peliculas
             </Link>
           </div>
         </div>
@@ -171,8 +170,6 @@ export default function MovieDetailPage() {
     <>
       <PublicNavigation />
       <div className="min-h-screen bg-gray-50 text-gray-900">
-
-        {/* ── Hero ── */}
         <section className="bg-white border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
             <Link
@@ -182,11 +179,10 @@ export default function MovieDetailPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
               </svg>
-              Volver a películas
+              Volver a peliculas
             </Link>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-              {/* Poster */}
               <div className="md:col-span-1">
                 <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-lg aspect-[2/3] bg-gray-100">
                   <img
@@ -200,7 +196,6 @@ export default function MovieDetailPage() {
                 </div>
               </div>
 
-              {/* Info */}
               <div className="md:col-span-2 flex flex-col gap-6">
                 <div>
                   <div className="flex flex-wrap gap-2 mb-3">
@@ -215,7 +210,6 @@ export default function MovieDetailPage() {
                     {movie.MovieName}
                   </h1>
 
-                  {/* Rating row */}
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-1.5 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-lg">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -227,7 +221,6 @@ export default function MovieDetailPage() {
                   </div>
                 </div>
 
-                {/* Details card */}
                 <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 space-y-4">
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Director</p>
@@ -253,7 +246,7 @@ export default function MovieDetailPage() {
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                     </svg>
-                    Ver tráiler
+                    Ver trailer
                   </a>
                 )}
               </div>
@@ -261,12 +254,11 @@ export default function MovieDetailPage() {
           </div>
         </section>
 
-        {/* ── Sessions ── */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900">Funciones disponibles</h2>
-              <p className="text-gray-400 text-sm mt-1">Elige la función que mejor te venga</p>
+              <p className="text-gray-400 text-sm mt-1">Elige la funcion que mejor te venga</p>
             </div>
           </div>
 
@@ -276,7 +268,7 @@ export default function MovieDetailPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <h3 className="text-lg font-bold text-gray-900 mb-1">No hay funciones disponibles</h3>
-              <p className="text-gray-400 text-sm">Vuelve más tarde para ver próximas funciones.</p>
+              <p className="text-gray-400 text-sm">Vuelve mas tarde para ver proximas funciones.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -287,18 +279,18 @@ export default function MovieDetailPage() {
           )}
         </section>
 
-        {/* ── Reviews ── */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            {/* All reviews */}
             <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
               <h2 className="text-lg font-extrabold text-gray-900 mb-5">Valoraciones de clientes</h2>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
                   <p className="text-xs text-gray-400 font-medium mb-1">Promedio</p>
-                  <p className="text-2xl font-extrabold text-gray-900">{reviewSummary.averageScore.toFixed(1)}<span className="text-sm font-semibold text-gray-400">/5</span></p>
+                  <p className="text-2xl font-extrabold text-gray-900">
+                    {reviewSummary.averageScore.toFixed(1)}
+                    <span className="text-sm font-semibold text-gray-400">/5</span>
+                  </p>
                 </div>
                 <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
                   <p className="text-xs text-gray-400 font-medium mb-1">Opiniones</p>
@@ -308,7 +300,7 @@ export default function MovieDetailPage() {
 
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {reviews.length === 0 ? (
-                  <p className="text-sm text-gray-400 py-4 text-center">Todavía no hay valoraciones para esta película.</p>
+                  <p className="text-sm text-gray-400 py-4 text-center">Todavia no hay valoraciones para esta pelicula.</p>
                 ) : (
                   reviews.map((review) => {
                     const customer = typeof review.CustomerID === 'object' ? review.CustomerID : null;
@@ -333,14 +325,13 @@ export default function MovieDetailPage() {
               </div>
             </div>
 
-            {/* My review */}
             <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
-              <h2 className="text-lg font-extrabold text-gray-900 mb-5">Tu valoración</h2>
+              <h2 className="text-lg font-extrabold text-gray-900 mb-5">Tu valoracion</h2>
 
               {canReview ? (
                 <form onSubmit={handleSubmitReview} className="space-y-5">
                   <div>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Puntuación</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Puntuacion</p>
                     <div className="flex flex-wrap gap-2">
                       {[1, 2, 3, 4, 5].map((score) => (
                         <button
@@ -368,7 +359,7 @@ export default function MovieDetailPage() {
                       onChange={(e) => setReviewForm({ ...reviewForm, Comment: e.target.value })}
                       rows={5}
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm resize-none focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-50 placeholder-gray-300"
-                      placeholder="Cuéntales a otros clientes cómo fue tu experiencia..."
+                      placeholder="Cuentales a otros clientes como fue tu experiencia..."
                     />
                   </div>
 
@@ -377,18 +368,18 @@ export default function MovieDetailPage() {
                     disabled={submittingReview}
                     className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-gray-200 disabled:text-gray-400 text-white text-sm font-bold transition-colors shadow-lg shadow-red-100"
                   >
-                    {submittingReview ? 'Guardando...' : myReview ? 'Actualizar valoración' : 'Enviar valoración'}
+                    {submittingReview ? 'Guardando...' : myReview ? 'Actualizar valoracion' : 'Enviar valoracion'}
                   </button>
                 </form>
               ) : (
                 <div className="space-y-4">
-                  <p className="text-sm text-gray-500">{reviewReason || 'Necesitas haber visto la película para valorarla.'}</p>
-                  {!getStoredSession() && (
+                  <p className="text-sm text-gray-500">{reviewReason || 'Necesitas haber visto la pelicula para valorarla.'}</p>
+                  {!authSession && (
                     <Link
                       href={`/account/login?redirect=${encodeURIComponent(`/movies/${movieId}`)}`}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-100"
                     >
-                      Iniciar sesión
+                      Iniciar sesion
                     </Link>
                   )}
                 </div>
@@ -397,7 +388,6 @@ export default function MovieDetailPage() {
           </div>
         </section>
 
-        {/* ── Footer ── */}
         <footer className="bg-white border-t border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -406,7 +396,9 @@ export default function MovieDetailPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
                 </svg>
               </div>
-              <span className="text-gray-800 font-bold text-sm">Cine<span className="text-red-600">book</span></span>
+              <span className="text-gray-800 font-bold text-sm">
+                Cine<span className="text-red-600">book</span>
+              </span>
             </div>
             <p className="text-gray-400 text-xs">Proyecto SIS 226 2026</p>
           </div>

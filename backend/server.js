@@ -2,9 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
+const { connectToDatabase, REQUIRED_DB_NAME, REQUIRED_DB_TARGET } = require('./config/database');
 
 const app = express();
-const { MONGODB_URI } = process.env;
 
 // Middleware
 app.use(cors());
@@ -12,14 +12,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB Connection
-if (!MONGODB_URI) {
-  console.error('Missing MONGODB_URI. Create backend/.env based on backend/env.example before starting the server.');
-  process.exit(1);
-}
-
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+connectToDatabase()
+  .then(() => {
+    console.log(
+      `MongoDB connected successfully to ${REQUIRED_DB_TARGET}`,
+    );
+  })
+  .catch((err) => {
+    console.error('MongoDB connection error:', err.message);
+    process.exit(1);
+  });
 
 // Import routes
 const authRouter = require('./routes/auth');
@@ -53,7 +55,15 @@ app.use('/api/pos', posRouter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Cinema Booking API is running' });
+  res.json({
+    status: 'OK',
+    message: 'Cinema Booking API is running',
+    database: {
+      name: mongoose.connection.name || REQUIRED_DB_NAME,
+      target: REQUIRED_DB_TARGET,
+      readyState: mongoose.connection.readyState,
+    },
+  });
 });
 
 // Error handling middleware

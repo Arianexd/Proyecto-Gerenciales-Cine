@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { snackCategoriesApi, snackProductsApi, snackSalesApi } from '@/lib/api';
-import { getStoredSession } from '@/lib/auth';
+import { useAuthSession } from '@/lib/auth';
 import RoleProtectedRoute from '@/components/RoleProtectedRoute';
 import toast from 'react-hot-toast';
 
@@ -13,13 +13,13 @@ type Sale = { _id: string; Items: { ProductName: string; Quantity: number; UnitP
 type Tab = 'products' | 'categories' | 'sales';
 
 export default function SnacksPage() {
+  const session = useAuthSession();
   const [tab, setTab] = useState<Tab>('products');
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
-  const userRole = getStoredSession()?.user?.Role;
-  const isAdmin = userRole === 'ADMIN';
+  const isAdmin = session?.user.Role === 'ADMIN';
 
   useEffect(() => { loadAll(); }, []);
 
@@ -57,9 +57,6 @@ export default function SnacksPage() {
             <h1 className="text-3xl font-bold text-gray-900">Gestión de Snacks</h1>
             <p className="text-gray-500 mt-1">Productos, categorías, inventario y ventas</p>
           </div>
-          <a href="/admin/snacks/sell" className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-colors">
-            🛒 Ir a Caja
-          </a>
         </div>
 
         {/* Summary cards */}

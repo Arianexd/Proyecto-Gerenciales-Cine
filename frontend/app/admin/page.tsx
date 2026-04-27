@@ -1,16 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { customersApi, moviesApi, hallsApi, sessionsApi, reservationsApi, paymentsApi, snackSalesApi, snackProductsApi } from '@/lib/api';
-import { getStoredSession, subscribeToAuthChanges, AuthUser } from '@/lib/auth';
 import Link from 'next/link';
+import {
+  customersApi,
+  moviesApi,
+  hallsApi,
+  sessionsApi,
+  reservationsApi,
+  paymentsApi,
+  snackSalesApi,
+  snackProductsApi,
+} from '@/lib/api';
+import { AuthUser, getStoredSession, subscribeToAuthChanges } from '@/lib/auth';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [stats, setStats] = useState({
-    customers: 0, movies: 0, halls: 0, sessions: 0,
-    reservations: 0, payments: 0, snackSales: 0, lowStock: 0,
+    customers: 0,
+    movies: 0,
+    halls: 0,
+    sessions: 0,
+    reservations: 0,
+    payments: 0,
+    snackSales: 0,
+    lowStock: 0,
   });
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -26,12 +41,16 @@ export default function AdminDashboard() {
       router.replace('/admin/pos');
       return;
     }
-    if (user) fetchStats();
-  }, [user]);
+
+    if (user) {
+      fetchStats();
+    }
+  }, [user, router]);
 
   const fetchStats = async () => {
     try {
       setLoading(true);
+
       if (user?.Role === 'CAJERO') {
         const [reservationsRes, paymentsRes, salesRes, productsRes] = await Promise.all([
           reservationsApi.getAll(),
@@ -39,15 +58,25 @@ export default function AdminDashboard() {
           snackSalesApi.getAll(),
           snackProductsApi.getAll({ active: true }),
         ]);
-        setStats(s => ({
-          ...s,
+
+        setStats((current) => ({
+          ...current,
           reservations: reservationsRes.data.length,
           payments: paymentsRes.data.length,
           snackSales: salesRes.data.length,
-          lowStock: productsRes.data.filter((p: any) => p.Stock <= 5).length,
+          lowStock: productsRes.data.filter((product: any) => product.Stock <= 5).length,
         }));
       } else {
-        const [customersRes, moviesRes, hallsRes, sessionsRes, reservationsRes, paymentsRes, salesRes, productsRes] = await Promise.all([
+        const [
+          customersRes,
+          moviesRes,
+          hallsRes,
+          sessionsRes,
+          reservationsRes,
+          paymentsRes,
+          salesRes,
+          productsRes,
+        ] = await Promise.all([
           customersApi.getAll(),
           moviesApi.getAll(),
           hallsApi.getAll(),
@@ -57,6 +86,7 @@ export default function AdminDashboard() {
           snackSalesApi.getAll(),
           snackProductsApi.getAll({ active: true }),
         ]);
+
         setStats({
           customers: customersRes.data.length,
           movies: moviesRes.data.length,
@@ -65,7 +95,7 @@ export default function AdminDashboard() {
           reservations: reservationsRes.data.length,
           payments: paymentsRes.data.length,
           snackSales: salesRes.data.length,
-          lowStock: productsRes.data.filter((p: any) => p.Stock <= 5).length,
+          lowStock: productsRes.data.filter((product: any) => product.Stock <= 5).length,
         });
       }
     } catch (error) {
@@ -82,8 +112,20 @@ export default function AdminDashboard() {
   return <AdminFullDashboard stats={stats} loading={loading} />;
 }
 
-function StatCard({ icon, label, value, color, href, loading }: {
-  icon: string; label: string; value: number; color: string; href: string; loading: boolean;
+function StatCard({
+  icon,
+  label,
+  value,
+  color,
+  href,
+  loading,
+}: {
+  icon: string;
+  label: string;
+  value: number;
+  color: string;
+  href: string;
+  loading: boolean;
 }) {
   return (
     <Link
@@ -102,7 +144,7 @@ function StatCard({ icon, label, value, color, href, loading }: {
 function AdminFullDashboard({ stats, loading }: { stats: any; loading: boolean }) {
   const statCards = [
     { icon: '👥', label: 'Clientes', href: '/admin/customers', color: 'orange', value: stats.customers },
-    { icon: '🎬', label: 'Películas', href: '/admin/movies', color: 'blue', value: stats.movies },
+    { icon: '🎬', label: 'Peliculas', href: '/admin/movies', color: 'blue', value: stats.movies },
     { icon: '🏛️', label: 'Salas', href: '/admin/halls', color: 'indigo', value: stats.halls },
     { icon: '🎭', label: 'Funciones', href: '/admin/sessions', color: 'green', value: stats.sessions },
     { icon: '📋', label: 'Reservas', href: '/admin/reservations', color: 'purple', value: stats.reservations },
@@ -111,33 +153,92 @@ function AdminFullDashboard({ stats, loading }: { stats: any; loading: boolean }
     { icon: '⚠️', label: 'Stock Bajo', href: '/admin/snacks', color: 'red', value: stats.lowStock },
   ];
 
+  const managementCards = [
+    {
+      color: 'orange',
+      icon: '👥',
+      title: 'Gestion de Clientes',
+      desc: 'Administra cuentas, contacto e historial de reservas.',
+      href: '/admin/customers',
+      label: 'Gestionar Clientes',
+    },
+    {
+      color: 'blue',
+      icon: '🎬',
+      title: 'Catalogo de Peliculas',
+      desc: 'Agrega, edita y gestiona el catalogo de peliculas.',
+      href: '/admin/movies',
+      label: 'Gestionar Peliculas',
+    },
+    {
+      color: 'indigo',
+      icon: '🏛️',
+      title: 'Salas y Asientos',
+      desc: 'Configura salas con matriz de asientos y calidad.',
+      href: '/admin/halls',
+      label: 'Gestionar Salas',
+    },
+    {
+      color: 'green',
+      icon: '🎭',
+      title: 'Programacion de Funciones',
+      desc: 'Programa funciones en diferentes salas y horarios.',
+      href: '/admin/sessions',
+      label: 'Gestionar Funciones',
+    },
+    {
+      color: 'purple',
+      icon: '📋',
+      title: 'Reservas',
+      desc: 'Consulta y supervisa las reservas registradas.',
+      href: '/admin/reservations',
+      label: 'Ver Reservas',
+    },
+    {
+      color: 'emerald',
+      icon: '💳',
+      title: 'Pagos',
+      desc: 'Consulta y supervisa los pagos registrados.',
+      href: '/admin/payments',
+      label: 'Ver Pagos',
+    },
+    {
+      color: 'yellow',
+      icon: '🍿',
+      title: 'Gestion de Snacks',
+      desc: 'Administra productos, categorias e inventario de snacks.',
+      href: '/admin/snacks',
+      label: 'Gestionar Snacks',
+    },
+  ];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Panel de Administración</h1>
-        <p className="text-gray-600">Bienvenido al Sistema de Gestión de Cine</p>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Panel de Administracion</h1>
+        <p className="text-gray-600">Bienvenido al sistema de gestion de cine</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {statCards.map(card => (
+        {statCards.map((card) => (
           <StatCard key={card.href + card.label} {...card} loading={loading} />
         ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[
-          { color: 'orange', icon: '👥', title: 'Gestión de Clientes', desc: 'Administra cuentas, contacto e historial de reservas.', href: '/admin/customers', label: 'Gestionar Clientes' },
-          { color: 'blue', icon: '🎬', title: 'Catálogo de Películas', desc: 'Agrega, edita y gestiona el catálogo de películas.', href: '/admin/movies', label: 'Gestionar Películas' },
-          { color: 'indigo', icon: '🏛️', title: 'Salas y Asientos', desc: 'Configura salas con matriz de asientos y calidad.', href: '/admin/halls', label: 'Gestionar Salas' },
-          { color: 'green', icon: '🎭', title: 'Programación de Funciones', desc: 'Programa funciones en diferentes salas y horarios.', href: '/admin/sessions', label: 'Gestionar Funciones' },
-          { color: 'purple', icon: '📋', title: 'Reservas', desc: 'Crea reservas con selección de asientos y entradas QR.', href: '/admin/reservations', label: 'Gestionar Reservas' },
-          { color: 'emerald', icon: '💳', title: 'Pagos', desc: 'Procesa y rastrea pagos de reservas.', href: '/admin/payments', label: 'Gestionar Pagos' },
-          { color: 'yellow', icon: '🍿', title: 'Gestión de Snacks', desc: 'Administra productos, categorías e inventario de snacks.', href: '/admin/snacks', label: 'Gestionar Snacks' },
-        ].map(card => (
-          <div key={card.href} className={`bg-gradient-to-br from-${card.color}-50 to-${card.color}-100 rounded-xl p-6 shadow-md`}>
-            <h3 className={`text-lg font-bold text-${card.color}-900 mb-2`}>{card.icon} {card.title}</h3>
+        {managementCards.map((card) => (
+          <div
+            key={card.href}
+            className={`bg-gradient-to-br from-${card.color}-50 to-${card.color}-100 rounded-xl p-6 shadow-md`}
+          >
+            <h3 className={`text-lg font-bold text-${card.color}-900 mb-2`}>
+              {card.icon} {card.title}
+            </h3>
             <p className={`text-${card.color}-700 text-sm mb-4`}>{card.desc}</p>
-            <Link href={card.href} className={`inline-block bg-${card.color}-600 hover:bg-${card.color}-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors`}>
+            <Link
+              href={card.href}
+              className={`inline-block bg-${card.color}-600 hover:bg-${card.color}-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors`}
+            >
               {card.label} →
             </Link>
           </div>
@@ -166,7 +267,7 @@ function CajeroDashboard({ stats, loading }: { stats: any; loading: boolean }) {
         <Link href="/admin/snacks/sell" className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all text-white group">
           <div className="text-5xl mb-4">🛒</div>
           <h3 className="text-2xl font-bold mb-2">Vender Snacks</h3>
-          <p className="text-orange-100 text-sm">Abre la caja para vender snacks y bebidas rápidamente.</p>
+          <p className="text-orange-100 text-sm">Abre la caja para vender snacks y bebidas rapidamente.</p>
           <div className="mt-4 text-sm font-semibold group-hover:underline">Abrir caja →</div>
         </Link>
 
@@ -194,7 +295,7 @@ function CajeroDashboard({ stats, loading }: { stats: any; loading: boolean }) {
         <Link href="/admin/customers" className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all text-white group">
           <div className="text-5xl mb-4">👥</div>
           <h3 className="text-2xl font-bold mb-2">Clientes</h3>
-          <p className="text-blue-100 text-sm">Consulta información de clientes registrados.</p>
+          <p className="text-blue-100 text-sm">Consulta informacion de clientes registrados.</p>
           <div className="mt-4 text-sm font-semibold group-hover:underline">Ver clientes →</div>
         </Link>
       </div>

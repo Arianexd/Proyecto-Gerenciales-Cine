@@ -2,30 +2,42 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AuthUser } from '@/lib/auth';
+import { AuthUser, UserRole } from '@/lib/auth';
+
+type NavItem = {
+  name: string;
+  path: string;
+  icon: string;
+  roles: UserRole[];
+};
+
+const navItems: NavItem[] = [
+  { name: 'Dashboard', path: '/admin', icon: '📊', roles: ['ADMIN'] },
+  { name: 'Caja POS', path: '/admin/pos', icon: '🖥️', roles: ['CAJERO'] },
+  { name: 'Clientes', path: '/admin/customers', icon: '👥', roles: ['ADMIN', 'CAJERO'] },
+  { name: 'Peliculas', path: '/admin/movies', icon: '🎬', roles: ['ADMIN'] },
+  { name: 'Salas', path: '/admin/halls', icon: '🏛️', roles: ['ADMIN'] },
+  { name: 'Funciones', path: '/admin/sessions', icon: '🎭', roles: ['ADMIN'] },
+  { name: 'Reservas', path: '/admin/reservations', icon: '📋', roles: ['ADMIN', 'CAJERO'] },
+  { name: 'Pagos', path: '/admin/payments', icon: '💳', roles: ['ADMIN', 'CAJERO'] },
+  { name: 'Snacks', path: '/admin/snacks', icon: '🍿', roles: ['ADMIN'] },
+  { name: 'Vender Snacks', path: '/admin/snacks/sell', icon: '🛒', roles: ['CAJERO'] },
+];
 
 export default function AdminNavigation({ user }: { user: AuthUser | null }) {
   const pathname = usePathname();
 
-  if (!user) return null;
+  if (!user) {
+    return null;
+  }
 
-  const navItems = [
-    { name: 'Dashboard', path: '/admin', icon: '📊', roles: ['ADMIN'] },
-    { name: 'Caja POS', path: '/admin/pos', icon: '🖥️', roles: ['CAJERO'] },
-    { name: 'Clientes', path: '/admin/customers', icon: '👥', roles: ['ADMIN', 'CAJERO'] },
-    { name: 'Películas', path: '/admin/movies', icon: '🎬', roles: ['ADMIN'] },
-    { name: 'Salas', path: '/admin/halls', icon: '🏛️', roles: ['ADMIN'] },
-    { name: 'Funciones', path: '/admin/sessions', icon: '🎭', roles: ['ADMIN'] },
-    { name: 'Reservas', path: '/admin/reservations', icon: '📋', roles: ['ADMIN', 'CAJERO'] },
-    { name: 'Pagos', path: '/admin/payments', icon: '💳', roles: ['ADMIN', 'CAJERO'] },
-    { name: 'Snacks', path: '/admin/snacks', icon: '🍿', roles: ['ADMIN'] },
-    { name: 'Vender Snacks', path: '/admin/snacks/sell', icon: '🛒', roles: ['CAJERO'] },
-  ];
-
-  const filteredItems = navItems.filter(item => item.roles.includes(user.Role));
+  const filteredItems = navItems.filter((item) => item.roles.includes(user.Role));
 
   const isActive = (path: string) => {
-    if (path === '/admin') return pathname === '/admin';
+    if (path === '/admin') {
+      return pathname === '/admin';
+    }
+
     return pathname.startsWith(path);
   };
 

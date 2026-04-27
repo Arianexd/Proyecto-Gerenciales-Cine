@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import RoleProtectedRoute from '@/components/RoleProtectedRoute';
 import { snackCategoriesApi, snackProductsApi, snackSalesApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import RoleProtectedRoute from '@/components/RoleProtectedRoute';
 
 type Category = { _id: string; Name: string; IsActive: boolean };
 type Product = { _id: string; Name: string; Description: string; Category: Category; UnitCost: number; SalePrice: number; Stock: number; IsActive: boolean };
@@ -15,6 +15,14 @@ type PaymentMethod = typeof PAYMENT_METHODS[number];
 const paymentLabels: Record<PaymentMethod, string> = { Cash: 'Efectivo', Card: 'Tarjeta', Online: 'Online' };
 
 export default function SnackSellPage() {
+  return (
+    <RoleProtectedRoute allowedRoles={['CAJERO']} redirectTo="/admin">
+      <SnackSellPageContent />
+    </RoleProtectedRoute>
+  );
+}
+
+function SnackSellPageContent() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');

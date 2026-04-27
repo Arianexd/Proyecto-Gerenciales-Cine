@@ -3,19 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { clearSession, getStoredSession, getUserDisplayName, subscribeToAuthChanges } from '@/lib/auth';
+import { clearSession, getUserDisplayName, useAuthSession } from '@/lib/auth';
 import toast from 'react-hot-toast';
 
 export default function PublicNavigation() {
   const pathname = usePathname();
-  const [session, setSession] = useState(getStoredSession());
+  const session = useAuthSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const syncSession = () => setSession(getStoredSession());
-    syncSession();
-    return subscribeToAuthChanges(syncSession);
-  }, []);
 
   useEffect(() => {
     setMobileMenuOpen(false);
