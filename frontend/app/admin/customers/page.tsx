@@ -107,10 +107,17 @@ export default function CustomersPage() {
       };
 
       if (selectedCustomer) {
+<<<<<<< HEAD
+        await customersApi.update(selectedCustomer._id, formData);
+        toast.success('Cliente actualizado');
+      } else {
+        await customersApi.create(formData);
+=======
         await customersApi.update(selectedCustomer._id, payload);
         toast.success('Cliente actualizado');
       } else {
         await customersApi.create(payload);
+>>>>>>> 8b92dbb7e776e81780a8938fa72038bc4559b760
         toast.success('Cliente creado');
       }
       setIsModalOpen(false);
@@ -194,6 +201,14 @@ export default function CustomersPage() {
               <option value="Female">Femenino</option>
               <option value="Other">Otro</option>
             </select>
+<<<<<<< HEAD
+            <input type="number" placeholder="Edad" value={formData.Age} onChange={(e) => setFormData({...formData, Age: parseInt(e.target.value) || 0})} className="border-2 p-2 rounded-lg outline-none focus:border-orange-500" />
+          </div>
+
+          <input placeholder="Correo electrónico" type="email" value={formData.Email} onChange={(e) => setFormData({...formData, Email: e.target.value})} className="w-full border-2 p-2 rounded-lg outline-none focus:border-orange-500" required />
+          <input placeholder="Teléfono" value={formData.PhoneNumber} onChange={(e) => setFormData({...formData, PhoneNumber: e.target.value})} className="w-full border-2 p-2 rounded-lg outline-none focus:border-orange-500" required />
+
+=======
             <input type="date" value={formData.BirthDate} onChange={(e) => setFormData({...formData, BirthDate: e.target.value})} className="border-2 p-2 rounded-lg outline-none focus:border-orange-500" required />
           </div>
 
@@ -204,6 +219,7 @@ export default function CustomersPage() {
           <input placeholder="Correo electrónico" type="email" value={formData.Email} onChange={(e) => setFormData({...formData, Email: e.target.value})} className="w-full border-2 p-2 rounded-lg outline-none focus:border-orange-500" required />
           <input placeholder="Teléfono" value={formData.PhoneNumber} onChange={(e) => setFormData({...formData, PhoneNumber: e.target.value})} className="w-full border-2 p-2 rounded-lg outline-none focus:border-orange-500" required />
 
+>>>>>>> 8b92dbb7e776e81780a8938fa72038bc4559b760
           <button type="submit" className="w-full bg-orange-600 text-white font-bold py-3 rounded-xl shadow-lg uppercase tracking-widest">Guardar cliente</button>
         </form>
       </Modal>

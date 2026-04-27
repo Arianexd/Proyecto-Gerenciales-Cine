@@ -112,9 +112,9 @@ router.put('/movie/:movieId', requireAuth, requireCustomer, async (req, res) => 
     }
 
     const eligibleReservation = await getEligibleReservation(req.user.CustomerID._id, req.params.movieId);
-    if (!eligibleReservation) {
-      return res.status(403).json({ error: 'You can only review movies that you have already watched' });
-    }
+if (!eligibleReservation) {
+    return res.status(403).json({ error: 'You can only review movies that you have already watched' });
+}
 
     const review = await Review.findOneAndUpdate(
       {
