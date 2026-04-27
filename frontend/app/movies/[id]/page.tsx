@@ -19,9 +19,8 @@ export default function MovieDetailPage() {
   const params = useParams();
   const movieId = params.id as string;
 
-  // ESTADO PARA EVITAR ERROR DE HYDRATION
   const [isMounted, setIsMounted] = useState(false);
-  
+
   const [movie, setMovie] = useState<Movie | null>(null);
   const [sessions, setSessions] = useState<MovieSession[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -122,12 +121,10 @@ export default function MovieDetailPage() {
     return (
       <>
         <PublicNavigation />
-        <div className="min-h-screen bg-black flex items-center justify-center">
-          <div className="relative">
-            <div className="w-24 h-24 border-8 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-4xl animate-pulse">🎬</div>
-            </div>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-gray-400 text-sm font-medium">Cargando película...</p>
           </div>
         </div>
       </>
@@ -138,12 +135,14 @@ export default function MovieDetailPage() {
     return (
       <>
         <PublicNavigation />
-        <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-8xl mb-6">🎬</div>
-            <h2 className="text-3xl font-black text-white mb-4">PELÍCULA NO ENCONTRADA</h2>
-            <Link href="/movies" className="text-yellow-400 hover:text-yellow-300 font-bold text-lg">
-              ← VOLVER A PELÍCULAS
+            <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+            </svg>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Película no encontrada</h2>
+            <Link href="/movies" className="text-red-600 hover:text-red-700 text-sm font-semibold">
+              ← Volver a películas
             </Link>
           </div>
         </div>
@@ -152,96 +151,83 @@ export default function MovieDetailPage() {
   }
 
   const hasUserRating = Boolean(movie.UserRatingCount && movie.UserRatingCount > 0);
-  const displayRating = hasUserRating ? `${movie.UserRatingAverage?.toFixed(1)}/5` : `${movie.Rating}/10`;
+  const displayRating = hasUserRating
+    ? `${movie.UserRatingAverage?.toFixed(1)}/5`
+    : `${movie.Rating}/10`;
 
   return (
     <>
       <PublicNavigation />
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
-        <div className="relative bg-gradient-to-br from-black via-red-950 to-black text-white border-b-8 border-red-600">
-          <div className="absolute top-0 left-0 right-0 h-3 bg-yellow-500 flex gap-2 px-1 z-20">
-            {[...Array(40)].map((_, i) => (
-              <div key={i} className="flex-1 bg-black rounded-sm"></div>
-            ))}
-          </div>
+      <div className="min-h-screen bg-gray-50 text-gray-900">
 
-          <div className="absolute inset-0 opacity-20 overflow-hidden">
-            <img
-              src={movie.PosterURL}
-              alt=""
-              className="w-full h-full object-cover blur-md scale-110"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-          </div>
-
-          <div className="relative container mx-auto px-4 py-6 md:py-8 md:pt-12">
-            <Link href="/movies" className="inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 mb-6 md:mb-8 font-bold text-sm md:text-base transition-colors group">
-              <svg className="w-6 h-6 transform group-hover:-translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+        {/* ── Hero ── */}
+        <section className="bg-white border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
+            <Link
+              href="/movies"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 mb-8 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
               </svg>
-              VOLVER A PELÍCULAS
+              Volver a películas
             </Link>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+              {/* Poster */}
               <div className="md:col-span-1">
-                <div className="relative bg-gradient-to-br from-gray-900 to-black p-3 md:p-4 rounded-2xl border-2 md:border-4 border-yellow-500">
+                <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-lg aspect-[2/3] bg-gray-100">
                   <img
                     src={movie.PosterURL}
                     alt={movie.MovieName}
-                    className="w-full rounded-xl shadow-2xl"
+                    className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = 'https://via.placeholder.com/300x450?text=No+Poster';
+                      e.currentTarget.src = 'https://via.placeholder.com/300x450/f3f4f6/d1d5db?text=Sin+poster';
                     }}
                   />
                 </div>
               </div>
 
-              <div className="md:col-span-2 space-y-6">
+              {/* Info */}
+              <div className="md:col-span-2 flex flex-col gap-6">
                 <div>
-                  <h1 className="text-3xl sm:text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-400 to-red-500 mb-2 tracking-wide md:tracking-wider leading-tight">
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span className="px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-xs font-bold border border-red-100 uppercase tracking-wide">
+                      {movie.Genre}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">
+                      {movie.AgeLimit}+
+                    </span>
+                  </div>
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-3">
                     {movie.MovieName}
                   </h1>
-                  <div className="h-1 w-32 bg-gradient-to-r from-red-500 to-transparent mb-6"></div>
-                </div>
 
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-4 py-2.5 md:px-6 md:py-3 rounded-lg font-black shadow-lg shadow-yellow-500/50">
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span className="text-lg md:text-2xl">{displayRating}</span>
-                  </div>
-
-                  <div className="bg-gray-800 text-yellow-400 px-4 py-2.5 md:px-6 md:py-3 rounded-lg font-bold text-sm md:text-lg border-2 border-gray-700">
-                    {reviewSummary.reviewCount} valoraciones
-                  </div>
-
-                  <div className="bg-gradient-to-r from-red-600 to-red-700 px-4 py-2.5 md:px-6 md:py-3 rounded-lg font-black text-lg md:text-2xl shadow-lg shadow-red-500/50 border-2 border-red-400">
-                    {movie.AgeLimit}+
-                  </div>
-
-                  <div className="bg-red-600/20 text-red-400 px-4 py-2.5 md:px-6 md:py-3 rounded-lg font-bold text-sm md:text-lg border-2 border-red-600/50 uppercase tracking-wider">
-                    {movie.Genre}
+                  {/* Rating row */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-1.5 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-lg">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      <span className="text-sm font-bold">{displayRating}</span>
+                    </div>
+                    <span className="text-sm text-gray-400">{reviewSummary.reviewCount} valoraciones</span>
                   </div>
                 </div>
 
-                <div className="space-y-5 md:space-y-6 bg-gradient-to-br from-gray-900/80 to-black/80 backdrop-blur-sm p-5 md:p-8 rounded-2xl border-2 border-gray-800">
+                {/* Details card */}
+                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 space-y-4">
                   <div>
-                    <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">DIRECTOR</h3>
-                    <p className="text-xl md:text-2xl font-bold text-white">{movie.Director}</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Director</p>
+                    <p className="text-gray-900 font-semibold">{movie.Director}</p>
                   </div>
-
                   <div>
-                    <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">REPARTO</h3>
-                    <p className="text-base md:text-xl text-gray-300 leading-relaxed">{movie.Cast.join(', ')}</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Reparto</p>
+                    <p className="text-gray-700 text-sm leading-relaxed">{movie.Cast.join(', ')}</p>
                   </div>
-
                   <div>
-                    <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">SINOPSIS</h3>
-                    <p className="text-base md:text-lg text-gray-300 leading-relaxed">{movie.Description}</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Sinopsis</p>
+                    <p className="text-gray-700 text-sm leading-relaxed">{movie.Description}</p>
                   </div>
                 </div>
 
@@ -250,68 +236,84 @@ export default function MovieDetailPage() {
                     href={movie.TrailerURL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-black text-base md:text-lg transition-all shadow-2xl shadow-red-500/50"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-100 self-start"
                   >
-                    VER TRÁILER
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                    </svg>
+                    Ver tráiler
                   </a>
                 )}
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="container mx-auto px-4 py-12 md:py-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-400 to-red-500 tracking-wider">
-              FUNCIONES
-            </h2>
+        {/* ── Sessions ── */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900">Funciones disponibles</h2>
+              <p className="text-gray-400 text-sm mt-1">Elige la función que mejor te venga</p>
+            </div>
           </div>
 
           {sessions.length === 0 ? (
-            <div className="bg-gradient-to-br from-gray-900 to-black rounded-3xl shadow-2xl p-8 md:p-16 text-center border-4 border-red-600">
-              <h3 className="text-2xl md:text-4xl font-black text-white mb-4">NO HAY FUNCIONES DISPONIBLES</h3>
-              <p className="text-gray-400 text-base md:text-xl">Vuelve más tarde para ver próximas funciones</p>
+            <div className="bg-white border border-gray-100 rounded-2xl p-12 text-center shadow-sm">
+              <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <h3 className="text-lg font-bold text-gray-900 mb-1">No hay funciones disponibles</h3>
+              <p className="text-gray-400 text-sm">Vuelve más tarde para ver próximas funciones.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {sessions.map((session) => (
                 <SessionCard key={session._id} session={session} />
               ))}
             </div>
           )}
-        </div>
+        </section>
 
-        <div className="container mx-auto px-4 pb-12 md:pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-gradient-to-br from-gray-900 to-black border-4 border-yellow-500 rounded-2xl p-5 md:p-8">
-              <h2 className="text-2xl md:text-3xl font-black text-yellow-400 mb-6">VALORACIONES DE CLIENTES</h2>
+        {/* ── Reviews ── */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* All reviews */}
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
+              <h2 className="text-lg font-extrabold text-gray-900 mb-5">Valoraciones de clientes</h2>
+
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-black/40 border border-yellow-500/20 rounded-xl p-4">
-                  <p className="text-gray-400 text-sm">Promedio</p>
-                  <p className="text-2xl md:text-4xl font-black text-white">{reviewSummary.averageScore.toFixed(1)}/5</p>
+                <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+                  <p className="text-xs text-gray-400 font-medium mb-1">Promedio</p>
+                  <p className="text-2xl font-extrabold text-gray-900">{reviewSummary.averageScore.toFixed(1)}<span className="text-sm font-semibold text-gray-400">/5</span></p>
                 </div>
-                <div className="bg-black/40 border border-yellow-500/20 rounded-xl p-4">
-                  <p className="text-gray-400 text-sm">Opiniones</p>
-                  <p className="text-2xl md:text-4xl font-black text-white">{reviewSummary.reviewCount}</p>
+                <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+                  <p className="text-xs text-gray-400 font-medium mb-1">Opiniones</p>
+                  <p className="text-2xl font-extrabold text-gray-900">{reviewSummary.reviewCount}</p>
                 </div>
               </div>
 
-              <div className="space-y-4 max-h-[420px] overflow-y-auto pr-2">
+              <div className="space-y-3 max-h-96 overflow-y-auto">
                 {reviews.length === 0 ? (
-                  <p className="text-gray-400">Todavía no hay valoraciones de clientes para esta película.</p>
+                  <p className="text-sm text-gray-400 py-4 text-center">Todavía no hay valoraciones para esta película.</p>
                 ) : (
                   reviews.map((review) => {
                     const customer = typeof review.CustomerID === 'object' ? review.CustomerID : null;
-
                     return (
-                      <div key={review._id} className="bg-black/40 border border-white/10 rounded-xl p-4">
-                        <div className="flex items-center justify-between gap-4 mb-3">
-                          <p className="text-white font-bold">
+                      <div key={review._id} className="border border-gray-100 rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-bold text-gray-900">
                             {customer ? `${customer.Name} ${customer.Surname}` : 'Cliente'}
                           </p>
-                          <span className="text-yellow-400 font-black">{review.Score}/5</span>
+                          <div className="flex items-center gap-1 bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-md">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <span className="text-xs font-bold">{review.Score}/5</span>
+                          </div>
                         </div>
-                        <p className="text-gray-300">{review.Comment || 'Sin comentario adicional.'}</p>
+                        <p className="text-sm text-gray-500">{review.Comment || 'Sin comentario adicional.'}</p>
                       </div>
                     );
                   })
@@ -319,23 +321,24 @@ export default function MovieDetailPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-gray-900 to-black border-4 border-emerald-500 rounded-2xl p-5 md:p-8">
-              <h2 className="text-2xl md:text-3xl font-black text-yellow-400 mb-6">TU VALORACIÓN</h2>
+            {/* My review */}
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
+              <h2 className="text-lg font-extrabold text-gray-900 mb-5">Tu valoración</h2>
 
               {canReview ? (
                 <form onSubmit={handleSubmitReview} className="space-y-5">
                   <div>
-                    <p className="text-sm text-gray-400 mb-3">Puntúa esta película</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Puntuación</p>
                     <div className="flex flex-wrap gap-2">
                       {[1, 2, 3, 4, 5].map((score) => (
                         <button
                           key={score}
                           type="button"
                           onClick={() => setReviewForm({ ...reviewForm, Score: score })}
-                          className={`px-4 py-3 rounded-lg font-black transition-all ${
+                          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                             reviewForm.Score === score
-                              ? 'bg-yellow-500 text-black'
-                              : 'bg-gray-800 text-white border border-gray-700'
+                              ? 'bg-yellow-400 text-yellow-900 shadow-md'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}
                         >
                           {score} ★
@@ -345,12 +348,14 @@ export default function MovieDetailPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">Comentario</label>
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+                      Comentario
+                    </label>
                     <textarea
                       value={reviewForm.Comment}
                       onChange={(e) => setReviewForm({ ...reviewForm, Comment: e.target.value })}
-                      rows={6}
-                      className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white resize-none focus:outline-none focus:border-emerald-500"
+                      rows={5}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm resize-none focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-50 placeholder-gray-300"
                       placeholder="Cuéntales a otros clientes cómo fue tu experiencia..."
                     />
                   </div>
@@ -358,27 +363,42 @@ export default function MovieDetailPage() {
                   <button
                     type="submit"
                     disabled={submittingReview}
-                    className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-700 disabled:to-gray-800 text-black font-black py-4 rounded-xl"
+                    className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-gray-200 disabled:text-gray-400 text-white text-sm font-bold transition-colors shadow-lg shadow-red-100"
                   >
-                    {submittingReview ? 'GUARDANDO...' : myReview ? 'ACTUALIZAR VALORACIÓN' : 'ENVIAR VALORACIÓN'}
+                    {submittingReview ? 'Guardando...' : myReview ? 'Actualizar valoración' : 'Enviar valoración'}
                   </button>
                 </form>
               ) : (
                 <div className="space-y-4">
-                  <p className="text-gray-300">{reviewReason || 'Necesitas haber visto la película para valorarla.'}</p>
+                  <p className="text-sm text-gray-500">{reviewReason || 'Necesitas haber visto la película para valorarla.'}</p>
                   {!getStoredSession() && (
                     <Link
                       href={`/account/login?redirect=${encodeURIComponent(`/movies/${movieId}`)}`}
-                      className="inline-block px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-black"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-100"
                     >
-                      INICIAR SESIÓN
+                      Iniciar sesión
                     </Link>
                   )}
                 </div>
               )}
             </div>
           </div>
-        </div>
+        </section>
+
+        {/* ── Footer ── */}
+        <footer className="bg-white border-t border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-red-600 flex items-center justify-center">
+                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                </svg>
+              </div>
+              <span className="text-gray-800 font-bold text-sm">Cine<span className="text-red-600">book</span></span>
+            </div>
+            <p className="text-gray-400 text-xs">Proyecto SIS 226 2026</p>
+          </div>
+        </footer>
       </div>
     </>
   );
