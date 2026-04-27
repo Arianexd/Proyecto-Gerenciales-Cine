@@ -22,10 +22,23 @@ export default function CustomersPage() {
     Surname: '',
     CI: '',          // Identificación
     Gender: 'Other', // Género
+    BirthDate: '',   // Fecha de nacimiento
     Age: 0,          // Edad
     Email: '',
     PhoneNumber: '',
   });
+
+  const calculateAgeFromBirthDate = (birthDate: string) => {
+    if (!birthDate) return 0;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age -= 1;
+    }
+    return Math.max(age, 0);
+  };
 
   useEffect(() => {
     fetchCustomers();
@@ -51,13 +64,23 @@ export default function CustomersPage() {
         Surname: customer.Surname,
         CI: customer.CI || '',
         Gender: (customer.Gender as any) || 'Other',
+        BirthDate: (customer as any).BirthDate || '',
         Age: customer.Age || 0,
         Email: customer.Email,
         PhoneNumber: customer.PhoneNumber,
       });
     } else {
       setSelectedCustomer(null);
-      setFormData({ Name: '', Surname: '', CI: '', Gender: 'Other', Age: 0, Email: '', PhoneNumber: '' });
+      setFormData({
+        Name: '',
+        Surname: '',
+        CI: '',
+        Gender: 'Other',
+        BirthDate: '',
+        Age: 0,
+        Email: '',
+        PhoneNumber: '',
+      });
     }
     setIsModalOpen(true);
   };
@@ -65,11 +88,36 @@ export default function CustomersPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const normalizedCI = formData.CI.trim().toLowerCase();
+      const ciAlreadyExists = customers.some((customer) => {
+        const existingCI = (customer.CI || '').trim().toLowerCase();
+        const isDifferentCustomer = selectedCustomer ? customer._id !== selectedCustomer._id : true;
+        return isDifferentCustomer && existingCI === normalizedCI;
+      });
+
+      if (ciAlreadyExists) {
+        toast.error('El CI ya existe. Debe ser unico.');
+        return;
+      }
+
+      const payload = {
+        ...formData,
+        CI: formData.CI.trim(),
+        Age: calculateAgeFromBirthDate(formData.BirthDate),
+      };
+
       if (selectedCustomer) {
+<<<<<<< HEAD
         await customersApi.update(selectedCustomer._id, formData);
         toast.success('Cliente actualizado');
       } else {
         await customersApi.create(formData);
+=======
+        await customersApi.update(selectedCustomer._id, payload);
+        toast.success('Cliente actualizado');
+      } else {
+        await customersApi.create(payload);
+>>>>>>> 8b92dbb7e776e81780a8938fa72038bc4559b760
         toast.success('Cliente creado');
       }
       setIsModalOpen(false);
@@ -153,12 +201,25 @@ export default function CustomersPage() {
               <option value="Female">Femenino</option>
               <option value="Other">Otro</option>
             </select>
+<<<<<<< HEAD
             <input type="number" placeholder="Edad" value={formData.Age} onChange={(e) => setFormData({...formData, Age: parseInt(e.target.value) || 0})} className="border-2 p-2 rounded-lg outline-none focus:border-orange-500" />
           </div>
 
           <input placeholder="Correo electrónico" type="email" value={formData.Email} onChange={(e) => setFormData({...formData, Email: e.target.value})} className="w-full border-2 p-2 rounded-lg outline-none focus:border-orange-500" required />
           <input placeholder="Teléfono" value={formData.PhoneNumber} onChange={(e) => setFormData({...formData, PhoneNumber: e.target.value})} className="w-full border-2 p-2 rounded-lg outline-none focus:border-orange-500" required />
 
+=======
+            <input type="date" value={formData.BirthDate} onChange={(e) => setFormData({...formData, BirthDate: e.target.value})} className="border-2 p-2 rounded-lg outline-none focus:border-orange-500" required />
+          </div>
+
+          <p className="text-xs text-gray-500">
+            Edad calculada automaticamente: <span className="font-semibold">{calculateAgeFromBirthDate(formData.BirthDate)} años</span>
+          </p>
+
+          <input placeholder="Correo electrónico" type="email" value={formData.Email} onChange={(e) => setFormData({...formData, Email: e.target.value})} className="w-full border-2 p-2 rounded-lg outline-none focus:border-orange-500" required />
+          <input placeholder="Teléfono" value={formData.PhoneNumber} onChange={(e) => setFormData({...formData, PhoneNumber: e.target.value})} className="w-full border-2 p-2 rounded-lg outline-none focus:border-orange-500" required />
+
+>>>>>>> 8b92dbb7e776e81780a8938fa72038bc4559b760
           <button type="submit" className="w-full bg-orange-600 text-white font-bold py-3 rounded-xl shadow-lg uppercase tracking-widest">Guardar cliente</button>
         </form>
       </Modal>

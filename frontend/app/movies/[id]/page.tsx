@@ -47,9 +47,11 @@ export default function MovieDetailPage() {
         reviewsApi.getMovieReviews(movieId),
       ]);
 
+      const now = new Date();
       const movieSessions = sessionsRes.data.filter((session: MovieSession) => {
         const sessionMovieId = typeof session.MovieID === 'object' ? session.MovieID._id : session.MovieID;
-        return sessionMovieId === movieId;
+        const sessionDate = new Date(session.SessionDateTime);
+        return sessionMovieId === movieId && sessionDate > now;
       });
 
       setMovie(movieRes.data);
@@ -152,14 +154,30 @@ export default function MovieDetailPage() {
 
   const hasUserRating = Boolean(movie.UserRatingCount && movie.UserRatingCount > 0);
   const displayRating = hasUserRating
+<<<<<<< HEAD
     ? `${movie.UserRatingAverage?.toFixed(1)}/5`
     : `${movie.Rating}/10`;
+=======
+    ? `${movie.UserRatingAverage?.toFixed(1) || '0.0'}/5`
+    : typeof movie.Rating === 'number' && movie.Rating > 0
+      ? `${movie.Rating.toFixed(1)}/10`
+      : 'Sin puntaje';
+  const posterSrc =
+    movie.PosterURL ||
+    `https://placehold.co/300x450/111827/f9fafb?text=${encodeURIComponent(movie.MovieName)}`;
+  const castList = movie.Cast && movie.Cast.length > 0
+    ? movie.Cast.join(', ')
+    : 'Reparto no registrado';
+  const movieDescription = movie.Description || 'Sin sinopsis disponible.';
+  const movieDirector = movie.Director || 'Direccion no registrada';
+>>>>>>> 8b92dbb7e776e81780a8938fa72038bc4559b760
 
   return (
     <>
       <PublicNavigation />
       <div className="min-h-screen bg-gray-50 text-gray-900">
 
+<<<<<<< HEAD
         {/* ── Hero ── */}
         <section className="bg-white border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
@@ -169,6 +187,24 @@ export default function MovieDetailPage() {
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+=======
+          <div className="absolute inset-0 opacity-20 overflow-hidden">
+            <img
+              src={posterSrc}
+              alt=""
+              className="w-full h-full object-cover blur-md scale-110"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+          </div>
+
+          <div className="relative container mx-auto px-4 py-6 md:py-8 md:pt-12">
+            <Link href="/movies" className="inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 mb-6 md:mb-8 font-bold text-sm md:text-base transition-colors group">
+              <svg className="w-6 h-6 transform group-hover:-translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+>>>>>>> 8b92dbb7e776e81780a8938fa72038bc4559b760
               </svg>
               Volver a películas
             </Link>
@@ -178,7 +214,7 @@ export default function MovieDetailPage() {
               <div className="md:col-span-1">
                 <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-lg aspect-[2/3] bg-gray-100">
                   <img
-                    src={movie.PosterURL}
+                    src={posterSrc}
                     alt={movie.MovieName}
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -218,16 +254,31 @@ export default function MovieDetailPage() {
                 {/* Details card */}
                 <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 space-y-4">
                   <div>
+<<<<<<< HEAD
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Director</p>
                     <p className="text-gray-900 font-semibold">{movie.Director}</p>
+=======
+                    <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">DIRECTOR</h3>
+                    <p className="text-xl md:text-2xl font-bold text-white">{movieDirector}</p>
+>>>>>>> 8b92dbb7e776e81780a8938fa72038bc4559b760
                   </div>
                   <div>
+<<<<<<< HEAD
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Reparto</p>
                     <p className="text-gray-700 text-sm leading-relaxed">{movie.Cast.join(', ')}</p>
+=======
+                    <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">REPARTO</h3>
+                    <p className="text-base md:text-xl text-gray-300 leading-relaxed">{castList}</p>
+>>>>>>> 8b92dbb7e776e81780a8938fa72038bc4559b760
                   </div>
                   <div>
+<<<<<<< HEAD
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Sinopsis</p>
                     <p className="text-gray-700 text-sm leading-relaxed">{movie.Description}</p>
+=======
+                    <h3 className="text-sm font-black text-yellow-400 mb-2 tracking-widest">SINOPSIS</h3>
+                    <p className="text-base md:text-lg text-gray-300 leading-relaxed">{movieDescription}</p>
+>>>>>>> 8b92dbb7e776e81780a8938fa72038bc4559b760
                   </div>
                 </div>
 

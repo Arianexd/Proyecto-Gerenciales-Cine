@@ -9,9 +9,14 @@ interface MovieCardProps {
 
 export default function MovieCard({ movie }: MovieCardProps) {
   const hasUserRating = Boolean(movie.UserRatingCount && movie.UserRatingCount > 0);
+  const posterSrc =
+    movie.PosterURL ||
+    `https://placehold.co/300x450/111827/f9fafb?text=${encodeURIComponent(movie.MovieName)}`;
   const ratingValue = hasUserRating
-    ? `${movie.UserRatingAverage?.toFixed(1)}/5`
-    : `${movie.Rating}/10`;
+    ? `${movie.UserRatingAverage?.toFixed(1) || '0.0'}/5`
+    : typeof movie.Rating === 'number' && movie.Rating > 0
+      ? `${movie.Rating.toFixed(1)}/10`
+      : 'Sin puntaje';
 
   return (
     <Link href={`/movies/${movie._id}`}>
@@ -20,7 +25,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
 
         <div className="relative h-96 bg-black overflow-hidden">
           <img
-            src={movie.PosterURL}
+            src={posterSrc}
             alt={movie.MovieName}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 group-hover:brightness-110"
             onError={(e) => {
@@ -70,12 +75,12 @@ export default function MovieCard({ movie }: MovieCardProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
             <span className="text-gray-400 font-medium">
-              {hasUserRating ? `${movie.UserRatingCount} valoraciones` : movie.Director}
+              {hasUserRating ? `${movie.UserRatingCount} valoraciones` : movie.Director || 'Direccion no registrada'}
             </span>
           </div>
 
           <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">
-            {movie.Description}
+            {movie.Description || 'Sin sinopsis disponible.'}
           </p>
         </div>
       </div>

@@ -29,4 +29,17 @@ const reservationSchema = new mongoose.Schema({
   timestamps: true
 });
 
+reservationSchema.pre('findOneAndDelete', async function(next) {
+  const reservation = await this.model.findOne(this.getQuery()).select('_id');
+
+  if (reservation) {
+    await Promise.all([
+      mongoose.model('Payment').deleteMany({ ReservationID: reservation._id }),
+      mongoose.model('Ticket').deleteMany({ ReservationID: reservation._id })
+    ]);
+  }
+
+  next();
+});
+
 module.exports = mongoose.model('Reservation', reservationSchema);

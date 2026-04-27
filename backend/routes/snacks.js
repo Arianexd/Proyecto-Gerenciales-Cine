@@ -86,7 +86,7 @@ router.post('/products', requireAdmin, async (req, res) => {
   }
 });
 
-router.put('/products/:id', requireAdminOrCajero, async (req, res) => {
+router.put('/products/:id', requireAdmin, async (req, res) => {
   try {
     const product = await SnackProduct.findByIdAndUpdate(
       req.params.id, req.body, { new: true, runValidators: true }
@@ -146,10 +146,10 @@ router.post('/sales', requireAdminOrCajero, async (req, res) => {
         ProductID: product._id,
         ProductName: product.Name,
         Quantity: item.Quantity,
-        UnitPrice: product.Price
+        UnitPrice: product.SalePrice
       });
 
-      total += product.Price * item.Quantity;
+      total += product.SalePrice * item.Quantity;
       product.Stock -= item.Quantity;
       await product.save();
     }

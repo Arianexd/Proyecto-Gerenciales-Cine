@@ -18,8 +18,8 @@ export default function AdminNavigation({ user }: { user: AuthUser | null }) {
     { name: 'Funciones', path: '/admin/sessions', icon: '🎭', roles: ['ADMIN'] },
     { name: 'Reservas', path: '/admin/reservations', icon: '📋', roles: ['ADMIN', 'CAJERO'] },
     { name: 'Pagos', path: '/admin/payments', icon: '💳', roles: ['ADMIN', 'CAJERO'] },
-    { name: 'Snacks', path: '/admin/snacks', icon: '🍿', roles: ['ADMIN', 'CAJERO'] },
-    { name: 'Vender Snacks', path: '/admin/snacks/sell', icon: '🛒', roles: ['ADMIN'] },
+    { name: 'Snacks', path: '/admin/snacks', icon: '🍿', roles: ['ADMIN'] },
+    { name: 'Vender Snacks', path: '/admin/snacks/sell', icon: '🛒', roles: ['ADMIN', 'CAJERO'] },
   ];
 
   const filteredItems = navItems.filter(item => item.roles.includes(user.Role));

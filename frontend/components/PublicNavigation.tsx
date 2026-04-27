@@ -26,7 +26,7 @@ export default function PublicNavigation() {
     toast.success('Sesión cerrada correctamente');
   };
 
-  const isAdmin = session?.user.Role === 'ADMIN';
+  const isStaff = session?.user.Role === 'ADMIN' || session?.user.Role === 'CAJERO';
   const isCustomer = session?.user.Role === 'CUSTOMER';
 
   return (
@@ -47,9 +47,11 @@ export default function PublicNavigation() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
-            {isAdmin ? (
+            {isStaff ? (
               <>
-                <span className="text-sm text-gray-400 font-medium">Administrador</span>
+                <span className="text-sm text-gray-400 font-medium">
+                  {session?.user.Role === 'ADMIN' ? 'Administrador' : 'Cajero'}
+                </span>
                 <Link
                   href="/admin"
                   className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors"
@@ -115,10 +117,10 @@ export default function PublicNavigation() {
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-3 border-t border-gray-100 space-y-2">
-            {isAdmin ? (
+            {isStaff ? (
               <>
                 <Link href="/admin" className="block px-4 py-2.5 rounded-lg bg-red-600 text-white text-sm font-semibold text-center">
-                  Panel Admin
+                  Panel {session?.user.Role === 'ADMIN' ? 'Admin' : 'Cajero'}
                 </Link>
                 <button onClick={handleLogout} className="w-full px-4 py-2.5 rounded-lg text-gray-600 text-sm font-medium border border-gray-200 text-center">
                   Cerrar sesión

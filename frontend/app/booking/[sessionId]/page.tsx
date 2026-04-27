@@ -89,6 +89,15 @@ export default function BookingPage() {
       setLoading(true);
       const sessionRes = await sessionsApi.getById(sessionId);
       const sessionData = sessionRes.data;
+      
+      const now = new Date();
+      const sessionDate = new Date(sessionData.SessionDateTime);
+      if (sessionDate < now) {
+        toast.error('Esta función ya ha pasado y no acepta más reservas.');
+        router.push('/movies');
+        return;
+      }
+      
       setSession(sessionData);
 
       const hallId = typeof sessionData.HallID === 'object' ? sessionData.HallID._id : sessionData.HallID;
@@ -194,7 +203,10 @@ export default function BookingPage() {
   const movieName = typeof session.MovieID === 'object' ? session.MovieID.MovieName : 'Película';
   const hallName = typeof session.HallID === 'object' ? session.HallID.HallName : 'Sala';
   const hallCapacity = typeof session.HallID === 'object' ? session.HallID.Capacity : 100;
-  const totalPrice = selectedSeats.length * session.Price;
+  const totalPrice = selectedSeats.reduce((sum, seatId) => {
+    const seat = seats.find(s => s._id === seatId);
+    return sum + (session?.Price || 0) + (seat?.PriceModifier || 0);
+  }, 0);
 
   return (
     <>
@@ -226,7 +238,7 @@ export default function BookingPage() {
               </div>
               <div className="bg-gray-800/50 rounded-lg px-4 py-3 border border-gray-700">
                 <span className="text-gray-400 text-sm block mb-1">PRECIO/ASIENTO</span>
-                <span className="text-green-400 font-black text-base md:text-lg">${session.Price}</span>
+                <span className="text-green-400 font-black text-base md:text-lg">Bs {session.Price}</span>
               </div>
             </div>
 
@@ -255,6 +267,7 @@ export default function BookingPage() {
                 onSeatClick={handleSeatClick}
                 onSeatHover={setHoveredSeat}
                 reservedSeats={reservedSeats}
+                showCategories={true}
               />
             </div>
 
@@ -275,6 +288,9 @@ export default function BookingPage() {
                       seatRow={hoveredSeat.RowNumber}
                       seatNumber={hoveredSeat.SeatNumber}
                       totalSeatsInRow={seats.filter((seat) => seat.RowNumber === hoveredSeat.RowNumber).length}
+                      category={hoveredSeat.Category}
+                      priceModifier={hoveredSeat.PriceModifier}
+                      sessionPrice={session.Price}
                     />
                   </div>
                 ) : (
@@ -293,11 +309,11 @@ export default function BookingPage() {
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-gray-800">
                     <span className="text-gray-400 font-semibold">Precio por Asiento</span>
-                    <span className="text-white font-black text-lg">${session.Price}</span>
+                    <span className="text-white font-black text-lg">Bs {session.Price}</span>
                   </div>
                   <div className="flex justify-between items-center py-3 bg-gradient-to-r from-yellow-500/20 to-red-500/20 rounded-lg px-4 border-2 border-yellow-500/30">
                     <span className="text-yellow-400 font-black text-lg">TOTAL</span>
-                    <span className="text-yellow-400 font-black text-2xl md:text-3xl">${totalPrice.toFixed(2)}</span>
+                    <span className="text-yellow-400 font-black text-2xl md:text-3xl">Bs {totalPrice.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

@@ -12,10 +12,14 @@ export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
+  const [paymentSearch, setPaymentSearch] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [formData, setFormData] = useState({
     ReservationID: '',
@@ -27,6 +31,21 @@ export default function PaymentsPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (selectedPayment && selectedPayment.ReservationID && typeof selectedPayment.ReservationID === 'object') {
+      const r = selectedPayment.ReservationID;
+      const name = (r.CustomerID && typeof r.CustomerID === 'object') ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : 'Cliente';
+      setSearchTerm(name);
+    } else {
+      setSearchTerm('');
+    }
+    setShowSuggestions(false);
+  }, [selectedPayment]);
 
   const fetchData = async () => {
     try {
@@ -73,7 +92,9 @@ export default function PaymentsPage() {
         Amount: '',
         PaymentStatus: 'Pending',
       });
+      setSearchTerm('');
     }
+    setShowSuggestions(false);
     setIsModalOpen(true);
   };
 
@@ -204,12 +225,36 @@ export default function PaymentsPage() {
   };
 
   const getCustomerName = (payment: Payment) => {
-    if (typeof payment.ReservationID === 'object' && typeof payment.ReservationID.CustomerID === 'object') {
+    if (typeof payment.ReservationID === 'object' && payment.ReservationID?.CustomerID && typeof payment.ReservationID.CustomerID === 'object') {
       const customer = payment.ReservationID.CustomerID;
       return `${customer.Name} ${customer.Surname}`;
     }
     return 'Desconocido';
   };
+
+  const getCustomerCI = (payment: Payment) => {
+    if (
+      typeof payment.ReservationID === 'object' &&
+      payment.ReservationID?.CustomerID &&
+      typeof payment.ReservationID.CustomerID === 'object'
+    ) {
+      return payment.ReservationID.CustomerID.CI || '';
+    }
+    return '';
+  };
+
+  const normalizedPaymentSearch = paymentSearch.trim().toLowerCase();
+  const filteredPayments = normalizedPaymentSearch
+    ? payments.filter((payment) => {
+        const name = getCustomerName(payment).toLowerCase();
+        const ci = getCustomerCI(payment).toLowerCase();
+        return name.includes(normalizedPaymentSearch) || ci.includes(normalizedPaymentSearch);
+      })
+    : payments;
+
+  if (!mounted) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -219,8 +264,17 @@ export default function PaymentsPage() {
           onClick={() => handleOpenModal()}
           className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
-          + Procesar Pago
+          + Gestionar Pago
         </button>
+      </div>
+
+      <div className="mb-4">
+        <input
+          value={paymentSearch}
+          onChange={(e) => setPaymentSearch(e.target.value)}
+          placeholder="Buscar por Nombre o CI..."
+          className="w-full md:w-[420px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+        />
       </div>
 
       {/* Info Box */}
@@ -244,11 +298,15 @@ export default function PaymentsPage() {
         <LoadingSpinner />
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+          <div className="overflow-x-auto">
+            <table className="min-w-[900px] w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Cliente
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  CI
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Método
@@ -268,23 +326,26 @@ export default function PaymentsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {payments.length === 0 ? (
+              {filteredPayments.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    No se encontraron pagos. ¡Procesa tu primer pago!
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                    No se encontraron pagos.
                   </td>
                 </tr>
               ) : (
-                payments.map((payment) => (
+                filteredPayments.map((payment) => (
                   <tr key={payment._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {getCustomerName(payment)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {getCustomerCI(payment) || '—'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {getPaymentMethodLabel(payment.PaymentMethod)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-emerald-600">
-                      ${payment.Amount.toFixed(2)}
+                      Bs {payment.Amount.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {getStatusBadge(payment.PaymentStatus)}
@@ -311,6 +372,7 @@ export default function PaymentsPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
@@ -320,59 +382,82 @@ export default function PaymentsPage() {
         onClose={() => {
           setIsModalOpen(false);
           setSelectedPayment(null);
+          setShowSuggestions(false);
         }} 
-        title={selectedPayment ? 'Editar Pago' : 'Procesar Pago'}
+        title={selectedPayment ? 'Editar Pago' : 'Gestionar Pago'}
       >
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Reserva
+                Buscar Reserva (Cliente o Pelicula)
               </label>
-              <select
-                required
-                value={formData.ReservationID}
-                onChange={(e) => {
-                  const reservationId = e.target.value;
-                  setFormData({ ...formData, ReservationID: reservationId });
-                  
-                  // Auto-calculate price when reservation is selected
-                  if (reservationId && !selectedPayment) {
-                    const totalPrice = calculateTotalPrice(reservationId);
-                    setFormData(prev => ({ ...prev, Amount: totalPrice.toString() }));
-                  }
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                disabled={!!selectedPayment}
-              >
-                <option value="">Selecciona una reserva</option>
-                {reservations
-                  .filter((r) => r.Status === 'CREATED' || r.Status === 'PAID')
-                  .map((reservation) => {
-                    const storedSeats = localStorage.getItem(`reservation_${reservation._id}_seats`);
-                    const seatCount = storedSeats ? JSON.parse(storedSeats).length : reservation.SeatIDs?.length || 1;
-                    const sessionPrice = typeof reservation.SessionID === 'object' ? reservation.SessionID.Price : 0;
 
-                    return (
-                      <option key={reservation._id} value={reservation._id}>
-                        {typeof reservation.CustomerID === 'object'
-                          ? `${reservation.CustomerID.Name} ${reservation.CustomerID.Surname}`
-                          : 'Cliente'}{' '}
-                        - {typeof reservation.SessionID === 'object' && typeof reservation.SessionID.MovieID === 'object'
-                          ? reservation.SessionID.MovieID.MovieName
-                          : 'Película'}{' '}
-                        ({seatCount} {seatCount === 1 ? 'asiento' : 'asientos'} × ${sessionPrice})
-                        {reservation.Status === 'PAID' ? ' ✓' : ''}
-                      </option>
-                    );
-                  })}
-                {reservations.filter((r) => r.Status === 'CREATED' || r.Status === 'PAID').length === 0 && (
-                  <option disabled>No hay reservas disponibles - Crea una reserva primero</option>
-                )}
-              </select>
+              <input
+                type="text"
+                placeholder="Escribe para buscar..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none"
+                disabled={!!selectedPayment}
+              />
+
+              {showSuggestions && !selectedPayment && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {reservations
+                    .filter((r) => r.Status === 'CREATED' || r.Status === 'PAID')
+                    .filter((r) => {
+                      const name = (r.CustomerID && typeof r.CustomerID === 'object') ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : '';
+                      const ci = (r.CustomerID && typeof r.CustomerID === 'object') ? (r.CustomerID.CI || '') : '';
+                      const movie = typeof r.SessionID === 'object' && typeof r.SessionID.MovieID === 'object' ? r.SessionID.MovieID.MovieName : '';
+                      return (name + ci + movie).toLowerCase().includes(searchTerm.toLowerCase());
+                    })
+                    .map((reservation) => {
+                      const clientName = (reservation.CustomerID && typeof reservation.CustomerID === 'object') ? `${reservation.CustomerID.Name} ${reservation.CustomerID.Surname}` : 'Cliente';
+                      const clientCI = (reservation.CustomerID && typeof reservation.CustomerID === 'object') ? (reservation.CustomerID.CI || '') : '';
+                      const movieName = typeof reservation.SessionID === 'object' && typeof reservation.SessionID.MovieID === 'object' ? reservation.SessionID.MovieID.MovieName : 'Pelicula';
+
+                      return (
+                        <div
+                          key={reservation._id}
+                          className="px-4 py-2 hover:bg-emerald-50 cursor-pointer border-b last:border-none text-sm"
+                          onClick={() => {
+                            setFormData({ ...formData, ReservationID: reservation._id });
+                            setSearchTerm(`${clientName}${clientCI ? ` (${clientCI})` : ''} - ${movieName}`);
+                            setShowSuggestions(false);
+
+                            const totalPrice = calculateTotalPrice(reservation._id);
+                            setFormData((prev) => ({ ...prev, Amount: totalPrice.toString() }));
+                          }}
+                        >
+                          <div className="font-semibold">
+                            {clientName} {clientCI ? <span className="text-xs text-gray-500">({clientCI})</span> : null}
+                          </div>
+                          <div className="text-gray-500 text-xs">{movieName}</div>
+                        </div>
+                      );
+                    })}
+                  {searchTerm &&
+                    reservations
+                      .filter((r) => r.Status === 'CREATED' || r.Status === 'PAID')
+                      .filter((r) => {
+                        const name = typeof r.CustomerID === 'object' ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : '';
+                        const ci = typeof r.CustomerID === 'object' ? (r.CustomerID.CI || '') : '';
+                        const movie = typeof r.SessionID === 'object' && typeof r.SessionID.MovieID === 'object' ? r.SessionID.MovieID.MovieName : '';
+                        return (name + ci + movie).toLowerCase().includes(searchTerm.toLowerCase());
+                      }).length === 0 && (
+                      <div className="px-4 py-2 text-gray-500 text-sm">No se encontraron reservas</div>
+                    )}
+                </div>
+              )}
+
               {formData.ReservationID && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Calculado automáticamente según el precio de la función y la cantidad de asientos. Puedes modificar este monto.
+                <p className="text-xs text-emerald-600 mt-1 font-medium">
+                  ✓ Reserva seleccionada correctamente.
                 </p>
               )}
             </div>
@@ -395,7 +480,7 @@ export default function PaymentsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Monto ($)
+                Monto (Bs)
               </label>
               <input
                 type="number"

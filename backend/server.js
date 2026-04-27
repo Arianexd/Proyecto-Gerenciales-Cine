@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+const { MONGODB_URI } = process.env;
 
 // Middleware
 app.use(cors());
@@ -11,7 +12,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
+if (!MONGODB_URI) {
+  console.error('Missing MONGODB_URI. Create backend/.env based on backend/env.example before starting the server.');
+  process.exit(1);
+}
+
+mongoose.connect(MONGODB_URI)
   .then(() => console.log('MongoDB connected successfully'))
   .catch((err) => console.error('MongoDB connection error:', err));
 

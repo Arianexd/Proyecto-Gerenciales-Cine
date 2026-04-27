@@ -21,7 +21,8 @@ function getUserPayload(user) {
         Name: user.CustomerID.Name,
         Surname: user.CustomerID.Surname,
         Email: user.CustomerID.Email,
-        PhoneNumber: user.CustomerID.PhoneNumber
+        PhoneNumber: user.CustomerID.PhoneNumber,
+        CI: user.CustomerID.CI
       }
     : null;
 

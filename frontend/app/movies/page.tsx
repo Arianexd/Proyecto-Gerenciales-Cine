@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { moviesApi } from '@/lib/api';
+import { moviesApi, sessionsApi } from '@/lib/api';
 import { Movie } from '@/lib/types';
 import PublicNavigation from '@/components/PublicNavigation';
 import Link from 'next/link';
@@ -18,8 +18,19 @@ export default function MoviesPage() {
   const fetchMovies = async () => {
     try {
       setLoading(true);
-      const response = await moviesApi.getAll();
-      setMovies(response.data);
+      const [moviesRes, sessionsRes] = await Promise.all([
+        moviesApi.getAll(),
+        sessionsApi.getAll()
+      ]);
+      
+      const now = new Date();
+      const activeSessions = sessionsRes.data.filter((s: any) => new Date(s.SessionDateTime) > now);
+      const activeMovieIds = new Set(activeSessions.map((s: any) => 
+        typeof s.MovieID === 'object' ? s.MovieID._id : s.MovieID
+      ));
+
+      const activeMovies = moviesRes.data.filter((m: Movie) => activeMovieIds.has(m._id));
+      setMovies(activeMovies);
     } catch (error) {
       console.error('Failed to fetch movies:', error);
     } finally {
@@ -140,9 +151,14 @@ export default function MoviesPage() {
 
 function MovieCard({ movie }: { movie: Movie }) {
   const hasUserRating = Boolean(movie.UserRatingCount && movie.UserRatingCount > 0);
+  const posterSrc =
+    movie.PosterURL ||
+    `https://placehold.co/300x450/111827/f9fafb?text=${encodeURIComponent(movie.MovieName)}`;
   const ratingValue = hasUserRating
-    ? movie.UserRatingAverage?.toFixed(1)
-    : (movie.Rating / 2).toFixed(1);
+    ? movie.UserRatingAverage?.toFixed(1) || '0.0'
+    : typeof movie.Rating === 'number' && movie.Rating > 0
+      ? (movie.Rating / 2).toFixed(1)
+      : 'Nuevo';
 
   return (
     <Link href={`/movies/${movie._id}`} className="group block">
@@ -150,7 +166,7 @@ function MovieCard({ movie }: { movie: Movie }) {
         {/* Poster */}
         <div className="relative aspect-[2/3] overflow-hidden bg-gray-100">
           <img
-            src={movie.PosterURL}
+            src={posterSrc}
             alt={movie.MovieName}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={(e) => {
