@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { snackCategoriesApi, snackProductsApi, snackSalesApi } from '@/lib/api';
 import toast from 'react-hot-toast';
+import RoleProtectedRoute from '@/components/RoleProtectedRoute';
 
 type Category = { _id: string; Name: string; IsActive: boolean };
 type Product = { _id: string; Name: string; Description: string; Category: Category; UnitCost: number; SalePrice: number; Stock: number; IsActive: boolean };
@@ -95,7 +96,8 @@ export default function SnackSellPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-130px)] flex flex-col">
+    <RoleProtectedRoute allowedRoles={['CAJERO']} redirectTo="/admin">
+      <div className="h-[calc(100vh-130px)] flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -284,5 +286,6 @@ export default function SnackSellPage() {
         </div>
       )}
     </div>
+    </RoleProtectedRoute>
   );
 }

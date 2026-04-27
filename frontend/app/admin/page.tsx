@@ -133,7 +133,6 @@ function AdminFullDashboard({ stats, loading }: { stats: any; loading: boolean }
           { color: 'purple', icon: '📋', title: 'Reservas', desc: 'Crea reservas con selección de asientos y entradas QR.', href: '/admin/reservations', label: 'Gestionar Reservas' },
           { color: 'emerald', icon: '💳', title: 'Pagos', desc: 'Procesa y rastrea pagos de reservas.', href: '/admin/payments', label: 'Gestionar Pagos' },
           { color: 'yellow', icon: '🍿', title: 'Gestión de Snacks', desc: 'Administra productos, categorías e inventario de snacks.', href: '/admin/snacks', label: 'Gestionar Snacks' },
-          { color: 'amber', icon: '🛒', title: 'Venta de Snacks', desc: 'Punto de venta rápido para snacks y bebidas.', href: '/admin/snacks/sell', label: 'Abrir Caja' },
         ].map(card => (
           <div key={card.href} className={`bg-gradient-to-br from-${card.color}-50 to-${card.color}-100 rounded-xl p-6 shadow-md`}>
             <h3 className={`text-lg font-bold text-${card.color}-900 mb-2`}>{card.icon} {card.title}</h3>

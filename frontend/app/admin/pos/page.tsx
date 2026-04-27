@@ -7,6 +7,7 @@ import Modal from '@/components/Modal';
 import SeatGrid from '@/components/SeatGrid';
 import SeatPreview from '@/components/SeatPreview';
 import toast from 'react-hot-toast';
+import RoleProtectedRoute from '@/components/RoleProtectedRoute';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -352,7 +353,8 @@ export default function PosPage() {
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-[calc(100vh-130px)] flex overflow-hidden">
+    <RoleProtectedRoute allowedRoles={['CAJERO']} redirectTo="/admin">
+      <div className="h-[calc(100vh-130px)] flex overflow-hidden">
 
       {/* ── Left area ───────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto bg-gray-50">
@@ -903,6 +905,7 @@ export default function PosPage() {
         }}
       />
     </div>
+    </RoleProtectedRoute>
   );
 }
 

@@ -11,9 +11,16 @@ import SeatPreview from '@/components/SeatPreview';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import RoleProtectedRoute from '@/components/RoleProtectedRoute';
+import { getStoredSession } from '@/lib/auth';
 
 export default function ReservationsPage() {
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  
+  useEffect(() => {
+    setCurrentUser(getStoredSession()?.user || null);
+  }, []);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [sessions, setSessions] = useState<MovieSession[]>([]);
@@ -326,12 +333,14 @@ export default function ReservationsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Reservas</h1>
-        <button
-          onClick={() => handleOpenModal()}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-        >
-          + Agregar Reserva
-        </button>
+        {currentUser?.Role === 'CAJERO' && (
+          <button
+            onClick={() => handleOpenModal()}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            + Agregar Reserva
+          </button>
+        )}
       </div>
 
       {loading ? (
