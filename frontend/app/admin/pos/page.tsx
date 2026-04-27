@@ -7,6 +7,7 @@ import Modal from '@/components/Modal';
 import SeatGrid from '@/components/SeatGrid';
 import SeatPreview from '@/components/SeatPreview';
 import toast from 'react-hot-toast';
+import RoleProtectedRoute from '@/components/RoleProtectedRoute';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -47,6 +48,18 @@ type SaleResult = {
   } | null;
 };
 
+const parseSessionDateTime = (value: string): number | null => {
+  const direct = Date.parse(value);
+  if (!Number.isNaN(direct)) return direct;
+
+  // Fallback for values like "YYYY-MM-DD HH:mm:ss"
+  const normalized = value.replace(' ', 'T');
+  const normalizedMs = Date.parse(normalized);
+  if (!Number.isNaN(normalizedMs)) return normalizedMs;
+
+  return null;
+};
+
 const PAYMENT_METHODS = [
   { value: 'Cash', label: '💵 Efectivo', snackValue: 'Cash' },
   { value: 'Credit Card', label: '💳 Tarjeta', snackValue: 'Card' },
@@ -57,6 +70,7 @@ const PAYMENT_METHODS = [
 
 export default function PosPage() {
   const [step, setStep] = useState<'sessions' | 'pos'>('sessions');
+  const [saleMode, setSaleMode] = useState<'ticketsAndSnacks' | 'snacksOnly'>('ticketsAndSnacks');
 
   // Session / seat state
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -110,10 +124,15 @@ export default function PosPage() {
     setLoadingSessions(true);
     try {
       const res = await sessionsApi.getAll();
-      const now = new Date();
-      const upcoming = (res.data as Session[]).filter(
-        s => new Date(s.SessionDateTime) > now
-      );
+      const nowMs = Date.now();
+      const upcoming = (res.data as Session[])
+        .map(session => ({
+          session,
+          timestamp: parseSessionDateTime(session.SessionDateTime),
+        }))
+        .filter(item => item.timestamp !== null && item.timestamp > nowMs)
+        .sort((a, b) => (a.timestamp as number) - (b.timestamp as number))
+        .map(item => item.session);
       setSessions(upcoming);
     } catch {
       toast.error('Error al cargar funciones');
@@ -174,10 +193,19 @@ export default function PosPage() {
 
   const handleChangeSession = () => {
     setStep('sessions');
+    setSaleMode('ticketsAndSnacks');
     setSelectedSession(null);
     setSelectedSeatIds([]);
     setCart([]);
     loadSessions();
+  };
+
+  const handleStartSnackOnly = async () => {
+    setSaleMode('snacksOnly');
+    setSelectedSession(null);
+    setSelectedSeatIds([]);
+    setStep('pos');
+    await loadSnacks();
   };
 
   const handleOpenSeatModal = async () => {
@@ -227,26 +255,41 @@ export default function PosPage() {
 
   // ── Totals ─────────────────────────────────────────────────────────────
 
-  const ticketSubtotal = selectedSeatIds.length * (selectedSession?.Price || 0);
+  const ticketSubtotal = saleMode === 'ticketsAndSnacks' 
+    ? selectedSeatIds.reduce((sum, id) => {
+        const seat = seats.find(s => s._id === id);
+        return sum + (selectedSession?.Price || 0) + (seat?.PriceModifier || 0);
+      }, 0)
+    : 0;
   const snackSubtotal = cart.reduce((sum, i) => sum + i.product.Price * i.quantity, 0);
   const grandTotal = ticketSubtotal + snackSubtotal;
+  const formatBs = (amount: number) => `Bs ${amount.toFixed(2)}`;
 
   // ── Checkout ───────────────────────────────────────────────────────────
 
   const handleCheckout = async () => {
-    if (!selectedSession || selectedSeatIds.length === 0) {
+    const requiresTickets = saleMode === 'ticketsAndSnacks';
+    if (requiresTickets && (!selectedSession || selectedSeatIds.length === 0)) {
       toast.error('Selecciona una función y asientos para continuar');
+      return;
+    }
+    if (!requiresTickets && cart.length === 0) {
+      toast.error('Agrega al menos un snack para continuar');
       return;
     }
     setProcessing(true);
     const pm = PAYMENT_METHODS.find(m => m.value === paymentMethod);
     try {
-      const ticketRes = await posApi.sellTickets({
-        SessionID: selectedSession._id,
-        SeatIDs: selectedSeatIds,
-        PaymentMethod: paymentMethod,
-        CustomerID: selectedCustomer?._id,
-      });
+      let ticketSummary: SaleResult['tickets'] = null;
+      if (requiresTickets && selectedSession) {
+        const ticketRes = await posApi.sellTickets({
+          SessionID: selectedSession._id,
+          SeatIDs: selectedSeatIds,
+          PaymentMethod: paymentMethod,
+          CustomerID: selectedCustomer?._id,
+        });
+        ticketSummary = ticketRes.data.summary;
+      }
 
       let snackResult = null;
       if (cart.length > 0) {
@@ -263,7 +306,7 @@ export default function PosPage() {
       }
 
       setSaleResult({
-        tickets: ticketRes.data.summary,
+        tickets: ticketSummary,
         snacks: snackResult,
       });
       toast.success('¡Venta completada!');
@@ -310,14 +353,24 @@ export default function PosPage() {
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-[calc(100vh-130px)] flex overflow-hidden">
+    <RoleProtectedRoute allowedRoles={['CAJERO']} redirectTo="/admin">
+      <div className="h-[calc(100vh-130px)] flex overflow-hidden">
 
       {/* ── Left area ───────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto bg-gray-50">
         {step === 'sessions' ? (
           // Session selection
           <div className="p-6">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">Selecciona una función</h2>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-lg font-bold text-gray-800">Selecciona una función</h2>
+              <button
+                onClick={handleStartSnackOnly}
+                className="inline-flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm font-semibold text-orange-700 transition-colors hover:bg-orange-100"
+              >
+                <span>🍿</span>
+                Comprar snacks
+              </button>
+            </div>
             {loadingSessions ? (
               <div className="text-center py-20 text-gray-400">Cargando funciones...</div>
             ) : sessions.length === 0 ? (
@@ -337,7 +390,7 @@ export default function PosPage() {
                         <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
                           {isToday ? 'HOY' : dt.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}
                         </span>
-                        <span className="text-lg font-bold text-green-600">Bs {session.Price.toFixed(2)}</span>
+                        <span className="text-lg font-bold text-green-600">{formatBs(session.Price)}</span>
                       </div>
                       <h3 className="font-bold text-gray-900 text-lg leading-tight mb-1">
                         {session.MovieID.MovieName}
@@ -365,27 +418,41 @@ export default function PosPage() {
           <div className="flex flex-col h-full overflow-hidden">
             {/* Session summary bar */}
             <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center gap-3 shrink-0">
-              <span className="text-sm font-bold text-gray-900">🎬 {selectedSession?.MovieID.MovieName}</span>
-              <span className="text-gray-400">·</span>
-              <span className="text-sm text-gray-600">{selectedSession?.HallID.HallName}</span>
-              <span className="text-gray-400">·</span>
-              <span className="text-sm text-gray-600">
-                {selectedSession && new Date(selectedSession.SessionDateTime).toLocaleString('es-MX', {
-                  weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-                })}
-              </span>
-              <button
-                onClick={handleOpenSeatModal}
-                className="ml-auto text-xs text-purple-600 hover:text-purple-800 font-medium border border-purple-200 px-2 py-1 rounded-lg hover:bg-purple-50 transition-colors"
-              >
-                Cambiar asientos ({selectedSeatIds.length})
-              </button>
-              <button
-                onClick={handleChangeSession}
-                className="text-xs text-gray-500 hover:text-gray-700 font-medium border border-gray-200 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cambiar función
-              </button>
+              {saleMode === 'snacksOnly' ? (
+                <>
+                  <span className="text-sm font-bold text-gray-900">🍿 Venta directa de snacks</span>
+                  <button
+                    onClick={handleChangeSession}
+                    className="ml-auto text-xs text-gray-500 hover:text-gray-700 font-medium border border-gray-200 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Ir a venta con boletos
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm font-bold text-gray-900">🎬 {selectedSession?.MovieID.MovieName}</span>
+                  <span className="text-gray-400">·</span>
+                  <span className="text-sm text-gray-600">{selectedSession?.HallID.HallName}</span>
+                  <span className="text-gray-400">·</span>
+                  <span className="text-sm text-gray-600">
+                    {selectedSession && new Date(selectedSession.SessionDateTime).toLocaleString('es-MX', {
+                      weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                    })}
+                  </span>
+                  <button
+                    onClick={handleOpenSeatModal}
+                    className="ml-auto text-xs text-purple-600 hover:text-purple-800 font-medium border border-purple-200 px-2 py-1 rounded-lg hover:bg-purple-50 transition-colors"
+                  >
+                    Cambiar asientos ({selectedSeatIds.length})
+                  </button>
+                  <button
+                    onClick={handleChangeSession}
+                    className="text-xs text-gray-500 hover:text-gray-700 font-medium border border-gray-200 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cambiar función
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Category filter */}
@@ -431,7 +498,7 @@ export default function PosPage() {
                         )}
                         <div className="text-3xl mb-2 text-center">{categoryEmoji(p.Category?.Name)}</div>
                         <div className="text-sm font-semibold text-gray-900 leading-tight mb-1">{p.Name}</div>
-                        <div className="text-base font-bold text-green-600">Bs {p.Price.toFixed(2)}</div>
+                        <div className="text-base font-bold text-green-600">{formatBs(p.Price)}</div>
                         <div className={`text-xs mt-1 ${p.Stock <= 5 ? 'text-orange-500' : 'text-gray-400'}`}>
                           {outOfStock ? 'Sin stock' : `Stock: ${p.Stock}`}
                         </div>
@@ -455,7 +522,7 @@ export default function PosPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {!selectedSession ? (
+          {!selectedSession && saleMode !== 'snacksOnly' ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400 py-12 text-center px-4">
               <span className="text-5xl mb-3">🎬</span>
               <p className="text-sm">Selecciona una función para comenzar</p>
@@ -463,6 +530,7 @@ export default function PosPage() {
           ) : (
             <div className="divide-y divide-gray-100">
               {/* ── Tickets section ── */}
+              {saleMode === 'ticketsAndSnacks' && selectedSession && (
               <div className="p-5 space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">🎟 Boletos</p>
@@ -486,7 +554,7 @@ export default function PosPage() {
                     })}
                   </p>
                   <p className="text-orange-800 text-xs font-semibold mt-1">
-                    Bs {selectedSession.Price.toFixed(2)} / asiento
+                    {formatBs(selectedSession.Price)} / asiento
                   </p>
                 </div>
 
@@ -507,12 +575,13 @@ export default function PosPage() {
                         ))}
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">{selectedSeatIds.length} boleto{selectedSeatIds.length !== 1 ? 's' : ''} × Bs {selectedSession.Price.toFixed(2)}</span>
-                      <span className="font-bold text-gray-900">Bs {ticketSubtotal.toFixed(2)}</span>
+                      <span className="text-gray-500">{selectedSeatIds.length} boleto{selectedSeatIds.length !== 1 ? 's' : ''} × {formatBs(selectedSession.Price)}</span>
+                      <span className="font-bold text-gray-900">{formatBs(ticketSubtotal)}</span>
                     </div>
                   </>
                 )}
               </div>
+              )}
 
               {/* ── Snacks section (only when in pos step) ── */}
               {step === 'pos' && (
@@ -533,7 +602,7 @@ export default function PosPage() {
                           <div key={item.product._id} className="flex items-center gap-2">
                             <div className="flex-1 min-w-0">
                               <div className="text-sm font-medium text-gray-900 truncate">{item.product.Name}</div>
-                              <div className="text-xs text-gray-400">Bs {item.product.Price.toFixed(2)} c/u</div>
+                              <div className="text-xs text-gray-400">{formatBs(item.product.Price)} c/u</div>
                             </div>
                             <div className="flex items-center gap-1">
                               <button onClick={() => updateQty(item.product._id, item.quantity - 1)} className="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-xs font-bold">−</button>
@@ -541,7 +610,7 @@ export default function PosPage() {
                               <button onClick={() => updateQty(item.product._id, item.quantity + 1)} className="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-xs font-bold">+</button>
                             </div>
                             <div className="text-sm font-bold text-gray-900 w-12 text-right">
-                              Bs {(item.product.Price * item.quantity).toFixed(2)}
+                              {formatBs(item.product.Price * item.quantity)}
                             </div>
                             <button onClick={() => setCart(prev => prev.filter(i => i.product._id !== item.product._id))} className="text-gray-300 hover:text-red-500">✕</button>
                           </div>
@@ -549,7 +618,7 @@ export default function PosPage() {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">{cart.reduce((s, i) => s + i.quantity, 0)} producto{cart.reduce((s, i) => s + i.quantity, 0) !== 1 ? 's' : ''}</span>
-                        <span className="font-bold text-gray-900">Bs {snackSubtotal.toFixed(2)}</span>
+                        <span className="font-bold text-gray-900">{formatBs(snackSubtotal)}</span>
                       </div>
                     </>
                   )}
@@ -658,30 +727,30 @@ export default function PosPage() {
 
           {/* Grand total breakdown */}
           <div className="space-y-1 pt-2 border-t border-gray-100">
-            {selectedSeatIds.length > 0 && (
+            {saleMode === 'ticketsAndSnacks' && selectedSeatIds.length > 0 && (
               <div className="flex justify-between text-xs text-gray-500">
                 <span>Boletos ({selectedSeatIds.length})</span>
-                <span>Bs {ticketSubtotal.toFixed(2)}</span>
+                <span>{formatBs(ticketSubtotal)}</span>
               </div>
             )}
             {cart.length > 0 && (
               <div className="flex justify-between text-xs text-gray-500">
                 <span>Snacks ({cart.reduce((s, i) => s + i.quantity, 0)})</span>
-                <span>Bs {snackSubtotal.toFixed(2)}</span>
+                <span>{formatBs(snackSubtotal)}</span>
               </div>
             )}
             <div className="flex items-center justify-between pt-1">
               <span className="text-sm font-bold text-gray-900">Total</span>
-              <span className="text-2xl font-bold text-gray-900">Bs {grandTotal.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-gray-900">{formatBs(grandTotal)}</span>
             </div>
           </div>
 
           <button
             onClick={handleCheckout}
-            disabled={!selectedSession || selectedSeatIds.length === 0 || processing}
+            disabled={(saleMode === 'ticketsAndSnacks' && (!selectedSession || selectedSeatIds.length === 0)) || (saleMode === 'snacksOnly' && cart.length === 0) || processing}
             className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-4 rounded-xl transition-colors text-lg"
           >
-            {processing ? 'Procesando...' : `Cobrar Bs ${grandTotal.toFixed(2)}`}
+            {processing ? 'Procesando...' : `Cobrar ${formatBs(grandTotal)}`}
           </button>
         </div>
       </div>
@@ -729,6 +798,7 @@ export default function PosPage() {
                     )}
                     onSeatHover={setHoveredSeat}
                     reservedSeats={soldSeatIds}
+                    showCategories={true}
                   />
                 </div>
               </div>
@@ -753,6 +823,9 @@ export default function PosPage() {
                         seatRow={hoveredSeat.RowNumber}
                         seatNumber={hoveredSeat.SeatNumber}
                         totalSeatsInRow={seats.filter(s => s.RowNumber === hoveredSeat.RowNumber).length}
+                        category={hoveredSeat.Category}
+                        priceModifier={hoveredSeat.PriceModifier}
+                        sessionPrice={selectedSession?.Price}
                       />
                     </>
                   ) : (
@@ -832,6 +905,7 @@ export default function PosPage() {
         }}
       />
     </div>
+    </RoleProtectedRoute>
   );
 }
 
@@ -840,8 +914,9 @@ export default function PosPage() {
 function SaleSuccess({ result, onNew }: { result: SaleResult; onNew: () => void }) {
   const { tickets, snacks } = result;
   const ticketTotal = tickets?.totalAmount ?? 0;
-  const snackTotal = snacks?.items?.reduce((s, i) => s + i.price * i.qty, 0) ?? 0;
+  const snackTotal = snacks?.items.reduce((s, i) => s + i.price * i.qty, 0) ?? 0;
   const grandTotal = ticketTotal + snackTotal;
+  const formatBs = (amount: number) => `Bs ${amount.toFixed(2)}`;
 
   return (
     <div className="flex items-center justify-center h-[calc(100vh-130px)] bg-gray-50 p-8 overflow-y-auto">
@@ -876,7 +951,7 @@ function SaleSuccess({ result, onNew }: { result: SaleResult; onNew: () => void 
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Subtotal boletos</span>
-                  <span className="font-bold text-gray-900">Bs {ticketTotal.toFixed(2)}</span>
+                  <span className="font-bold text-gray-900">{formatBs(ticketTotal)}</span>
                 </div>
               </div>
 
@@ -900,12 +975,12 @@ function SaleSuccess({ result, onNew }: { result: SaleResult; onNew: () => void 
                 {snacks.items.map((item, i) => (
                   <div key={i} className="flex justify-between text-sm">
                     <span className="text-gray-600">{item.name} × {item.qty}</span>
-                    <span className="font-semibold text-gray-900">Bs {(item.price * item.qty).toFixed(2)}</span>
+                    <span className="font-semibold text-gray-900">{formatBs(item.price * item.qty)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Subtotal snacks</span>
-                  <span className="font-bold text-gray-900">Bs {snackTotal.toFixed(2)}</span>
+                  <span className="font-bold text-gray-900">{formatBs(snackTotal)}</span>
                 </div>
               </div>
             </div>
@@ -914,7 +989,7 @@ function SaleSuccess({ result, onNew }: { result: SaleResult; onNew: () => void 
           {/* Grand total */}
           <div className="flex justify-between text-sm pt-3 border-t border-gray-200">
             <span className="font-bold text-gray-900 text-base">Total cobrado</span>
-            <span className="font-bold text-green-600 text-xl">Bs {grandTotal.toFixed(2)}</span>
+            <span className="font-bold text-green-600 text-xl">{formatBs(grandTotal)}</span>
           </div>
         </div>
 

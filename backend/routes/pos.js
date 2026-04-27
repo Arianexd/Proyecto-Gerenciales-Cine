@@ -58,7 +58,7 @@ router.post('/sell-tickets', requireAuth, requireAdminOrCajero, async (req, res)
 
     const reservation = await Reservation.create(reservationData);
 
-    const amount = seats.length * session.Price;
+    const amount = seats.reduce((total, seat) => total + session.Price + (seat.PriceModifier || 0), 0);
     const payment = await Payment.create({
       ReservationID: reservation._id,
       PaymentMethod,

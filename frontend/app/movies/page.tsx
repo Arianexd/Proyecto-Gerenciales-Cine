@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { moviesApi } from '@/lib/api';
+import { moviesApi, sessionsApi } from '@/lib/api';
 import { Movie } from '@/lib/types';
 import PublicNavigation from '@/components/PublicNavigation';
 import Link from 'next/link';
@@ -18,8 +18,19 @@ export default function MoviesPage() {
   const fetchMovies = async () => {
     try {
       setLoading(true);
-      const response = await moviesApi.getAll();
-      setMovies(response.data);
+      const [moviesRes, sessionsRes] = await Promise.all([
+        moviesApi.getAll(),
+        sessionsApi.getAll()
+      ]);
+      
+      const now = new Date();
+      const activeSessions = sessionsRes.data.filter((s: any) => new Date(s.SessionDateTime) > now);
+      const activeMovieIds = new Set(activeSessions.map((s: any) => 
+        typeof s.MovieID === 'object' ? s.MovieID._id : s.MovieID
+      ));
+
+      const activeMovies = moviesRes.data.filter((m: Movie) => activeMovieIds.has(m._id));
+      setMovies(activeMovies);
     } catch (error) {
       console.error('Failed to fetch movies:', error);
     } finally {

@@ -2,23 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { snackCategoriesApi, snackProductsApi, snackSalesApi } from '@/lib/api';
-import { getStoredSession } from '@/lib/auth';
+import { useAuthSession } from '@/lib/auth';
+import RoleProtectedRoute from '@/components/RoleProtectedRoute';
 import toast from 'react-hot-toast';
 
 type Category = { _id: string; Name: string; Description: string; IsActive: boolean };
-type Product = { _id: string; Name: string; Description: string; Category: Category; Price: number; Stock: number; IsActive: boolean };
+type Product = { _id: string; Name: string; Description: string; Category: Category; UnitCost: number; SalePrice: number; Stock: number; IsActive: boolean };
 type Sale = { _id: string; Items: { ProductName: string; Quantity: number; UnitPrice: number }[]; TotalAmount: number; PaymentMethod: string; createdAt: string; SoldBy?: { Username: string } };
 
 type Tab = 'products' | 'categories' | 'sales';
 
 export default function SnacksPage() {
+  const session = useAuthSession();
   const [tab, setTab] = useState<Tab>('products');
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
-  const userRole = getStoredSession()?.user?.Role;
-  const isAdmin = userRole === 'ADMIN';
+  const isAdmin = session?.user.Role === 'ADMIN';
 
   useEffect(() => { loadAll(); }, []);
 
@@ -46,71 +47,70 @@ export default function SnacksPage() {
     { id: 'sales', label: 'Ventas', icon: '📊' },
   ];
 
-  const totalSalesAmount = sales.reduce((sum, s) => sum + s.TotalAmount, 0);
+  const totalSalesAmount = sales.reduce((sum, s) => sum + (s.TotalAmount || 0), 0);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestión de Snacks</h1>
-          <p className="text-gray-500 mt-1">Productos, categorías, inventario y ventas</p>
-        </div>
-        <a href="/admin/snacks/sell" className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-colors">
-          🛒 Ir a Caja
-        </a>
-      </div>
-
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-5 shadow-sm border-l-4 border-yellow-500">
-          <div className="text-2xl font-bold text-yellow-600">{products.filter(p => p.IsActive).length}</div>
-          <div className="text-sm text-gray-500">Productos activos</div>
-        </div>
-        <div className="bg-white rounded-xl p-5 shadow-sm border-l-4 border-red-500">
-          <div className="text-2xl font-bold text-red-600">{products.filter(p => p.Stock <= 5 && p.IsActive).length}</div>
-          <div className="text-sm text-gray-500">Stock bajo (≤5)</div>
-        </div>
-        <div className="bg-white rounded-xl p-5 shadow-sm border-l-4 border-green-500">
-          <div className="text-2xl font-bold text-green-600">{sales.length}</div>
-          <div className="text-sm text-gray-500">Ventas totales</div>
-        </div>
-        <div className="bg-white rounded-xl p-5 shadow-sm border-l-4 border-blue-500">
-          <div className="text-2xl font-bold text-blue-600">${totalSalesAmount.toFixed(2)}</div>
-          <div className="text-sm text-gray-500">Ingresos snacks</div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="bg-white rounded-xl shadow-sm">
-        <div className="border-b border-gray-200">
-          <div className="flex">
-            {tabs.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`flex items-center gap-2 px-6 py-4 text-sm font-semibold border-b-2 transition-colors ${
-                  tab === t.id ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {t.icon} {t.label}
-              </button>
-            ))}
+    <RoleProtectedRoute allowedRoles={['ADMIN']} redirectTo="/admin/login">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Gestión de Snacks</h1>
+            <p className="text-gray-500 mt-1">Productos, categorías, inventario y ventas</p>
           </div>
         </div>
 
-        <div className="p-6">
-          {loading ? (
-            <div className="text-center py-12 text-gray-400">Cargando...</div>
-          ) : tab === 'products' ? (
-            <ProductsTab products={products} categories={categories} isAdmin={isAdmin} onRefresh={loadAll} />
-          ) : tab === 'categories' ? (
-            <CategoriesTab categories={categories} isAdmin={isAdmin} onRefresh={loadAll} />
-          ) : (
-            <SalesTab sales={sales} />
-          )}
+        {/* Summary cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-xl p-5 shadow-sm border-l-4 border-yellow-500">
+            <div className="text-2xl font-bold text-yellow-600">{products.filter(p => p.IsActive).length}</div>
+            <div className="text-sm text-gray-500">Productos activos</div>
+          </div>
+          <div className="bg-white rounded-xl p-5 shadow-sm border-l-4 border-red-500">
+            <div className="text-2xl font-bold text-red-600">{products.filter(p => p.Stock <= 5 && p.IsActive).length}</div>
+            <div className="text-sm text-gray-500">Stock bajo (≤5)</div>
+          </div>
+          <div className="bg-white rounded-xl p-5 shadow-sm border-l-4 border-green-500">
+            <div className="text-2xl font-bold text-green-600">{sales.length}</div>
+            <div className="text-sm text-gray-500">Ventas totales</div>
+          </div>
+          <div className="bg-white rounded-xl p-5 shadow-sm border-l-4 border-blue-500">
+            <div className="text-2xl font-bold text-blue-600">Bs. {(totalSalesAmount || 0).toFixed(2)}</div>
+            <div className="text-sm text-gray-500">Ingresos snacks</div>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="bg-white rounded-xl shadow-sm">
+          <div className="border-b border-gray-200">
+            <div className="flex">
+              {tabs.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`flex items-center gap-2 px-6 py-4 text-sm font-semibold border-b-2 transition-colors ${
+                    tab === t.id ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t.icon} {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-6">
+            {loading ? (
+              <div className="text-center py-12 text-gray-400">Cargando...</div>
+            ) : tab === 'products' ? (
+              <ProductsTab products={products} categories={categories} isAdmin={isAdmin} onRefresh={loadAll} />
+            ) : tab === 'categories' ? (
+              <CategoriesTab categories={categories} isAdmin={isAdmin} onRefresh={loadAll} />
+            ) : (
+              <SalesTab sales={sales} />
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </RoleProtectedRoute>
   );
 }
 
@@ -121,17 +121,25 @@ function ProductsTab({ products, categories, isAdmin, onRefresh }: {
 }) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
-  const [form, setForm] = useState({ Name: '', Description: '', Category: '', Price: '', Stock: '', IsActive: true });
+  const [form, setForm] = useState({ Name: '', Description: '', Category: '', UnitCost: '', SalePrice: '', Stock: '', IsActive: true });
   const [saving, setSaving] = useState(false);
 
-  const openNew = () => { setEditing(null); setForm({ Name: '', Description: '', Category: '', Price: '', Stock: '', IsActive: true }); setShowForm(true); };
-  const openEdit = (p: Product) => { setEditing(p); setForm({ Name: p.Name, Description: p.Description, Category: p.Category._id, Price: String(p.Price), Stock: String(p.Stock), IsActive: p.IsActive }); setShowForm(true); };
+  const openNew = () => { setEditing(null); setForm({ Name: '', Description: '', Category: '', UnitCost: '', SalePrice: '', Stock: '', IsActive: true }); setShowForm(true); };
+  const openEdit = (p: Product) => { setEditing(p); setForm({ Name: p.Name, Description: p.Description, Category: p.Category._id, UnitCost: String(p.UnitCost), SalePrice: String(p.SalePrice), Stock: String(p.Stock), IsActive: p.IsActive }); setShowForm(true); };
 
   const handleSave = async () => {
-    if (!form.Name || !form.Category || !form.Price) return toast.error('Nombre, categoría y precio son requeridos');
+    if (!form.Name || !form.Category || !form.SalePrice) return toast.error('Nombre, categoría y precio de venta son requeridos');
     setSaving(true);
     try {
-      const data = { Name: form.Name, Description: form.Description, Category: form.Category, Price: parseFloat(form.Price), Stock: parseInt(form.Stock) || 0, IsActive: form.IsActive };
+      const data = { 
+        Name: form.Name, 
+        Description: form.Description, 
+        Category: form.Category, 
+        UnitCost: parseFloat(form.UnitCost) || 0,
+        SalePrice: parseFloat(form.SalePrice), 
+        Stock: parseInt(form.Stock) || 0, 
+        IsActive: form.IsActive 
+      };
       if (editing) {
         await snackProductsApi.update(editing._id, data);
         toast.success('Producto actualizado');
@@ -196,13 +204,17 @@ function ProductsTab({ products, categories, isAdmin, onRefresh }: {
                   {categories.filter(c => c.IsActive).map(c => <option key={c._id} value={c._id}>{c.Name}</option>)}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Precio ($) *</label>
-                  <input type="number" min="0" step="0.01" value={form.Price} onChange={e => setForm({ ...form, Price: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Costo Unit. (Bs.)</label>
+                  <input type="number" min="0" step="0.01" value={form.UnitCost} onChange={e => setForm({ ...form, UnitCost: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Venta (Bs.) *</label>
+                  <input type="number" min="0" step="0.01" value={form.SalePrice} onChange={e => setForm({ ...form, SalePrice: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Stock</label>
                   <input type="number" min="0" value={form.Stock} onChange={e => setForm({ ...form, Stock: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
                 </div>
               </div>
@@ -227,7 +239,8 @@ function ProductsTab({ products, categories, isAdmin, onRefresh }: {
             <tr className="bg-gray-50 text-left">
               <th className="px-4 py-3 font-semibold text-gray-600">Nombre</th>
               <th className="px-4 py-3 font-semibold text-gray-600">Categoría</th>
-              <th className="px-4 py-3 font-semibold text-gray-600">Precio</th>
+              <th className="px-4 py-3 font-semibold text-gray-600">Costo Unit.</th>
+              <th className="px-4 py-3 font-semibold text-gray-600">Precio Venta</th>
               <th className="px-4 py-3 font-semibold text-gray-600">Stock</th>
               <th className="px-4 py-3 font-semibold text-gray-600">Estado</th>
               {isAdmin && <th className="px-4 py-3 font-semibold text-gray-600">Acciones</th>}
@@ -238,7 +251,8 @@ function ProductsTab({ products, categories, isAdmin, onRefresh }: {
               <tr key={p._id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium">{p.Name}<div className="text-xs text-gray-400">{p.Description}</div></td>
                 <td className="px-4 py-3 text-gray-500">{p.Category?.Name}</td>
-                <td className="px-4 py-3 font-semibold text-green-700">${p.Price.toFixed(2)}</td>
+                <td className="px-4 py-3 font-medium text-gray-500">Bs. {(p.UnitCost || 0).toFixed(2)}</td>
+                <td className="px-4 py-3 font-bold text-green-700">Bs. {(p.SalePrice || 0).toFixed(2)}</td>
                 <td className="px-4 py-3">{stockBadge(p.Stock)}</td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${p.IsActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -256,7 +270,7 @@ function ProductsTab({ products, categories, isAdmin, onRefresh }: {
               </tr>
             ))}
             {products.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No hay productos registrados</td></tr>
+              <tr><td colSpan={isAdmin ? 7 : 6} className="px-4 py-8 text-center text-gray-400">No hay productos registrados</td></tr>
             )}
           </tbody>
         </table>
@@ -402,7 +416,7 @@ function SalesTab({ sales }: { sales: Sale[] }) {
                     <div key={i} className="text-xs">{item.ProductName} × {item.Quantity}</div>
                   ))}
                 </td>
-                <td className="px-4 py-3 font-semibold text-green-700">${s.TotalAmount.toFixed(2)}</td>
+                <td className="px-4 py-3 font-semibold text-green-700">Bs. {(s.TotalAmount || 0).toFixed(2)}</td>
                 <td className="px-4 py-3">
                   <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{s.PaymentMethod}</span>
                 </td>

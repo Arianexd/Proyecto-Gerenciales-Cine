@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { reservationsApi, customersApi, sessionsApi, seatsApi, ticketsApi } from '@/lib/api';
 import { Reservation, Customer, MovieSession, Seat } from '@/lib/types';
 import Modal from '@/components/Modal';
@@ -11,9 +11,16 @@ import SeatPreview from '@/components/SeatPreview';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import RoleProtectedRoute from '@/components/RoleProtectedRoute';
+import { getStoredSession } from '@/lib/auth';
 
 export default function ReservationsPage() {
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  
+  useEffect(() => {
+    setCurrentUser(getStoredSession()?.user || null);
+  }, []);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [sessions, setSessions] = useState<MovieSession[]>([]);
@@ -28,6 +35,12 @@ export default function ReservationsPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [reservationToDelete, setReservationToDelete] = useState<Reservation | null>(null);
+  const [clientSearch, setClientSearch] = useState('');
+  const [showClientSugg, setShowClientSugg] = useState(false);
+  const [sessionSearch, setSessionSearch] = useState('');
+  const [showSessionSugg, setShowSessionSugg] = useState(false);
+  const clientAutocompleteRef = useRef<HTMLDivElement | null>(null);
+  const sessionAutocompleteRef = useRef<HTMLDivElement | null>(null);
 
   const [formData, setFormData] = useState({
     CustomerID: '',
@@ -35,9 +48,53 @@ export default function ReservationsPage() {
     Status: 'CREATED' as 'CREATED' | 'PAID' | 'CANCELLED',
   });
 
+  // Nuevos estados para filtros y búsqueda
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [globalSearch, setGlobalSearch] = useState('');
+
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (clientAutocompleteRef.current && !clientAutocompleteRef.current.contains(target)) {
+        setShowClientSugg(false);
+      }
+      if (sessionAutocompleteRef.current && !sessionAutocompleteRef.current.contains(target)) {
+        setShowSessionSugg(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (selectedReservation) {
+      const customer = selectedReservation.CustomerID;
+      const session = selectedReservation.SessionID;
+
+      if (customer && typeof customer === 'object') {
+        setClientSearch(`${customer.Name} ${customer.Surname} - CI: ${customer.CI || 'N/A'}`);
+      } else {
+        setClientSearch('');
+      }
+
+      if (session && typeof session === 'object' && typeof session.MovieID === 'object') {
+        setSessionSearch(`${session.MovieID.MovieName} - ${formatDateTime(session.SessionDateTime)}`);
+      } else {
+        setSessionSearch('');
+      }
+    } else {
+      setClientSearch('');
+      setSessionSearch('');
+    }
+
+    setShowClientSugg(false);
+    setShowSessionSugg(false);
+  }, [selectedReservation]);
 
   const fetchData = async () => {
     try {
@@ -73,13 +130,19 @@ export default function ReservationsPage() {
         SessionID: '',
         Status: 'CREATED',
       });
+      setClientSearch('');
+      setSessionSearch('');
     }
+    setShowClientSugg(false);
+    setShowSessionSugg(false);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedReservation(null);
+    setShowClientSugg(false);
+    setShowSessionSugg(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -231,12 +294,33 @@ export default function ReservationsPage() {
     return 'Sin cliente';
   };
 
+  // Función para detectar expiración (Mejora 3)
+  const isExpired = (creationTime: string) => {
+    const diff = (new Date().getTime() - new Date(creationTime).getTime()) / 60000;
+    return diff > 15; // 15 minutos
+  };
+
   const getMovieName = (session: MovieSession | string | null | undefined) => {
     if (session && typeof session === 'object' && 'MovieID' in session && session.MovieID && typeof session.MovieID === 'object' && 'MovieName' in session.MovieID) {
       return (session.MovieID as any).MovieName;
     }
     return 'Sin película';
   };
+
+  // Lógica de filtrado y búsqueda (Mejoras 1, 3 y 4)
+  const filteredReservations = reservations.filter((r) => {
+    // Filtro por Estado (Mejora 1)
+    const matchesStatus = statusFilter === 'ALL' ? true : r.Status === statusFilter;
+    
+    // Buscador Global (Mejora 4)
+    const q = globalSearch.toLowerCase();
+    const customerName = getCustomerName(r.CustomerID).toLowerCase();
+    const movieName = getMovieName(r.SessionID).toLowerCase();
+    const ci = typeof r.CustomerID === 'object' ? (r.CustomerID.CI || '').toLowerCase() : '';
+    const matchesSearch = customerName.includes(q) || movieName.includes(q) || ci.includes(q);
+
+    return matchesStatus && matchesSearch;
+  });
 
   const getSessionDateTime = (session: MovieSession | string | null | undefined) => {
     if (session && typeof session === 'object' && 'SessionDateTime' in session) {
@@ -249,18 +333,57 @@ export default function ReservationsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Reservas</h1>
-        <button
-          onClick={() => handleOpenModal()}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-        >
-          + Agregar Reserva
-        </button>
+        {currentUser?.Role === 'CAJERO' && (
+          <button
+            onClick={() => handleOpenModal()}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            + Agregar Reserva
+          </button>
+        )}
       </div>
 
       {loading ? (
         <LoadingSpinner />
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
+          {/* Nueva Interfaz de Filtros y Búsqueda */}
+          <div className="bg-white p-4 rounded-t-lg border-b flex flex-col md:flex-row justify-between gap-4">
+            {/* Filtros de Estado */}
+            <div className="flex gap-2">
+              {[
+                { value: 'ALL', label: 'TODAS' },
+                { value: 'CREATED', label: 'CREADA' },
+                { value: 'PAID', label: 'PAGADA' },
+                { value: 'CANCELLED', label: 'CANCELADA' }
+              ].map((filter) => (
+                <button
+                  key={filter.value}
+                  onClick={() => setStatusFilter(filter.value)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    statusFilter === filter.value ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Buscador Global */}
+            <div className="relative w-full md:w-64">
+              <input
+                type="text"
+                placeholder="Buscar por cliente, CI o película..."
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+              />
+              <svg className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -286,14 +409,14 @@ export default function ReservationsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {reservations.length === 0 ? (
+                {filteredReservations.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                      No se encontraron reservas. ¡Agrega tu primera reserva!
+                      {reservations.length === 0 ? 'No se encontraron reservas. ¡Agrega tu primera reserva!' : 'No se encontraron reservas con los filtros actuales.'}
                     </td>
                   </tr>
                 ) : (
-                  reservations.map((reservation) => (
+                  filteredReservations.map((reservation) => (
                     <tr key={reservation._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {getCustomerName(reservation.CustomerID)}
@@ -309,6 +432,11 @@ export default function ReservationsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {getStatusBadge(reservation.Status)}
+                        {reservation.Status === 'CREATED' && isExpired(reservation.CreationTime) && (
+                          <span className="ml-2 animate-pulse inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-600 text-white">
+                            ⚠️ EXPIRADA
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <Link
@@ -347,50 +475,101 @@ export default function ReservationsPage() {
       >
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cliente
-              </label>
-              <select
-                required
-                value={formData.CustomerID}
-                onChange={(e) => setFormData({ ...formData, CustomerID: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+            <div className="relative" ref={clientAutocompleteRef}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+              <input
+                type="text"
+                placeholder="Buscar cliente por nombre, apellido o CI..."
+                value={clientSearch}
+                onChange={(e) => {
+                  setClientSearch(e.target.value);
+                  setShowClientSugg(true);
+                }}
+                onFocus={() => setShowClientSugg(true)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 outline-none"
                 disabled={!!selectedReservation}
-              >
-                <option value="">Selecciona un cliente</option>
-                {customers.map((customer) => (
-                  <option key={customer._id} value={customer._id}>
-                    {customer.Name} {customer.Surname} ({customer.Email})
-                  </option>
-                ))}
-              </select>
+                required
+              />
+
+              {showClientSugg && !selectedReservation && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {customers
+                    .filter((c) => {
+                      const q = clientSearch.toLowerCase();
+                      const fullName = `${c.Name} ${c.Surname}`.toLowerCase();
+                      const ci = (c.CI || '').toLowerCase();
+                      return fullName.includes(q) || ci.includes(q);
+                    })
+                    .map((customer) => (
+                      <div
+                        key={customer._id}
+                        className="px-4 py-2 hover:bg-emerald-50 cursor-pointer text-sm border-b last:border-none"
+                        onClick={() => {
+                          setFormData({ ...formData, CustomerID: customer._id });
+                          setClientSearch(`${customer.Name} ${customer.Surname} - CI: ${customer.CI}`);
+                          setShowClientSugg(false);
+                        }}
+                      >
+                        <span className="font-medium">{customer.Name} {customer.Surname}</span>
+                        <div className="text-xs text-gray-400">CI: {customer.CI} | {customer.Email}</div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+
+            <div className="relative" ref={sessionAutocompleteRef}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Funcion (Pelicula y Horario)</label>
+              <input
+                type="text"
+                placeholder="Buscar por nombre de pelicula..."
+                value={sessionSearch}
+                onChange={(e) => {
+                  setSessionSearch(e.target.value);
+                  setShowSessionSugg(true);
+                }}
+                onFocus={() => setShowSessionSugg(true)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 outline-none"
+                disabled={!!selectedReservation}
+                required
+              />
+
+              {showSessionSugg && !selectedReservation && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {sessions
+                    .filter((s) => {
+                      const movieName = typeof s.MovieID === 'object' ? s.MovieID.MovieName : '';
+                      return movieName.toLowerCase().includes(sessionSearch.toLowerCase());
+                    })
+                    .map((session) => {
+                      const movieName = typeof session.MovieID === 'object' ? session.MovieID.MovieName : 'Pelicula';
+                      const time = formatDateTime(session.SessionDateTime);
+
+                      return (
+                        <div
+                          key={session._id}
+                          className="px-4 py-2 hover:bg-emerald-50 cursor-pointer text-sm border-b last:border-none"
+                          onClick={() => {
+                            setFormData({ ...formData, SessionID: session._id });
+                            setSessionSearch(`${movieName} - ${time}`);
+                            setShowSessionSugg(false);
+                            setSelectedSeats([]);
+                          }}
+                        >
+                          <div className="font-semibold">{movieName}</div>
+                          <div className="text-xs text-emerald-600 font-medium">
+                            {time} - {typeof session.HallID === 'object' ? session.HallID.HallName : 'Sala'}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Función
-              </label>
-              <select
-                required
-                value={formData.SessionID}
-                onChange={(e) => setFormData({ ...formData, SessionID: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                disabled={!!selectedReservation}
-              >
-                <option value="">Selecciona una función</option>
-                {sessions.map((session) => (
-                  <option key={session._id} value={session._id}>
-                    {typeof session.MovieID === 'object' ? session.MovieID.MovieName : 'Película'} -{' '}
-                    {formatDateTime(session.SessionDateTime)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Estado
+                Estado de Reserva
               </label>
               <select
                 required
@@ -443,12 +622,19 @@ export default function ReservationsPage() {
                 Haz clic en los asientos disponibles para seleccionarlos. Pasa el cursor sobre un asiento para ver la vista y el perfil acústico.
               </p>
             </div>
-            {selectedSession && typeof selectedSession.HallID === 'object' && (
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-700">{selectedSession.HallID.HallName}</p>
-                <p className="text-xs text-gray-500">Capacidad: {selectedSession.HallID.Capacity}</p>
-              </div>
-            )}
+            <div className="text-right">
+              {selectedSession && (
+                <div className="text-sm font-medium text-gray-700">
+                  <div>Precio Base: {selectedSession.Price} Bs</div>
+                  <div className="text-lg font-bold text-purple-700">
+                    Total: {(selectedSession.Price * selectedSeats.length) + selectedSeats.reduce((sum, seatId) => {
+                      const seat = seats.find(s => s._id === seatId);
+                      return sum + (seat?.PriceModifier || 0);
+                    }, 0)} Bs
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -464,6 +650,7 @@ export default function ReservationsPage() {
                 onSeatClick={handleSeatClick}
                 onSeatHover={setHoveredSeat}
                 reservedSeats={reservedSeats}
+                showCategories={true}
               />
             </div>
           </div>
@@ -489,6 +676,9 @@ export default function ReservationsPage() {
                       seatRow={hoveredSeat.RowNumber}
                       seatNumber={hoveredSeat.SeatNumber}
                       totalSeatsInRow={seats.filter(s => s.RowNumber === hoveredSeat.RowNumber).length}
+                      category={hoveredSeat.Category}
+                      priceModifier={hoveredSeat.PriceModifier}
+                      sessionPrice={selectedSession && typeof selectedSession === 'object' ? selectedSession.Price : 0}
                     />
                   </div>
                 </>

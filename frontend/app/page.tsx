@@ -2,33 +2,38 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { moviesApi } from '@/lib/api';
-import { getStoredSession } from '@/lib/auth';
+import { moviesApi, sessionsApi } from '@/lib/api';
 import { Movie } from '@/lib/types';
 import PublicNavigation from '@/components/PublicNavigation';
 import Link from 'next/link';
 
 export default function Home() {
   const router = useRouter();
-  const [allMovies, setAllMovies] = useState<Movie[]>([]); // Cambiado para manejar el catálogo completo
+  const [allMovies, setAllMovies] = useState<Movie[]>([]);
+  const [activeMovieIds, setActiveMovieIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [selectedGenre, setSelectedGenre] = useState('Todos'); // Estado para el filtro instantáneo
+  const [selectedGenre, setSelectedGenre] = useState('Todos');
 
   useEffect(() => {
-    const session = getStoredSession();
-    if (session?.user.Role === 'ADMIN') {
-      router.push('/admin');
-      return;
-    }
     fetchAllMovies();
   }, [router]);
 
   const fetchAllMovies = async () => {
     try {
       setLoading(true);
-      const response = await moviesApi.getAll();
-      // Cargamos todas las películas para permitir el filtrado en el cliente
-      setAllMovies(response.data);
+      const [moviesRes, sessionsRes] = await Promise.all([
+        moviesApi.getAll(),
+        sessionsApi.getAll()
+      ]);
+      
+      const now = new Date();
+      const activeSessions = sessionsRes.data.filter((s: any) => new Date(s.SessionDateTime) > now);
+      const activeIds = new Set<string>(activeSessions.map((s: any) => 
+        typeof s.MovieID === 'object' ? s.MovieID._id : s.MovieID
+      ));
+
+      setActiveMovieIds(activeIds);
+      setAllMovies(moviesRes.data);
     } catch (error) {
       console.error('Failed to fetch movies:', error);
     } finally {
@@ -36,219 +41,243 @@ export default function Home() {
     }
   };
 
-  // Lógica de filtrado instantáneo (CA2)
+  const showingMovies = useMemo(() => 
+    allMovies.filter(m => activeMovieIds.has(m._id)), 
+    [allMovies, activeMovieIds]
+  );
+
+  const comingSoonMovies = useMemo(() => 
+    allMovies
+      .filter(m => !activeMovieIds.has(m._id))
+      .sort((a, b) => {
+        if (!a.ReleaseDate) return 1;
+        if (!b.ReleaseDate) return -1;
+        return new Date(a.ReleaseDate).getTime() - new Date(b.ReleaseDate).getTime();
+      }), 
+    [allMovies, activeMovieIds]
+  );
+
+  const featuredMovie = showingMovies.length > 0 ? showingMovies[0] : allMovies[0];
+
   const genres = useMemo(() => {
     const extracted = allMovies.map(m => m.Genre);
     return ['Todos', ...Array.from(new Set(extracted))];
   }, [allMovies]);
 
-  const filteredMovies = useMemo(() => {
-    if (selectedGenre === 'Todos') return allMovies;
-    return allMovies.filter(movie => movie.Genre === selectedGenre);
-  }, [allMovies, selectedGenre]);
+  const filteredShowing = useMemo(() => {
+    if (selectedGenre === 'Todos') return showingMovies;
+    return showingMovies.filter(movie => movie.Genre === selectedGenre);
+  }, [showingMovies, selectedGenre]);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen bg-gray-950 text-white font-sans">
       <PublicNavigation />
 
-      {/* ── Hero ── */}
-      <section className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 flex flex-col md:flex-row items-center gap-12">
-          <div className="flex-1 text-center md:text-left">
-            <span className="inline-block mb-4 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold tracking-widest uppercase border border-red-100">
-              Reserva online · Sin colas
-            </span>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
-              Tu próxima película<br />
-              <span className="text-red-600">te está esperando</span>
-            </h1>
-            <p className="text-gray-500 text-lg mb-8 max-w-lg mx-auto md:mx-0">
-              Elige tu sala, selecciona tu asiento y compra tu entrada en segundos. Cine sin complicaciones.
-            </p>
-            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-              <Link
-                href="/movies"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-100"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
-                </svg>
-                Ver cartelera
-              </Link>
-              <Link
-                href="/account/register"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-gray-800 text-sm font-bold border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors"
-              >
-                Crear cuenta gratis
-              </Link>
+      {/* Hero Destacado */}
+      {!loading && featuredMovie && (
+        <section className="relative h-[85vh] w-full overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <img 
+              src={featuredMovie.PosterURL} 
+              alt={featuredMovie.MovieName}
+              className="w-full h-full object-cover scale-105 blur-md opacity-30"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-transparent to-transparent" />
+          </div>
+
+          <div className="container mx-auto px-4 h-full flex flex-col md:flex-row items-center justify-center gap-12 relative z-10 pt-20">
+            <div className="w-56 md:w-80 shrink-0 shadow-[0_0_50px_rgba(220,38,38,0.3)] rounded-2xl overflow-hidden border border-white/10 transform hover:scale-105 transition-transform duration-700">
+              <img src={featuredMovie.PosterURL} alt={featuredMovie.MovieName} className="w-full h-auto" />
+            </div>
+            
+            <div className="max-w-3xl text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-3 mb-6">
+                <span className="px-3 py-1 rounded-md bg-red-600 text-white text-[10px] font-black tracking-widest uppercase shadow-lg shadow-red-600/50">
+                  Destacada
+                </span>
+                <span className="text-gray-400 text-sm font-bold tracking-tight">
+                  {(featuredMovie.Genre || 'Cine').split(',')[0]} · {featuredMovie.Duration} min
+                </span>
+              </div>
+              
+              <h1 className="text-6xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.9] bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
+                {featuredMovie.MovieName}
+              </h1>
+              
+              <p className="text-gray-400 text-lg md:text-xl mb-10 line-clamp-3 font-medium leading-relaxed max-w-xl">
+                {featuredMovie.Description || 'Disfruta de la mejor calidad de imagen y sonido en nuestras salas VIP.'}
+              </p>
+              
+              <div className="flex flex-wrap gap-5 justify-center md:justify-start">
+                <Link
+                  href={`/movies/${featuredMovie._id}`}
+                  className="px-10 py-4 bg-red-600 text-white rounded-2xl font-black text-lg hover:bg-red-700 transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(220,38,38,0.4)]"
+                >
+                  Ver Funciones
+                </Link>
+                <Link
+                  href="/movies"
+                  className="px-10 py-4 bg-white/5 backdrop-blur-xl text-white border border-white/10 rounded-2xl font-black text-lg hover:bg-white/10 transition-all"
+                >
+                  Explorar Catálogo
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Content */}
+      <div className="container mx-auto px-4 py-24 space-y-32">
+        
+        {/* Estrenos / En Cartelera */}
+        <section>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-1 w-12 bg-red-600 rounded-full" />
+                <span className="text-red-500 font-black tracking-[0.2em] uppercase text-xs">Now Showing</span>
+              </div>
+              <h2 className="text-5xl md:text-6xl font-black tracking-tighter">Estrenos en Cartelera</h2>
+            </div>
+
+            {/* Filtros */}
+            <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide">
+              {genres.map((genre) => (
+                <button
+                  key={genre}
+                  onClick={() => setSelectedGenre(genre)}
+                  className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all border-2 ${
+                    selectedGenre === genre
+                      ? 'bg-red-600 border-red-600 text-white shadow-xl shadow-red-600/20'
+                      : 'bg-white/5 border-white/5 text-gray-500 hover:border-white/20 hover:text-white'
+                  }`}
+                >
+                  {(genre || 'Todos').toUpperCase()}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="flex-shrink-0 flex flex-col gap-4 md:gap-5 w-full md:w-auto">
-            {[
-              { label: 'Películas en cartelera', value: '20+', icon: '🎬' },
-              { label: 'Salas disponibles', value: '6', icon: '🏟️' },
-              { label: 'Reservas realizadas', value: '1,200+', icon: '🎟️' },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="flex items-center gap-4 bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 min-w-[220px]"
-              >
-                <span className="text-2xl">{stat.icon}</span>
-                <div>
-                  <p className="text-xl font-extrabold text-gray-900">{stat.value}</p>
-                  <p className="text-xs text-gray-400 font-medium">{stat.label}</p>
-                </div>
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
+              {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+            </div>
+          ) : filteredShowing.length === 0 ? (
+            <div className="text-center py-32 bg-white/5 rounded-[40px] border border-white/5">
+              <p className="text-gray-500 font-bold text-xl">No hay películas en esta categoría todavía.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8 md:gap-10">
+              {filteredShowing.map((movie) => (
+                <MovieCard key={movie._id} movie={movie} isActive />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Próximamente */}
+        {!loading && comingSoonMovies.length > 0 && (
+          <section>
+            <div className="space-y-4 mb-16">
+              <div className="flex items-center gap-3">
+                <div className="h-1 w-12 bg-gray-600 rounded-full" />
+                <span className="text-gray-500 font-black tracking-[0.2em] uppercase text-xs">Coming Soon</span>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Features strip ── */}
-      <section className="bg-red-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-white text-center sm:text-left">
-            {[
-              { icon: '🪑', title: 'Elige tu asiento', desc: 'Previsualiza la sala antes de reservar.' },
-              { icon: '⚡', title: 'Reserva en segundos', desc: 'Proceso rápido, seguro y sin filas.' },
-              { icon: '🎟️', title: 'Entradas digitales', desc: 'Recibe tu ticket al instante.' },
-            ].map((f) => (
-              <div key={f.title} className="flex items-start gap-3">
-                <span className="text-2xl mt-0.5">{f.icon}</span>
-                <div>
-                  <p className="font-bold text-sm">{f.title}</p>
-                  <p className="text-red-100 text-xs mt-0.5">{f.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Now Showing / Catálogo con Filtros ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900">En cartelera</h2>
-            <p className="text-gray-400 text-sm mt-1">Explora nuestras películas disponibles</p>
-          </div>
-
-          {/* Filtros de Género (Integración de CA2 con nuevos estilos) */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-            {genres.map((genre) => (
-              <button
-                key={genre}
-                onClick={() => setSelectedGenre(genre)}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
-                  selectedGenre === genre
-                    ? 'bg-red-600 text-white shadow-md shadow-red-100'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:border-red-300'
-                }`}
-              >
-                {genre}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="rounded-2xl overflow-hidden bg-gray-200 animate-pulse">
-                <div className="aspect-[2/3]" />
-                <div className="p-4 space-y-2">
-                  <div className="h-4 bg-gray-300 rounded w-3/4" />
-                  <div className="h-3 bg-gray-200 rounded w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : filteredMovies.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400 text-center">
-            <svg className="w-12 h-12 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-            </svg>
-            <p className="text-sm font-medium">No se encontraron películas para este género</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-            {filteredMovies.map((movie) => (
-              <MovieCard key={movie._id} movie={movie} />
-            ))}
-          </div>
+              <h2 className="text-5xl md:text-6xl font-black tracking-tighter">Próximamente</h2>
+            </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8 md:gap-10">
+              {comingSoonMovies.map((movie) => (
+                <MovieCard key={movie._id} movie={movie} isActive={false} />
+              ))}
+            </div>
+          </section>
         )}
-      </section>
+      </div>
 
-      {/* ── Footer ── */}
-      <footer className="bg-white border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-red-600 flex items-center justify-center">
-              <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-              </svg>
+      <footer className="bg-black py-20 border-t border-white/5">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center font-black text-xl">C</div>
+              <span className="text-2xl font-black tracking-tighter">Cine<span className="text-red-600">book</span></span>
             </div>
-            <span className="text-gray-800 font-bold text-sm">Cine<span className="text-red-600">book</span></span>
+            <div className="flex gap-10 text-gray-500 text-sm font-bold">
+              <Link href="/movies" className="hover:text-white transition-colors">Películas</Link>
+              <Link href="/account/login" className="hover:text-white transition-colors">Mi Cuenta</Link>
+              <Link href="/admin/login" className="hover:text-white transition-colors">Administración</Link>
+            </div>
           </div>
-          <p className="text-gray-400 text-xs">Proyecto SIS 226 2026</p>
+          <div className="mt-16 pt-8 border-t border-white/5 text-center text-gray-600 text-xs font-bold">
+            © 2026 PROYECTO CINEBOOK • TODOS LOS DERECHOS RESERVADOS
+          </div>
         </div>
       </footer>
     </div>
   );
 }
 
-// MovieCard actualizado con todas las mejoras visuales de tus compañeros
-function MovieCard({ movie }: { movie: Movie }) {
-  const hasUserRating = Boolean(movie.UserRatingCount && movie.UserRatingCount > 0);
-  const posterSrc =
-    movie.PosterURL ||
-    `https://placehold.co/300x450/111827/f9fafb?text=${encodeURIComponent(movie.MovieName)}`;
-  
-  const ratingValue = hasUserRating
-    ? movie.UserRatingAverage?.toFixed(1) || '0.0'
-    : typeof movie.Rating === 'number' && movie.Rating > 0
-      ? (movie.Rating / 2).toFixed(1)
-      : 'Nuevo';
+function SkeletonCard() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="aspect-[2/3] bg-white/5 rounded-3xl" />
+      <div className="space-y-3">
+        <div className="h-4 bg-white/5 rounded-full w-3/4" />
+        <div className="h-3 bg-white/5 rounded-full w-1/2" />
+      </div>
+    </div>
+  );
+}
+
+function MovieCard({ movie, isActive }: { movie: Movie; isActive: boolean }) {
+  const posterSrc = movie.PosterURL || `https://placehold.co/400x600/111827/f9fafb?text=${encodeURIComponent(movie.MovieName)}`;
 
   return (
     <Link href={`/movies/${movie._id}`} className="group block">
-      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-        <div className="relative aspect-[2/3] overflow-hidden bg-gray-100">
-          <img
-            src={posterSrc}
-            alt={movie.MovieName}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            onError={(e) => {
-              e.currentTarget.src = 'https://via.placeholder.com/300x450/f3f4f6/d1d5db?text=Sin+poster';
-            }}
-          />
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent" />
-          <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-gray-900/80 text-white text-xs font-bold backdrop-blur-sm">
-            {movie.AgeLimit}+
-          </div>
-          <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-400 text-yellow-900">
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-            <span className="text-xs font-bold">{ratingValue}</span>
-          </div>
-          <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-            <span className="block w-full py-2 rounded-lg bg-red-600 text-white text-xs font-bold text-center">
-              Reservar entrada
+      <div className="relative aspect-[2/3] rounded-[32px] overflow-hidden mb-6 shadow-2xl transition-all duration-700 group-hover:scale-[1.03] group-hover:-translate-y-3">
+        <img 
+          src={posterSrc} 
+          alt={movie.MovieName} 
+          className={`w-full h-full object-cover transition-all duration-1000 ${!isActive ? 'grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100' : 'scale-105 group-hover:scale-110'}`} 
+          onError={(e) => {
+            e.currentTarget.src = "https://via.placeholder.com/400x600/111827/f9fafb?text=Sin+Poster";
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent opacity-80" />
+        
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
+          <span className="px-3 py-1.5 bg-black/60 backdrop-blur-xl rounded-xl text-[9px] font-black border border-white/10 uppercase tracking-widest">
+            {(movie.Genre || 'Cine').split(',')[0]}
+          </span>
+          {!isActive && (
+            <span className="px-3 py-1.5 bg-yellow-500 text-black rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-yellow-500/20">
+              PRONTO
             </span>
-          </div>
+          )}
         </div>
 
-        <div className="p-3.5">
-          <h3 className="text-gray-900 text-sm font-bold mb-1.5 line-clamp-1 group-hover:text-red-600 transition-colors">
-            {movie.MovieName}
-          </h3>
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">{movie.Genre}</span>
-            <span>·</span>
-            <span>{movie.Duration} min</span>
+        <div className="absolute inset-x-6 bottom-6 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+          <div className="w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black text-center shadow-2xl uppercase tracking-widest">
+            {isActive ? 'Reservar Entrada' : 'Ver Detalles'}
           </div>
+        </div>
+      </div>
+      
+      <div className="space-y-2 px-1">
+        <h3 className="font-black text-base line-clamp-1 group-hover:text-red-500 transition-colors uppercase tracking-tighter">
+          {movie.MovieName}
+        </h3>
+        <div className="flex flex-col gap-1">
+          <p className="text-gray-500 text-[11px] font-bold tracking-tight">
+            {movie.Duration} MIN · CLAS. {movie.AgeLimit}+
+          </p>
+          {!isActive && movie.ReleaseDate && (
+            <p className="text-yellow-500 text-[10px] font-black uppercase tracking-[0.1em]">
+              Estreno: {new Date(movie.ReleaseDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })}
+            </p>
+          )}
         </div>
       </div>
     </Link>

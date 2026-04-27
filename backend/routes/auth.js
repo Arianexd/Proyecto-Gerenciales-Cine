@@ -105,9 +105,17 @@ router.post("/login", async (req, res) => {
     }
 
     const normalizedIdentity = normalizeIdentity(rawIdentity);
-    const user = await User.findOne({
+    let user = await User.findOne({
       $or: [{ Email: normalizedIdentity }, { Username: normalizedIdentity }],
     }).populate("CustomerID");
+
+    // If not found, try to find by CI
+    if (!user) {
+      const customer = await Customer.findOne({ CI: rawIdentity.trim() });
+      if (customer) {
+        user = await User.findOne({ CustomerID: customer._id }).populate("CustomerID");
+      }
+    }
 
     if (!user || !user.IsActive) {
       return res.status(401).json({ error: "Invalid credentials" });

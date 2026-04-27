@@ -20,54 +20,59 @@ export default function SessionCard({ session }: SessionCardProps) {
   const hallName = typeof session.HallID === 'object' ? session.HallID.HallName : 'Sala';
 
   return (
-    <div className="group relative bg-gradient-to-b from-gray-900 to-black rounded-2xl border border-gray-800 hover:border-red-500/70 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl hover:shadow-red-500/20 overflow-hidden">
-      <div className="flex items-center justify-between mb-5 mt-2">
-        <div className="flex flex-col gap-1">
-          <div className="bg-red-600 text-white px-4 py-2 rounded-lg text-lg font-black shadow-lg shadow-red-500/30">
-            {time}
+    <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+      <div className="p-5">
+        {/* Time & Price */}
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-2xl font-extrabold text-gray-900">{time}</p>
+            <p className="text-xs text-gray-400 font-medium mt-0.5">{date}</p>
           </div>
-          <div className="text-xs text-yellow-400 font-bold tracking-wider uppercase">{date}</div>
-        </div>
-        <div className="bg-yellow-500 text-black px-5 py-2.5 rounded-xl font-black text-xl shadow-md shadow-yellow-500/25">
-          Bs {session.Price}
-        </div>
-      </div>
+          <div className="text-right">
+            <p className="text-xl font-extrabold text-red-600">${session.Price}</p>
+            <p className="text-xs text-gray-400">por entrada</p>
+          </div>
 
-      <div className="space-y-3 mb-5">
-        <div className="flex items-center gap-2 text-gray-300 bg-gray-800/40 rounded-lg px-4 py-2 border border-gray-700">
-          <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-          </svg>
-          <span className="font-bold text-white">{hallName}</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center gap-2 text-gray-400 bg-gray-800/20 rounded-lg px-3 py-2 text-sm">
-            <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+        {/* Hall & Language */}
+        <div className="space-y-2 mb-5">
+          <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+            <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-            <span className="font-semibold">{session.Language}</span>
+            <span className="text-sm font-semibold text-gray-700">{hallName}</span>
           </div>
 
-          {session.SubtitleInfo && session.SubtitleInfo !== 'None' && (
-            <div className="flex items-center gap-2 text-gray-400 bg-gray-800/20 rounded-lg px-3 py-2 text-sm">
-              <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+          <div className="flex gap-2">
+            <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 flex-1">
+              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
               </svg>
-              <span className="font-semibold text-xs">{session.SubtitleInfo}</span>
+              <span className="text-xs font-semibold text-gray-600">{session.Language}</span>
             </div>
-          )}
-        </div>
-      </div>
 
-      <Link href={`/booking/${session._id}`}>
-        <button className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-black py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-red-500/25">
-          <svg className="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-          </svg>
-          <span className="relative z-10 text-base tracking-wider">RESERVAR</span>
-        </button>
-      </Link>
+            {session.SubtitleInfo && session.SubtitleInfo !== 'None' && (
+              <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 flex-1">
+                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                </svg>
+                <span className="text-xs font-semibold text-gray-600">{session.SubtitleInfo}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* CTA */}
+        <Link href={`/booking/${session._id}`}>
+          <button className="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-red-100">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+            </svg>
+            Reservar entrada
+          </button>
+        </Link>
+      </div>
     </div>
   );
 }

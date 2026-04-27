@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import RoleProtectedRoute from '@/components/RoleProtectedRoute';
 import { snackCategoriesApi, snackProductsApi, snackSalesApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 type Category = { _id: string; Name: string; IsActive: boolean };
-type Product = { _id: string; Name: string; Description: string; Category: Category; Price: number; Stock: number; IsActive: boolean };
+type Product = { _id: string; Name: string; Description: string; Category: Category; UnitCost: number; SalePrice: number; Stock: number; IsActive: boolean };
 type CartItem = { product: Product; quantity: number };
 
 const PAYMENT_METHODS = ['Cash', 'Card', 'Online'] as const;
@@ -14,6 +15,14 @@ type PaymentMethod = typeof PAYMENT_METHODS[number];
 const paymentLabels: Record<PaymentMethod, string> = { Cash: 'Efectivo', Card: 'Tarjeta', Online: 'Online' };
 
 export default function SnackSellPage() {
+  return (
+    <RoleProtectedRoute allowedRoles={['CAJERO']} redirectTo="/admin">
+      <SnackSellPageContent />
+    </RoleProtectedRoute>
+  );
+}
+
+function SnackSellPageContent() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -71,7 +80,7 @@ export default function SnackSellPage() {
     setCart(prev => prev.filter(i => i.product._id !== productId));
   };
 
-  const total = cart.reduce((sum, i) => sum + i.product.Price * i.quantity, 0);
+  const total = cart.reduce((sum, i) => sum + i.product.SalePrice * i.quantity, 0);
 
   const handleCheckout = async () => {
     if (cart.length === 0) { toast.error('El carrito está vacío'); return; }
@@ -85,7 +94,7 @@ export default function SnackSellPage() {
       setLastSale(response.data);
       setCart([]);
       setNotes('');
-      toast.success(`Venta completada. Total: $${total.toFixed(2)}`);
+      toast.success(`Venta completada. Total: Bs. ${(total || 0).toFixed(2)}`);
       loadData();
     } catch (e: any) {
       toast.error(e?.response?.data?.error || 'Error al procesar la venta');
@@ -95,7 +104,8 @@ export default function SnackSellPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-130px)] flex flex-col">
+    <RoleProtectedRoute allowedRoles={['CAJERO']} redirectTo="/admin">
+      <div className="h-[calc(100vh-130px)] flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -162,7 +172,7 @@ export default function SnackSellPage() {
                          p.Category?.Name === 'Combos' ? '🎁' : '🍫'}
                       </div>
                       <div className="text-sm font-semibold text-gray-900 leading-tight mb-1">{p.Name}</div>
-                      <div className="text-base font-bold text-green-600">${p.Price.toFixed(2)}</div>
+                      <div className="text-base font-bold text-green-600">Bs. {(p.SalePrice || 0).toFixed(2)}</div>
                       <div className={`text-xs mt-1 ${p.Stock <= 5 ? 'text-orange-500' : 'text-gray-400'}`}>
                         {outOfStock ? 'Sin stock' : `Stock: ${p.Stock}`}
                       </div>
@@ -199,7 +209,7 @@ export default function SnackSellPage() {
                   <div key={item.product._id} className="px-5 py-3 flex items-center gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-gray-900 truncate">{item.product.Name}</div>
-                      <div className="text-xs text-gray-400">${item.product.Price.toFixed(2)} c/u</div>
+                      <div className="text-xs text-gray-400">Bs. {(item.product.SalePrice || 0).toFixed(2)} c/u</div>
                     </div>
                     <div className="flex items-center gap-1">
                       <button
@@ -213,7 +223,7 @@ export default function SnackSellPage() {
                       >+</button>
                     </div>
                     <div className="text-sm font-bold text-gray-900 w-14 text-right">
-                      ${(item.product.Price * item.quantity).toFixed(2)}
+                      Bs. {((item.product.SalePrice || 0) * item.quantity).toFixed(2)}
                     </div>
                     <button onClick={() => removeFromCart(item.product._id)} className="text-gray-300 hover:text-red-500 ml-1">✕</button>
                   </div>
@@ -256,7 +266,7 @@ export default function SnackSellPage() {
             {/* Total */}
             <div className="flex items-center justify-between pt-2 border-t border-gray-100">
               <span className="text-sm font-medium text-gray-600">Total ({cart.reduce((s, i) => s + i.quantity, 0)} productos)</span>
-              <span className="text-2xl font-bold text-gray-900">${total.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-gray-900">Bs. {(total || 0).toFixed(2)}</span>
             </div>
 
             <button
@@ -264,7 +274,7 @@ export default function SnackSellPage() {
               disabled={cart.length === 0 || processing}
               className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-4 rounded-xl transition-colors text-lg"
             >
-              {processing ? 'Procesando...' : `Cobrar $${total.toFixed(2)}`}
+              {processing ? 'Procesando...' : `Cobrar Bs. ${(total || 0).toFixed(2)}`}
             </button>
           </div>
         </div>
@@ -276,7 +286,7 @@ export default function SnackSellPage() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="font-bold text-sm">✅ Venta completada</p>
-              <p className="text-xs text-green-100 mt-0.5">Total: ${lastSale.TotalAmount?.toFixed(2)}</p>
+               <p className="text-xs text-green-100 mt-0.5">Total: Bs. {(lastSale.TotalAmount || 0).toFixed(2)}</p>
               <p className="text-xs text-green-100">Pago: {paymentLabels[lastSale.PaymentMethod as PaymentMethod] || lastSale.PaymentMethod}</p>
             </div>
             <button onClick={() => setLastSale(null)} className="text-green-200 hover:text-white text-lg leading-none">✕</button>
@@ -284,5 +294,6 @@ export default function SnackSellPage() {
         </div>
       )}
     </div>
+    </RoleProtectedRoute>
   );
 }

@@ -12,6 +12,7 @@ export interface Movie {
   UserRatingAverage?: number;
   UserRatingCount?: number;
   TrailerURL?: string;
+  ReleaseDate?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -30,6 +31,7 @@ export interface Customer {
   Surname: string;
   CI: string;                                     // Añadido
   Gender: 'Male' | 'Female' | 'Other';            // Añadido
+  BirthDate?: string;
   Age: number;                                    // Añadido
   Email: string;
   PhoneNumber: string;
@@ -44,6 +46,8 @@ export interface Seat {
   SeatNumber: number;
   ScreenViewInfo: 'Excellent' | 'Good' | 'Average' | 'Poor';
   AcousticProfile: 'Excellent' | 'Good' | 'Average' | 'Poor';
+  Category: 'Standard' | 'Premium' | 'VIP';
+  PriceModifier: number;
   createdAt?: string;
   updatedAt?: string;
 }

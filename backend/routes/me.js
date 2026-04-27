@@ -60,9 +60,10 @@ async function findSoldSeatIdsForSession(
 }
 
 function calculateReservationTotal(reservation) {
-  const seatCount = reservation.SeatIDs?.length || 0;
   const sessionPrice = reservation.SessionID?.Price || 0;
-  return seatCount * sessionPrice;
+  return (reservation.SeatIDs || []).reduce((total, seat) => {
+    return total + sessionPrice + (seat.PriceModifier || 0);
+  }, 0);
 }
 
 function sanitizeCardNumber(cardNumber = "") {

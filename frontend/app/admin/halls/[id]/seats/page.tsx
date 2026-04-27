@@ -24,12 +24,15 @@ export default function HallSeatsPage() {
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [seatToDelete, setSeatToDelete] = useState<Seat | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [viewMode, setViewMode] = useState<'quality' | 'category'>('quality');
 
   const [formData, setFormData] = useState({
     RowNumber: '',
     SeatNumber: '',
     ScreenViewInfo: '',
     AcousticProfile: '',
+    Category: 'Standard',
+    PriceModifier: 0,
   });
 
   useEffect(() => {
@@ -63,6 +66,8 @@ export default function HallSeatsPage() {
         SeatNumber: seat.SeatNumber.toString(),
         ScreenViewInfo: seat.ScreenViewInfo,
         AcousticProfile: seat.AcousticProfile,
+        Category: seat.Category || 'Standard',
+        PriceModifier: seat.PriceModifier || 0,
       });
     } else {
       setSelectedSeat(null);
@@ -71,6 +76,8 @@ export default function HallSeatsPage() {
         SeatNumber: '',
         ScreenViewInfo: '',
         AcousticProfile: '',
+        Category: 'Standard',
+        PriceModifier: 0,
       });
     }
     setIsModalOpen(true);
@@ -91,6 +98,8 @@ export default function HallSeatsPage() {
         SeatNumber: parseInt(formData.SeatNumber),
         ScreenViewInfo: formData.ScreenViewInfo,
         AcousticProfile: formData.AcousticProfile,
+        Category: formData.Category,
+        PriceModifier: parseFloat(formData.PriceModifier.toString()),
       };
 
       if (selectedSeat) {
@@ -345,31 +354,75 @@ export default function HallSeatsPage() {
 
           {/* Seat Matrix View */}
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <div className="text-center mb-8">
-              <div className="inline-block bg-gray-800 text-white px-12 py-3 rounded-t-3xl text-sm font-semibold">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+              <div className="flex bg-gray-100 p-1 rounded-xl w-fit">
+                <button
+                  onClick={() => setViewMode('quality')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                    viewMode === 'quality' 
+                      ? 'bg-white text-blue-600 shadow-sm' 
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Vista y Sonido
+                </button>
+                <button
+                  onClick={() => setViewMode('category')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                    viewMode === 'category' 
+                      ? 'bg-white text-purple-600 shadow-sm' 
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Categorías y Precios
+                </button>
+              </div>
+
+              <div className="bg-gray-800 text-white px-12 py-3 rounded-t-3xl text-sm font-semibold order-first md:order-none">
                 🎬 PANTALLA
               </div>
+
+              <div className="w-[200px] hidden md:block"></div>
             </div>
 
             {/* Legend */}
             {seats.length > 0 && (
-              <div className="flex justify-center gap-4 mb-6 text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-green-500 rounded"></div>
-                  <span className="text-gray-700">Excelente</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-blue-500 rounded"></div>
-                  <span className="text-gray-700">Buena</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-yellow-500 rounded"></div>
-                  <span className="text-gray-700">Regular</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-red-500 rounded"></div>
-                  <span className="text-gray-700">Deficiente</span>
-                </div>
+              <div className="flex flex-wrap justify-center gap-4 mb-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                {viewMode === 'quality' ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-green-500 rounded shadow-sm"></div>
+                      <span className="text-xs font-medium text-gray-600">Excelente</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-blue-500 rounded shadow-sm"></div>
+                      <span className="text-xs font-medium text-gray-600">Buena</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-yellow-500 rounded shadow-sm"></div>
+                      <span className="text-xs font-medium text-gray-600">Regular</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-red-500 rounded shadow-sm"></div>
+                      <span className="text-xs font-medium text-gray-600">Deficiente</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-amber-500 rounded shadow-sm"></div>
+                      <span className="text-xs font-medium text-gray-600">VIP (+15 Bs)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-blue-600 rounded shadow-sm"></div>
+                      <span className="text-xs font-medium text-gray-600">Premium (+5 Bs)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-gray-500 rounded shadow-sm"></div>
+                      <span className="text-xs font-medium text-gray-600">Estándar (+0 Bs)</span>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -390,13 +443,22 @@ export default function HallSeatsPage() {
                     <div className="flex gap-2">
                       {groupedSeats[rowNumber].map((seat) => {
                         // Color based on quality
-                        const getQualityColor = (quality: string) => {
-                          switch (quality) {
-                            case 'Excellent': return 'bg-green-500 hover:bg-green-600';
-                            case 'Good': return 'bg-blue-500 hover:bg-blue-600';
-                            case 'Average': return 'bg-yellow-500 hover:bg-yellow-600';
-                            case 'Poor': return 'bg-red-500 hover:bg-red-600';
-                            default: return 'bg-gray-500 hover:bg-gray-600';
+                        const getSeatColor = (seat: Seat) => {
+                          if (viewMode === 'quality') {
+                            switch (seat.ScreenViewInfo) {
+                              case 'Excellent': return 'bg-green-500 hover:bg-green-600 shadow-green-100';
+                              case 'Good': return 'bg-blue-500 hover:bg-blue-600 shadow-blue-100';
+                              case 'Average': return 'bg-yellow-500 hover:bg-yellow-600 shadow-yellow-100';
+                              case 'Poor': return 'bg-red-500 hover:bg-red-600 shadow-red-100';
+                              default: return 'bg-gray-500 hover:bg-gray-600';
+                            }
+                          } else {
+                            switch (seat.Category) {
+                              case 'VIP': return 'bg-amber-500 hover:bg-amber-600 shadow-amber-100';
+                              case 'Premium': return 'bg-blue-600 hover:bg-blue-700 shadow-blue-200';
+                              case 'Standard':
+                              default: return 'bg-gray-500 hover:bg-gray-600 shadow-gray-100';
+                            }
                           }
                         };
                         
@@ -407,7 +469,7 @@ export default function HallSeatsPage() {
                           >
                             <button
                               onClick={() => handleOpenModal(seat)}
-                              className={`w-10 h-10 rounded-t-lg ${getQualityColor(seat.ScreenViewInfo)} text-white text-xs font-semibold flex items-center justify-center transition-all shadow hover:shadow-lg cursor-pointer`}
+                              className={`w-10 h-10 rounded-t-lg ${getSeatColor(seat)} text-white text-xs font-bold flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 cursor-pointer`}
                               title={`Fila ${seat.RowNumber}, Asiento ${seat.SeatNumber}`}
                             >
                               {seat.SeatNumber}
@@ -415,10 +477,29 @@ export default function HallSeatsPage() {
 
                             {/* Hover Tooltip */}
                             <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10">
-                              <div className="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-                                <div className="font-semibold">{seat.RowNumber}{seat.SeatNumber}</div>
-                                <div className="text-gray-300">Vista: {seat.ScreenViewInfo}</div>
-                                <div className="text-gray-300">Sonido: {seat.AcousticProfile}</div>
+                              <div className="bg-gray-900 text-white text-xs rounded-xl px-4 py-3 whitespace-nowrap shadow-2xl border border-gray-800">
+                                <div className="font-black text-sm mb-1 text-yellow-400">
+                                  ASIENTO {seat.RowNumber}{seat.SeatNumber}
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex justify-between gap-4">
+                                    <span className="text-gray-400">Categoría:</span>
+                                    <span className="font-bold">{seat.Category === 'VIP' ? 'VIP' : seat.Category === 'Premium' ? 'Premium' : 'Estándar'}</span>
+                                  </div>
+                                  <div className="flex justify-between gap-4">
+                                    <span className="text-gray-400">Recargo:</span>
+                                    <span className="font-bold text-green-400">+{seat.PriceModifier || 0} Bs</span>
+                                  </div>
+                                  <div className="h-px bg-gray-800 my-1"></div>
+                                  <div className="flex justify-between gap-4">
+                                    <span className="text-gray-400">Vista:</span>
+                                    <span>{seat.ScreenViewInfo}</span>
+                                  </div>
+                                  <div className="flex justify-between gap-4">
+                                    <span className="text-gray-400">Sonido:</span>
+                                    <span>{seat.AcousticProfile}</span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -448,6 +529,12 @@ export default function HallSeatsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Perfil Acústico
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Categoría
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Recargo
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Acciones
                   </th>
@@ -456,7 +543,7 @@ export default function HallSeatsPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {seats.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                       No se encontraron asientos. ¡Agrega tu primer asiento!
                     </td>
                   </tr>
@@ -480,6 +567,20 @@ export default function HallSeatsPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-600">{seat.AcousticProfile}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            seat.Category === 'VIP' ? 'bg-amber-100 text-amber-800' :
+                            seat.Category === 'Premium' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {seat.Category === 'VIP' ? 'VIP' : seat.Category === 'Premium' ? 'Premium' : 'Estándar'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {seat.PriceModifier > 0 ? `+${seat.PriceModifier} Bs` : '0 Bs'}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
@@ -577,6 +678,48 @@ export default function HallSeatsPage() {
                 <option value="Average">Regular</option>
                 <option value="Poor">Deficiente</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Categoría de Asiento
+              </label>
+              <select
+                required
+                value={formData.Category}
+                onChange={(e) => {
+                  const newCategory = e.target.value as 'Standard' | 'Premium' | 'VIP';
+                  const defaultModifiers = { Standard: 0, Premium: 5, VIP: 15 };
+                  setFormData({ 
+                    ...formData, 
+                    Category: newCategory,
+                    PriceModifier: defaultModifiers[newCategory]
+                  });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="Standard">Estándar (Precio Base)</option>
+                <option value="Premium">Premium (+5 Bs)</option>
+                <option value="VIP">VIP (+15 Bs)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Modificador de Precio (Bs)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.PriceModifier}
+                onChange={(e) => setFormData({ ...formData, PriceModifier: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="0"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Valor adicional que se sumará al precio base de la función
+              </p>
             </div>
           </div>
 

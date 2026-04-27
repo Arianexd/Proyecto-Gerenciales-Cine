@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import LoadingSpinner from './LoadingSpinner';
-import { getStoredSession, subscribeToAuthChanges, UserRole } from '@/lib/auth';
+import { UserRole, useAuthSession } from '@/lib/auth';
 
 interface RoleProtectedRouteProps {
   allowedRoles: UserRole[];
@@ -14,34 +14,39 @@ interface RoleProtectedRouteProps {
 export default function RoleProtectedRoute({
   allowedRoles,
   redirectTo,
-  children
+  children,
 }: RoleProtectedRouteProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const session = useAuthSession();
+  const [hasMounted, setHasMounted] = useState(false);
+
+  const allowedRolesKey = allowedRoles.join('|');
+  const isAuthorized = useMemo(() => {
+    if (!session) {
+      return false;
+    }
+
+    return allowedRoles.includes(session.user.Role);
+  }, [allowedRolesKey, allowedRoles, session]);
 
   useEffect(() => {
-    const checkSession = () => {
-      const session = getStoredSession();
-      const hasPermission = Boolean(session && allowedRoles.includes(session.user.Role));
+    setHasMounted(true);
+  }, []);
 
-      setIsAuthorized(hasPermission);
-      setIsLoading(false);
+  useEffect(() => {
+    if (!hasMounted || isAuthorized) {
+      return;
+    }
 
-      if (!hasPermission) {
-        const redirectUrl = pathname
-          ? `${redirectTo}?redirect=${encodeURIComponent(pathname)}`
-          : redirectTo;
-        router.push(redirectUrl);
-      }
-    };
+    const redirectUrl = pathname
+      ? `${redirectTo}?redirect=${encodeURIComponent(pathname)}`
+      : redirectTo;
 
-    checkSession();
-    return subscribeToAuthChanges(checkSession);
-  }, [allowedRoles, pathname, redirectTo, router]);
+    router.replace(redirectUrl);
+  }, [hasMounted, isAuthorized, pathname, redirectTo, router]);
 
-  if (isLoading) {
+  if (!hasMounted) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />

@@ -7,7 +7,7 @@ const { requireAuth, requireAdmin, requireAdminOrCajero, isOwnerOrAdmin } = requ
 router.get('/', requireAuth, requireAdminOrCajero, async (req, res) => {
   try {
     const reservations = await Reservation.find()
-      .populate('CustomerID', 'Name Surname Email')
+      .populate('CustomerID', 'Name Surname CI Email')
       .populate({
         path: 'SessionID',
         populate: [
@@ -54,7 +54,7 @@ router.post('/', requireAuth, requireAdminOrCajero, async (req, res) => {
     const reservation = new Reservation(req.body);
     await reservation.save();
     const populatedReservation = await Reservation.findById(reservation._id)
-      .populate('CustomerID', 'Name Surname Email')
+      .populate('CustomerID', 'Name Surname CI Email')
       .populate({
         path: 'SessionID',
         populate: [

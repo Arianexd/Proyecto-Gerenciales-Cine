@@ -7,6 +7,9 @@ interface SeatPreviewProps {
   seatRow?: string;
   seatNumber?: number;
   totalSeatsInRow?: number;
+  category?: 'Standard' | 'Premium' | 'VIP';
+  priceModifier?: number;
+  sessionPrice?: number;
 }
 
 export default function SeatPreview({ 
@@ -15,7 +18,10 @@ export default function SeatPreview({
   hallCapacity,
   seatRow,
   seatNumber,
-  totalSeatsInRow = 15
+  totalSeatsInRow = 15,
+  category = 'Standard',
+  priceModifier = 0,
+  sessionPrice = 0
 }: SeatPreviewProps) {
   
   // 1. Cálculos de posición
@@ -108,6 +114,23 @@ export default function SeatPreview({
 
   const viewData = getViewPreview();
   const acousticData = getAcousticPreview();
+  
+  // Calculate pricing
+  const totalPrice = sessionPrice + priceModifier;
+  const getCategoryInfo = () => {
+    switch (category) {
+      case 'VIP':
+        return { name: 'VIP', color: 'amber', description: 'Experiencia premium con asientos reclinables' };
+      case 'Premium':
+        return { name: 'Premium', color: 'blue', description: 'Mayor comodidad y mejor vista' };
+      case 'Standard':
+        return { name: 'Estándar', color: 'gray', description: 'Comodidad básica' };
+      default:
+        return { name: 'Estándar', color: 'gray', description: 'Comodidad básica' };
+    }
+  };
+  
+  const categoryInfo = getCategoryInfo();
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -311,6 +334,44 @@ export default function SeatPreview({
           </p>
         </div>
 
+      </div>
+
+      {/* Pricing Information */}
+      <div className="col-span-1 md:col-span-2 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg p-4 border border-purple-300 text-white">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center">
+            <svg className="w-6 h-6 mr-2 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 className="text-lg font-semibold">Precio Total</h3>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-bold">{totalPrice} Bs</div>
+            <div className="text-xs text-purple-200">Por asiento</div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="bg-white/10 rounded-lg p-3">
+            <div className="text-purple-200 text-xs mb-1">Precio Base</div>
+            <div className="font-semibold">{sessionPrice} Bs</div>
+          </div>
+          <div className="bg-white/10 rounded-lg p-3">
+            <div className="text-purple-200 text-xs mb-1">Categoría</div>
+            <div className="font-semibold flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full bg-${categoryInfo.color}-400`}></span>
+              {categoryInfo.name}
+            </div>
+          </div>
+          <div className="bg-white/10 rounded-lg p-3">
+            <div className="text-purple-200 text-xs mb-1">Recargo</div>
+            <div className="font-semibold">+{priceModifier} Bs</div>
+          </div>
+        </div>
+        
+        <div className="mt-3 text-xs text-purple-200 italic">
+          * {categoryInfo.description}
+        </div>
       </div>
 
       {/* Hall Information */}

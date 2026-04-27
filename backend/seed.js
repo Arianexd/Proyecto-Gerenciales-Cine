@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
+const { connectToDatabase, REQUIRED_DB_TARGET } = require('./config/database');
 
 const Customer = require('./models/Customer');
 const Movie = require('./models/Movie');
@@ -20,8 +21,8 @@ const { generateTicketCode } = require('./utils/tickets');
 const seedDatabase = async () => {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB connected');
+    await connectToDatabase();
+    console.log(`MongoDB connected to ${REQUIRED_DB_TARGET}`);
 
     // Clear existing data
     await Customer.deleteMany({});
