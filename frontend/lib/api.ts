@@ -39,6 +39,8 @@ export const authApi = {
     Email?: string;
     PhoneNumber?: string;
   }) => api.patch("/auth/me/profile", data),
+  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+    api.patch("/auth/me/password", data),
 };
 
 // Movies API

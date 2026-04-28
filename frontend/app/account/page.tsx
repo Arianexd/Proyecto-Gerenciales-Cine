@@ -15,12 +15,18 @@ export default function AccountPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'tickets' | 'reservations'>('profile');
   const [formData, setFormData] = useState({
     Name: '',
     Surname: '',
     Email: '',
     PhoneNumber: '',
+  });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
   });
 
   useEffect(() => {
@@ -68,6 +74,34 @@ export default function AccountPage() {
       toast.error(message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (passwordData.newPassword.length < 6) {
+      toast.error('La nueva contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error('Las contraseñas no coinciden');
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      await authApi.changePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+      toast.success('Contraseña actualizada correctamente');
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error: any) {
+      const message = error?.response?.data?.error || 'No se pudo cambiar la contraseña';
+      toast.error(message);
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -181,6 +215,7 @@ export default function AccountPage() {
 
               {/* Tab: Profile */}
               {activeTab === 'profile' && (
+                <div className="space-y-6">
                 <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
                   <div className="px-6 py-5 border-b border-gray-100 dark:border-white/5">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white">Información personal</h2>
@@ -247,6 +282,69 @@ export default function AccountPage() {
                       </button>
                     </div>
                   </form>
+                </div>
+
+                {/* Change password card */}
+                <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
+                  <div className="px-6 py-5 border-b border-gray-100 dark:border-white/5">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">Cambiar contraseña</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Mínimo 6 caracteres</p>
+                  </div>
+                  <form onSubmit={handleChangePassword} className="p-6 space-y-5">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                        Contraseña actual
+                      </label>
+                      <input
+                        type="password"
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                        placeholder="••••••••"
+                        required
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                          Nueva contraseña
+                        </label>
+                        <input
+                          type="password"
+                          value={passwordData.newPassword}
+                          onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                          placeholder="••••••••"
+                          minLength={6}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                          Confirmar nueva contraseña
+                        </label>
+                        <input
+                          type="password"
+                          value={passwordData.confirmPassword}
+                          onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                          placeholder="••••••••"
+                          minLength={6}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="pt-1">
+                      <button
+                        type="submit"
+                        disabled={changingPassword}
+                        className="px-6 py-2.5 bg-gray-900 dark:bg-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors text-sm"
+                      >
+                        {changingPassword ? 'Actualizando...' : 'Actualizar contraseña'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
                 </div>
               )}
 

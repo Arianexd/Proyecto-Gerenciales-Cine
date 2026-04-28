@@ -180,12 +180,12 @@ export default function LoginPage() {
 
             <button
               type="button"
-              onClick={() => fillDemo('cliente', 'cliente')}
+              onClick={() => fillDemo('cliente@test.com', 'cliente')}
               className="w-full text-left p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors"
             >
               <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400 mb-0.5">Cliente</p>
               <p className="text-xs text-emerald-600 dark:text-emerald-500">
-                Usuario: <code className="bg-emerald-100 dark:bg-emerald-500/20 px-1 rounded">cliente</code>{' '}
+                Email: <code className="bg-emerald-100 dark:bg-emerald-500/20 px-1 rounded">cliente@test.com</code>{' '}
                 Contraseña: <code className="bg-emerald-100 dark:bg-emerald-500/20 px-1 rounded">cliente</code>
               </p>
             </button>

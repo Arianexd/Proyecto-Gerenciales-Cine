@@ -180,4 +180,37 @@ router.patch("/me/profile", requireAuth, async (req, res) => {
   }
 });
 
+router.patch("/me/password", requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ error: "Current and new password are required" });
+    }
+
+    if (newPassword.length < 6) {
+      return res
+        .status(400)
+        .json({ error: "New password must be at least 6 characters long" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      req.user.PasswordHash,
+    );
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "Current password is incorrect" });
+    }
+
+    req.user.PasswordHash = await bcrypt.hash(newPassword, 10);
+    await req.user.save();
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 module.exports = router;
