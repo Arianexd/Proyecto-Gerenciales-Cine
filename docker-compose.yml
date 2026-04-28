@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cinema-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./backend/.env
+    # environment:
+    #   - MONGODB_URI=tu_mongo_uri (si no usas .env)
+    #   - PORT=3000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # IMPORTANTE: Cambia "localhost" por la IP pública de tu VPS o tu dominio
+        NEXT_PUBLIC_API_URL: http://TU_IP_PUBLICA_O_DOMINIO:3000/api
+    container_name: cinema-frontend
+    restart: unless-stopped
+    ports:
+      - "80:5173" # Mapea el puerto 80 del VPS al 5173 del contenedor (Next.js)
+    depends_on:
+      - backend
