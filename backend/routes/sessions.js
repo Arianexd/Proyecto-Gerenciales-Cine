@@ -55,12 +55,58 @@ router.get('/:id/availability', async (req, res) => {
 // POST create new session
 router.post('/', requireAdmin, async (req, res) => {
   try {
-    const { HallID, SessionDateTime } = req.body;
+    const { HallID, SessionDateTime, MovieID } = req.body;
 
-    // Check for existing session in the same hall at the same time
-    const existingSession = await MovieSession.findOne({ HallID, SessionDateTime });
-    if (existingSession) {
-      return res.status(400).json({ error: 'Ya existe una función programada en esta sala para el horario seleccionado.' });
+    // ✅ Validación mejorada: considerar duración de película y tiempo de limpieza
+    const Movie = require('../models/Movie');
+    const movie = await Movie.findById(MovieID);
+    if (!movie) {
+      return res.status(400).json({ error: 'Película no encontrada' });
+    }
+
+    const sessionStart = new Date(SessionDateTime);
+    const sessionEnd = new Date(sessionStart);
+    sessionEnd.setMinutes(sessionEnd.getMinutes() + movie.Duration + 30); // +30 min limpieza
+
+    // Buscar sesiones que se solapen considerando duración
+    const conflictingSessions = await MovieSession.find({
+      HallID,
+      _id: { $ne: req.params.id }, // Excluir sesión actual si es actualización
+      $or: [
+        // Sesión existente empieza durante la nueva sesión
+        {
+          SessionDateTime: { 
+            $gte: sessionStart, 
+            $lt: sessionEnd 
+          }
+        },
+        // Sesión existente termina durante la nueva sesión
+        {
+          $expr: {
+            $gt: [
+              { 
+                $add: [
+                  "$SessionDateTime", 
+                  { $multiply: ["$Duration", 60000] }, 
+                  1800000 // 30 min limpieza
+                ] 
+              },
+              sessionStart
+            ]
+          }
+        }
+      ]
+    }).populate('MovieID', 'MovieName Duration');
+
+    if (conflictingSessions.length > 0) {
+      const conflict = conflictingSessions[0];
+      const conflictStart = new Date(conflict.SessionDateTime);
+      const conflictEnd = new Date(conflictStart);
+      conflictEnd.setMinutes(conflictEnd.getMinutes() + (conflict.MovieID?.Duration || 120) + 30);
+      
+      return res.status(400).json({ 
+        error: `Conflicto de horario con "${conflict.MovieID?.MovieName}" (${conflictStart.toLocaleTimeString()} - ${conflictEnd.toLocaleTimeString()})` 
+      });
     }
 
     const session = new MovieSession(req.body);
@@ -77,17 +123,56 @@ router.post('/', requireAdmin, async (req, res) => {
 // PUT update session
 router.put('/:id', requireAdmin, async (req, res) => {
   try {
-    const { HallID, SessionDateTime } = req.body;
+    const { HallID, SessionDateTime, MovieID } = req.body;
 
-    if (HallID && SessionDateTime) {
-      // Check for existing session in the same hall at the same time (excluding current session)
-      const existingSession = await MovieSession.findOne({
+    if (HallID && SessionDateTime && MovieID) {
+      // ✅ Validación mejorada para actualizaciones
+      const Movie = require('../models/Movie');
+      const movie = await Movie.findById(MovieID);
+      if (!movie) {
+        return res.status(400).json({ error: 'Película no encontrada' });
+      }
+
+      const sessionStart = new Date(SessionDateTime);
+      const sessionEnd = new Date(sessionStart);
+      sessionEnd.setMinutes(sessionEnd.getMinutes() + movie.Duration + 30);
+
+      const conflictingSessions = await MovieSession.find({
         HallID,
-        SessionDateTime,
-        _id: { $ne: req.params.id }
-      });
-      if (existingSession) {
-        return res.status(400).json({ error: 'Ya existe otra función programada en esta sala para el horario seleccionado.' });
+        _id: { $ne: req.params.id },
+        $or: [
+          {
+            SessionDateTime: { 
+              $gte: sessionStart, 
+              $lt: sessionEnd 
+            }
+          },
+          {
+            $expr: {
+              $gt: [
+                { 
+                  $add: [
+                    "$SessionDateTime", 
+                    { $multiply: ["$Duration", 60000] }, 
+                    1800000
+                  ] 
+                },
+                sessionStart
+              ]
+            }
+          }
+        ]
+      }).populate('MovieID', 'MovieName Duration');
+
+      if (conflictingSessions.length > 0) {
+        const conflict = conflictingSessions[0];
+        const conflictStart = new Date(conflict.SessionDateTime);
+        const conflictEnd = new Date(conflictStart);
+        conflictEnd.setMinutes(conflictEnd.getMinutes() + (conflict.MovieID?.Duration || 120) + 30);
+        
+        return res.status(400).json({ 
+          error: `Conflicto de horario con "${conflict.MovieID?.MovieName}" (${conflictStart.toLocaleTimeString()} - ${conflictEnd.toLocaleTimeString()})` 
+        });
       }
     }
 

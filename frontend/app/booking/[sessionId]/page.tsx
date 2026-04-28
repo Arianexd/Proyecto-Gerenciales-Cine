@@ -11,6 +11,8 @@ import SeatPreview from '@/components/SeatPreview';
 import PublicNavigation from '@/components/PublicNavigation';
 import toast from 'react-hot-toast';
 
+type CartItem = { product: any; quantity: number };
+
 export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
@@ -21,6 +23,7 @@ export default function BookingPage() {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [hoveredSeat, setHoveredSeat] = useState<Seat | null>(null);
   const [reservedSeats, setReservedSeats] = useState<string[]>([]);
+  const [snackCart, setSnackCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [customerInfo, setCustomerInfo] = useState<{ Name: string; Surname: string; Email: string; PhoneNumber: string } | null>(null);
@@ -203,10 +206,10 @@ export default function BookingPage() {
   const movieName = typeof session.MovieID === 'object' ? session.MovieID.MovieName : 'Película';
   const hallName = typeof session.HallID === 'object' ? session.HallID.HallName : 'Sala';
   const hallCapacity = typeof session.HallID === 'object' ? session.HallID.Capacity : 100;
-  const totalPrice = selectedSeats.reduce((sum, seatId) => {
-    const seat = seats.find(s => s._id === seatId);
-    return sum + (session?.Price || 0) + (seat?.PriceModifier || 0);
-  }, 0);
+  
+  const ticketTotal = selectedSeats.length * session.Price;
+  const snackTotal = snackCart.reduce((sum, i) => sum + i.product.SalePrice * i.quantity, 0);
+  const grandTotal = ticketTotal + snackTotal;
 
   return (
     <>
@@ -267,7 +270,6 @@ export default function BookingPage() {
                 onSeatClick={handleSeatClick}
                 onSeatHover={setHoveredSeat}
                 reservedSeats={reservedSeats}
-                showCategories={true}
               />
             </div>
 
@@ -313,7 +315,7 @@ export default function BookingPage() {
                   </div>
                   <div className="flex justify-between items-center py-3 bg-gradient-to-r from-yellow-500/20 to-red-500/20 rounded-lg px-4 border-2 border-yellow-500/30">
                     <span className="text-yellow-400 font-black text-lg">TOTAL</span>
-                    <span className="text-yellow-400 font-black text-2xl md:text-3xl">Bs {totalPrice.toFixed(2)}</span>
+                    <span className="text-yellow-400 font-black text-2xl md:text-3xl">Bs {grandTotal.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

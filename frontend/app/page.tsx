@@ -60,13 +60,26 @@ export default function Home() {
   const featuredMovie = showingMovies.length > 0 ? showingMovies[0] : allMovies[0];
 
   const genres = useMemo(() => {
-    const extracted = allMovies.map(m => m.Genre);
-    return ['Todos', ...Array.from(new Set(extracted))];
+    // ✅ Extraer todos los géneros individuales de todas las películas
+    const allGenres = new Set<string>();
+    allMovies.forEach(movie => {
+      if (movie.Genre) {
+        // Separar géneros por coma y limpiar espacios
+        const movieGenres = movie.Genre.split(',').map(g => g.trim()).filter(g => g);
+        movieGenres.forEach(genre => allGenres.add(genre));
+      }
+    });
+    return ['Todos', ...Array.from(allGenres).sort()];
   }, [allMovies]);
 
   const filteredShowing = useMemo(() => {
     if (selectedGenre === 'Todos') return showingMovies;
-    return showingMovies.filter(movie => movie.Genre === selectedGenre);
+    // ✅ Filtrar por inclusión de género en lugar de coincidencia exacta
+    return showingMovies.filter(movie => {
+      if (!movie.Genre) return false;
+      const movieGenres = movie.Genre.split(',').map(g => g.trim());
+      return movieGenres.includes(selectedGenre);
+    });
   }, [showingMovies, selectedGenre]);
 
   return (

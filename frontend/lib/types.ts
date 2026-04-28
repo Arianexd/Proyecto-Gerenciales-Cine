@@ -56,10 +56,22 @@ export interface MovieSession {
   _id: string;
   MovieID: string | Movie;
   HallID: string | Hall;
-  SessionDateTime: string;
+  SessionDateTime: Date | string;
   Price: number;
   Language: string;
   SubtitleInfo: string;
+  // ✅ Campos agregados para mejor sincronización
+  AvailableSeats?: number;
+  TotalSeats?: number;
+  HallInfo?: {
+    HallName: string;
+    Capacity: number;
+  };
+  MovieInfo?: {
+    MovieName: string;
+    Genre: string;
+    Duration: number;
+  };
   createdAt?: string;
   updatedAt?: string;
 }
@@ -69,6 +81,12 @@ export interface Reservation {
   CustomerID: string | Customer;
   SessionID: string | MovieSession;
   SeatIDs?: Array<string | Seat>;
+  // ✅ Agregar SnackItems para sincronización completa
+  SnackItems?: Array<{
+    ProductID: string;
+    Quantity: number;
+    Price: number;
+  }>;
   CreationTime: string;
   Status: 'CREATED' | 'PAID' | 'CANCELLED';
   createdAt?: string;

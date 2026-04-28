@@ -16,8 +16,25 @@ export default function SessionCard({ session }: SessionCardProps) {
     };
   };
 
-  const { date, time } = formatDateTime(session.SessionDateTime);
-  const hallName = typeof session.HallID === 'object' ? session.HallID.HallName : 'Sala';
+  const { date, time } = formatDateTime(session.SessionDateTime.toString());
+  
+  // ✅ Manejo robusto de datos de sala
+  const getHallInfo = (session: MovieSession) => {
+    if (typeof session.HallID === 'object' && session.HallID) {
+      return {
+        name: session.HallID.HallName || 'Sala sin nombre',
+        capacity: session.HallID.Capacity || 0
+      };
+    } else if (session.HallInfo) {
+      return {
+        name: session.HallInfo.HallName || 'Sala sin nombre',
+        capacity: session.HallInfo.Capacity || 0
+      };
+    }
+    return { name: 'Sala no disponible', capacity: 0 };
+  };
+  
+  const hallInfo = getHallInfo(session);
 
   return (
     <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden">
@@ -41,7 +58,7 @@ export default function SessionCard({ session }: SessionCardProps) {
             <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-            <span className="text-sm font-semibold text-gray-700">{hallName}</span>
+            <span className="text-sm font-semibold text-gray-700">{hallInfo.name}</span>
           </div>
 
           <div className="flex gap-2">
