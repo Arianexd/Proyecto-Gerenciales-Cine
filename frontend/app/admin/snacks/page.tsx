@@ -50,7 +50,7 @@ export default function SnacksPage() {
   const totalSalesAmount = sales.reduce((sum, s) => sum + (s.TotalAmount || 0), 0);
 
   return (
-    <RoleProtectedRoute allowedRoles={['ADMIN']} redirectTo="/admin/login">
+    <RoleProtectedRoute allowedRoles={['ADMIN']} redirectTo="/account/login">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>

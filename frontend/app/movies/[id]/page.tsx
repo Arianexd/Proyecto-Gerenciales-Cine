@@ -182,16 +182,11 @@ export default function MovieDetailPage() {
               e.currentTarget.src = 'https://via.placeholder.com/1920x1080/111827/f9fafb?text=Sin+Poster';
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-50 dark:from-gray-950 via-gray-50/60 dark:via-gray-950/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-50 dark:from-gray-950 via-transparent to-transparent" />
         </div>
 
-        {/* Film Strip Top */}
-        <div className="absolute top-0 left-0 right-0 h-3 bg-yellow-500 flex gap-1 px-1 z-10">
-          {[...Array(30)].map((_, i) => (
-            <div key={i} className="flex-1 bg-black rounded-sm"></div>
-          ))}
-        </div>
+
 
         <div className="container mx-auto px-4 h-full flex flex-col md:flex-row items-center justify-center gap-12 relative z-10 pt-20">
           {/* Poster con efectos cinematográficos */}
@@ -217,7 +212,7 @@ export default function MovieDetailPage() {
               </span>
             </div>
             
-            <h1 className="text-6xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.9] bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
+            <h1 className="text-6xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.9] bg-clip-text text-transparent bg-gradient-to-b from-gray-900 to-gray-500 dark:from-white dark:to-gray-400">
               {movie.MovieName}
             </h1>
             
@@ -245,7 +240,7 @@ export default function MovieDetailPage() {
               </Link>
               <Link
                 href="/movies"
-                className="px-10 py-4 bg-white/5 backdrop-blur-xl text-white border border-white/10 rounded-2xl font-black text-lg hover:bg-white/10 transition-all"
+                className="px-10 py-4 bg-white/50 dark:bg-white/5 backdrop-blur-xl text-gray-900 dark:text-white border border-gray-300 dark:border-white/10 rounded-2xl font-black text-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
               >
                 Explorar Catálogo
               </Link>
@@ -255,7 +250,7 @@ export default function MovieDetailPage() {
       </section>
 
       {/* Content Section */}
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-100 to-gray-50 dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-300">
         <div className="container mx-auto px-4 py-24 space-y-32">
           
           {/* Información Detallada */}
@@ -263,42 +258,42 @@ export default function MovieDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Detalles principales */}
               <div className="lg:col-span-2 space-y-8">
-                <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-2 border-gray-800 p-8">
+                <div className="bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-black rounded-2xl border-2 border-gray-200 dark:border-gray-800 p-8 shadow-sm">
                   <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-400 mb-6">
                     Información de la Película
                   </h2>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                      <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-2">Director</p>
-                      <p className="text-white font-semibold text-lg">{movieDirector}</p>
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
+                      <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-2">Director</p>
+                      <p className="text-gray-900 dark:text-white font-semibold text-lg">{movieDirector}</p>
                     </div>
                     
-                    <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                      <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-2">Duración</p>
-                      <p className="text-white font-semibold text-lg">{movie.Duration} minutos</p>
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
+                      <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-2">Duración</p>
+                      <p className="text-gray-900 dark:text-white font-semibold text-lg">{movie.Duration} minutos</p>
                     </div>
                     
-                    <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                      <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-2">Clasificación</p>
-                      <p className="text-white font-semibold text-lg">+{movie.AgeLimit}</p>
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
+                      <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-2">Clasificación</p>
+                      <p className="text-gray-900 dark:text-white font-semibold text-lg">+{movie.AgeLimit}</p>
                     </div>
                     
-                    <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                      <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-2">Género</p>
-                      <p className="text-white font-semibold text-lg">{movie.Genre}</p>
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
+                      <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-2">Género</p>
+                      <p className="text-gray-900 dark:text-white font-semibold text-lg">{movie.Genre}</p>
                     </div>
                   </div>
                   
-                  <div className="mt-8 bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                    <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-3">Sinopsis</p>
-                    <p className="text-gray-300 text-base leading-relaxed">{movieDescription}</p>
+                  <div className="mt-8 bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
+                    <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-3">Sinopsis</p>
+                    <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">{movieDescription}</p>
                   </div>
                   
                   {movie.Cast && movie.Cast.length > 0 && (
-                    <div className="mt-8 bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                      <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-3">Reparto</p>
-                      <p className="text-gray-300 text-base leading-relaxed">{castList}</p>
+                    <div className="mt-8 bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
+                      <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-3">Reparto</p>
+                      <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">{castList}</p>
                     </div>
                   )}
                 </div>
@@ -307,8 +302,8 @@ export default function MovieDetailPage() {
               {/* Trailer y acciones */}
               <div className="space-y-6">
                 {movie.TrailerURL && (
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-2 border-gray-800 p-6">
-                    <h3 className="text-xl font-black text-white mb-4">Tráiler</h3>
+                  <div className="bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-black rounded-2xl border-2 border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white mb-4">Tráiler</h3>
                     <a
                       href={movie.TrailerURL}
                       target="_blank"
@@ -325,8 +320,8 @@ export default function MovieDetailPage() {
                   </div>
                 )}
                 
-                <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-2 border-gray-800 p-6">
-                  <h3 className="text-xl font-black text-white mb-4">Comparte</h3>
+                <div className="bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-black rounded-2xl border-2 border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+                  <h3 className="text-xl font-black text-gray-900 dark:text-white mb-4">Comparte</h3>
                   <div className="flex gap-3">
                     <button className="w-12 h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all hover:scale-105">
                       <svg className="w-5 h-5 mx-auto" fill="currentColor" viewBox="0 0 24 24">
@@ -353,18 +348,18 @@ export default function MovieDetailPage() {
         <section id="funciones" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-3xl md:text-4xl font-black tracking-tighter text-white mb-2">Funciones Disponibles</h2>
-              <p className="text-gray-400 text-sm">Elige la función que mejor te venga</p>
+              <h2 className="text-3xl md:text-4xl font-black tracking-tighter text-gray-900 dark:text-white mb-2">Funciones Disponibles</h2>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Elige la función que mejor te venga</p>
             </div>
           </div>
 
           {sessions.length === 0 ? (
-            <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-12 text-center">
+            <div className="bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-12 text-center shadow-sm">
               <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <h3 className="text-xl font-bold text-white mb-2">No hay funciones disponibles</h3>
-              <p className="text-gray-400 text-sm">Vuelve más tarde para ver próximas funciones.</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No hay funciones disponibles</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Vuelve más tarde para ver próximas funciones.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -379,39 +374,39 @@ export default function MovieDetailPage() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Valoraciones de Clientes */}
-            <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-2 border-gray-800 p-8">
+            <div className="bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-black rounded-2xl border-2 border-gray-200 dark:border-gray-800 p-8 shadow-sm">
               <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-400 mb-6">
                 Valoraciones de Clientes
               </h2>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-                  <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-2">Promedio</p>
-                  <p className="text-3xl font-black text-white">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
+                  <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-2">Promedio</p>
+                  <p className="text-3xl font-black text-gray-900 dark:text-white">
                     {reviewSummary.averageScore.toFixed(1)}
-                    <span className="text-sm font-semibold text-gray-400">/5</span>
+                    <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">/5</span>
                   </p>
                 </div>
-                <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-                  <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-2">Opiniones</p>
-                  <p className="text-3xl font-black text-white">{reviewSummary.reviewCount}</p>
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
+                  <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-2">Opiniones</p>
+                  <p className="text-3xl font-black text-gray-900 dark:text-white">{reviewSummary.reviewCount}</p>
                 </div>
               </div>
 
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                 {reviews.length === 0 ? (
-                  <p className="text-sm text-gray-400 py-8 text-center">Todavía no hay valoraciones para esta película.</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Todavía no hay valoraciones para esta película.</p>
                 ) : (
                   reviews.map((review) => {
                     const customer = typeof review.CustomerID === 'object' ? review.CustomerID : null;
                     return (
-                      <div key={review._id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                      <div key={review._id} className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <p className="text-sm font-semibold text-white">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
                               {customer ? `${customer.Name} ${customer.Surname}` : 'Cliente Anónimo'}
                             </p>
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
                               {new Date(review.createdAt || '').toLocaleDateString('es-ES', { 
                                 day: '2-digit', 
                                 month: '2-digit', 
@@ -424,7 +419,7 @@ export default function MovieDetailPage() {
                             <span className="text-xs font-bold">{review.Score}/5</span>
                           </div>
                         </div>
-                        <p className="text-sm text-gray-300 leading-relaxed">{review.Comment}</p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{review.Comment}</p>
                       </div>
                     );
                   })
@@ -433,7 +428,7 @@ export default function MovieDetailPage() {
             </div>
 
             {/* Tu Valoración */}
-            <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-2 border-gray-800 p-8">
+            <div id="valorar" className="bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-black rounded-2xl border-2 border-gray-200 dark:border-gray-800 p-8 shadow-sm scroll-mt-20">
               <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-400 mb-6">
                 Tu Valoración
               </h2>
@@ -441,7 +436,7 @@ export default function MovieDetailPage() {
               {canReview ? (
                 <div className="space-y-6">
                   <div>
-                    <p className="text-sm font-semibold text-gray-300 mb-4">Puntuación:</p>
+                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Puntuación:</p>
                     <div className="flex gap-2">
                       {[1, 2, 3, 4, 5].map((score) => (
                         <button
@@ -450,7 +445,7 @@ export default function MovieDetailPage() {
                           className={`px-4 py-3 rounded-xl font-bold transition-all transform hover:scale-105 ${
                             reviewForm.Score === score
                               ? 'bg-yellow-400 text-yellow-900 shadow-lg shadow-yellow-400/30'
-                              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                           }`}
                         >
                           {score} ★
@@ -464,7 +459,7 @@ export default function MovieDetailPage() {
                       value={reviewForm.Comment}
                       onChange={(e) => setReviewForm({ ...reviewForm, Comment: e.target.value })}
                       placeholder="Comparte tu experiencia..."
-                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 transition-all resize-none"
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-red-500 dark:focus:border-red-400 focus:ring-2 focus:ring-red-500/20 dark:focus:ring-red-400/20 transition-all resize-none"
                       rows={4}
                     />
                   </div>
@@ -479,16 +474,16 @@ export default function MovieDetailPage() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-400 text-sm mb-4">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
                     {reviewReason || 'Debes ver la película para poder valorarla'}
                   </p>
                   {myReview && (
-                    <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-                      <p className="text-sm font-semibold text-white mb-2">Tu valoración anterior:</p>
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Tu valoración anterior:</p>
                       <div className="bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-md inline-block mb-2">
                         <span className="text-xs font-bold">{myReview.Score}/5</span>
                       </div>
-                      <p className="text-sm text-gray-300">{myReview.Comment}</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{myReview.Comment}</p>
                     </div>
                   )}
                 </div>
@@ -500,20 +495,20 @@ export default function MovieDetailPage() {
       </div>
 
       {/* Footer Cinematográfico */}
-      <footer className="bg-black py-20 border-t border-white/5">
+      <footer className="bg-gray-100 dark:bg-black py-20 border-t border-gray-200 dark:border-white/5 transition-colors duration-300">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center font-black text-xl">C</div>
-              <span className="text-2xl font-black tracking-tighter text-white">Cine<span className="text-red-600">book</span></span>
+              <span className="text-2xl font-black tracking-tighter text-gray-900 dark:text-white">Cine<span className="text-red-600">book</span></span>
             </div>
             <div className="flex gap-10 text-gray-500 text-sm font-bold">
-              <Link href="/movies" className="hover:text-white transition-colors">Películas</Link>
-              <Link href="/account/login" className="hover:text-white transition-colors">Mi Cuenta</Link>
-              <Link href="/admin/login" className="hover:text-white transition-colors">Administración</Link>
+              <Link href="/movies" className="hover:text-gray-900 dark:hover:text-white transition-colors">Películas</Link>
+              <Link href="/account/login" className="hover:text-gray-900 dark:hover:text-white transition-colors">Mi Cuenta</Link>
+              <Link href="/account/login?redirect=/admin" className="hover:text-gray-900 dark:hover:text-white transition-colors">Administración</Link>
             </div>
           </div>
-          <div className="mt-16 pt-8 border-t border-white/5 text-center text-gray-600 text-xs font-bold">
+          <div className="mt-16 pt-8 border-t border-gray-200 dark:border-white/5 text-center text-gray-500 dark:text-gray-600 text-xs font-bold">
             2026 PROYECTO CINEBOOK • TODOS LOS DERECHOS RESERVADOS
           </div>
         </div>

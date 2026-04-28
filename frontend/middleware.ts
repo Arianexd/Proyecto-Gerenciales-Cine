@@ -2,12 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  // Check if accessing admin routes (except login)
-  if (request.nextUrl.pathname.startsWith('/admin') && 
-      !request.nextUrl.pathname.startsWith('/admin/login')) {
-    
-    // In a real app, you'd check a session/JWT token
-    // For this demo, we'll let the client-side handle it
+  // Admin routes are protected client-side via AdminProtectedRoute
+  // which redirects to /account/login
+  if (request.nextUrl.pathname.startsWith('/admin')) {
     return NextResponse.next();
   }
 

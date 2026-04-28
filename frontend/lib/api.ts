@@ -76,6 +76,8 @@ export const customersApi = {
   create: (data: any) => api.post("/customers", data),
   update: (id: string, data: any) => api.put(`/customers/${id}`, data),
   delete: (id: string) => api.delete(`/customers/${id}`),
+  setPassword: (id: string, Password: string) =>
+    api.post(`/customers/${id}/set-password`, { Password }),
 };
 
 // Halls API

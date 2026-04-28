@@ -5,15 +5,22 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clearSession, getUserDisplayName, useAuthSession } from '@/lib/auth';
 import toast from 'react-hot-toast';
+import { useTheme } from 'next-themes';
 
 export default function PublicNavigation() {
   const pathname = usePathname();
   const session = useAuthSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     clearSession();
@@ -24,7 +31,7 @@ export default function PublicNavigation() {
   const isCustomer = session?.user.Role === 'CUSTOMER';
 
   return (
-    <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
+    <header className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-white/5 sticky top-0 z-50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -34,7 +41,7 @@ export default function PublicNavigation() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
               </svg>
             </div>
-            <span className="text-gray-900 font-bold text-xl tracking-tight">
+            <span className="text-gray-900 dark:text-white font-bold text-xl tracking-tight">
               Cine<span className="text-red-600">book</span>
             </span>
           </Link>
@@ -43,7 +50,7 @@ export default function PublicNavigation() {
           <div className="hidden md:flex items-center gap-3">
             {isStaff ? (
               <>
-                <span className="text-sm text-gray-400 font-medium">
+                <span className="text-sm text-gray-400 dark:text-gray-500 font-medium">
                   {session?.user.Role === 'ADMIN' ? 'Administrador' : 'Cajero'}
                 </span>
                 <Link
@@ -54,7 +61,7 @@ export default function PublicNavigation() {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="px-4 py-2 rounded-lg text-gray-600 text-sm font-medium hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                  className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 text-sm font-medium hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
                 >
                   Salir
                 </button>
@@ -62,17 +69,17 @@ export default function PublicNavigation() {
             ) : isCustomer ? (
               <>
                 <span className="text-sm text-gray-500 font-medium">
-                  Hola, <span className="text-gray-900 font-semibold">{getUserDisplayName(session.user)}</span>
+                  Hola, <span className="text-gray-900 dark:text-white font-semibold">{getUserDisplayName(session.user)}</span>
                 </span>
                 <Link
                   href="/account"
-                  className="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-gray-900 dark:bg-white dark:text-black text-white text-sm font-semibold hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors"
                 >
                   Mi cuenta
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="px-4 py-2 rounded-lg text-gray-600 text-sm font-medium hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                  className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 text-sm font-medium hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
                 >
                   Salir
                 </button>
@@ -81,7 +88,7 @@ export default function PublicNavigation() {
               <>
                 <Link
                   href="/account/login"
-                  className="px-4 py-2 rounded-lg text-gray-700 text-sm font-semibold hover:text-gray-900 hover:bg-gray-50 border border-gray-200 hover:border-gray-300 transition-colors"
+                  className="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 text-sm font-semibold hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 border border-gray-200 dark:border-white/10 transition-colors"
                 >
                   Iniciar sesión
                 </Link>
@@ -93,45 +100,75 @@ export default function PublicNavigation() {
                 </Link>
               </>
             )}
+
+            {/* Theme Toggle */}
+            {mounted && (
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="ml-2 w-9 h-9 flex items-center justify-center rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                aria-label="Toggle Dark Mode"
+              >
+                {theme === 'dark' ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                )}
+              </button>
+            )}
           </div>
 
           {/* Mobile toggle */}
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="md:hidden w-9 h-9 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
-            aria-label="Abrir menú"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} />
-            </svg>
-          </button>
+          <div className="flex md:hidden items-center gap-2">
+            {mounted && (
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                aria-label="Toggle Dark Mode"
+              >
+                {theme === 'dark' ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                )}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+              aria-label="Abrir menú"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-3 border-t border-gray-100 space-y-2">
+          <div className="md:hidden py-3 border-t border-gray-100 dark:border-white/5 space-y-2">
             {isStaff ? (
               <>
                 <Link href="/admin" className="block px-4 py-2.5 rounded-lg bg-red-600 text-white text-sm font-semibold text-center">
                   Panel {session?.user.Role === 'ADMIN' ? 'Admin' : 'Cajero'}
                 </Link>
-                <button onClick={handleLogout} className="w-full px-4 py-2.5 rounded-lg text-gray-600 text-sm font-medium border border-gray-200 text-center">
+                <button onClick={handleLogout} className="w-full px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 text-sm font-medium border border-gray-200 dark:border-white/10 text-center">
                   Cerrar sesión
                 </button>
               </>
             ) : isCustomer ? (
               <>
-                <Link href="/account" className="block px-4 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-semibold text-center">
+                <Link href="/account" className="block px-4 py-2.5 rounded-lg bg-gray-900 dark:bg-white dark:text-black text-white text-sm font-semibold text-center">
                   Mi cuenta
                 </Link>
-                <button onClick={handleLogout} className="w-full px-4 py-2.5 rounded-lg text-gray-600 text-sm font-medium border border-gray-200">
+                <button onClick={handleLogout} className="w-full px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 text-sm font-medium border border-gray-200 dark:border-white/10">
                   Cerrar sesión
                 </button>
               </>
             ) : (
               <>
-                <Link href="/account/login" className="block px-4 py-2.5 rounded-lg border border-gray-200 text-gray-700 text-sm font-semibold text-center">
+                <Link href="/account/login" className="block px-4 py-2.5 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 text-sm font-semibold text-center">
                   Iniciar sesión
                 </Link>
                 <Link href="/account/register" className="block px-4 py-2.5 rounded-lg bg-red-600 text-white text-sm font-semibold text-center">

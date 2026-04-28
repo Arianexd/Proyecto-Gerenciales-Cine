@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { authApi, meApi } from '@/lib/api';
-import { getStoredSession, storeSession } from '@/lib/auth';
+import { getStoredSession, storeSession, getUserDisplayName } from '@/lib/auth';
 import { Customer, Reservation, Ticket } from '@/lib/types';
 import CustomerProtectedRoute from '@/components/CustomerProtectedRoute';
 import PublicNavigation from '@/components/PublicNavigation';
@@ -15,6 +15,7 @@ export default function AccountPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'profile' | 'tickets' | 'reservations'>('profile');
   const [formData, setFormData] = useState({
     Name: '',
     Surname: '',
@@ -54,18 +55,12 @@ export default function AccountPage() {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-
     try {
       const response = await authApi.updateProfile(formData);
       const session = getStoredSession();
-
       if (session) {
-        storeSession({
-          token: session.token,
-          user: response.data.user,
-        });
+        storeSession({ token: session.token, user: response.data.user });
       }
-
       toast.success('Perfil actualizado correctamente');
       await fetchAccountData();
     } catch (error: any) {
@@ -76,104 +71,231 @@ export default function AccountPage() {
     }
   };
 
-  const paidReservations = reservations.filter((reservation) => reservation.Status === 'PAID');
+  const paidReservations = reservations.filter((r) => r.Status === 'PAID');
+
+  const getStatusStyles = (status: string) => {
+    switch (status) {
+      case 'PAID':
+        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400';
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400';
+      case 'CANCELLED':
+        return 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400';
+      default:
+        return 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-400';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'PAID': return 'Pagada';
+      case 'PENDING': return 'Pendiente';
+      case 'CANCELLED': return 'Cancelada';
+      default: return status;
+    }
+  };
+
+  const tabs = [
+    { id: 'profile', label: 'Mi Perfil', icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    )},
+    { id: 'tickets', label: 'Mis Tickets', icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+      </svg>
+    )},
+    { id: 'reservations', label: 'Mis Reservas', icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    )},
+  ] as const;
 
   return (
     <CustomerProtectedRoute>
-      <PublicNavigation />
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black py-12">
-        <div className="container mx-auto px-4 space-y-8">
-          <div className="text-center">
-            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-400 to-red-500 mb-3">
-              MI CUENTA
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+        <PublicNavigation />
+
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+          {/* Header */}
+          <div className="mb-8">
+            <p className="text-red-600 text-xs font-bold tracking-widest uppercase mb-1">Panel de usuario</p>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white">
+              Mi Cuenta
             </h1>
-            <p className="text-gray-400">Gestiona tu perfil, tus compras y las películas que ya puedes valorar.</p>
+            {!loading && profile && (
+              <p className="text-gray-500 dark:text-gray-400 mt-1">
+                Bienvenido de nuevo, <span className="font-semibold text-gray-800 dark:text-gray-200">{profile.Name} {profile.Surname}</span>
+              </p>
+            )}
           </div>
 
           {loading ? (
-            <div className="text-center text-gray-400 py-20">Cargando tu cuenta...</div>
+            /* Skeleton loader */
+            <div className="space-y-6 animate-pulse">
+              <div className="grid grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-24 rounded-2xl bg-gray-200 dark:bg-white/5" />
+                ))}
+              </div>
+              <div className="h-64 rounded-2xl bg-gray-200 dark:bg-white/5" />
+            </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-gray-900 to-black border-4 border-red-600 rounded-2xl p-6">
-                  <p className="text-yellow-400 font-black tracking-widest text-sm mb-2">RESERVAS</p>
-                  <p className="text-5xl font-black text-white">{reservations.length}</p>
+              {/* Stats row */}
+              <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-5 shadow-sm">
+                  <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Reservas</p>
+                  <p className="text-4xl font-black text-gray-900 dark:text-white">{reservations.length}</p>
                 </div>
-                <div className="bg-gradient-to-br from-gray-900 to-black border-4 border-yellow-500 rounded-2xl p-6">
-                  <p className="text-yellow-400 font-black tracking-widest text-sm mb-2">PAGADAS</p>
-                  <p className="text-5xl font-black text-white">{paidReservations.length}</p>
+                <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-5 shadow-sm">
+                  <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Pagadas</p>
+                  <p className="text-4xl font-black text-emerald-600 dark:text-emerald-400">{paidReservations.length}</p>
                 </div>
-                <div className="bg-gradient-to-br from-gray-900 to-black border-4 border-emerald-500 rounded-2xl p-6">
-                  <p className="text-yellow-400 font-black tracking-widest text-sm mb-2">TICKETS</p>
-                  <p className="text-5xl font-black text-white">{tickets.length}</p>
+                <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-5 shadow-sm">
+                  <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Tickets</p>
+                  <p className="text-4xl font-black text-red-600 dark:text-red-400">{tickets.length}</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-gradient-to-br from-gray-900 to-black border-4 border-red-600 rounded-2xl p-8">
-                  <h2 className="text-2xl font-black text-yellow-400 mb-6">PERFIL</h2>
-                  <form onSubmit={handleSaveProfile} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Tabs */}
+              <div className="flex gap-1 p-1 bg-gray-100 dark:bg-white/5 rounded-xl mb-6 w-fit">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                      activeTab === tab.id
+                        ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    }`}
+                  >
+                    {tab.icon}
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab: Profile */}
+              {activeTab === 'profile' && (
+                <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
+                  <div className="px-6 py-5 border-b border-gray-100 dark:border-white/5">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">Información personal</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Actualiza tu nombre, correo y teléfono</p>
+                  </div>
+                  <form onSubmit={handleSaveProfile} className="p-6 space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                          Nombre
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.Name}
+                          onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
+                          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                          placeholder="Tu nombre"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                          Apellido
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.Surname}
+                          onChange={(e) => setFormData({ ...formData, Surname: e.target.value })}
+                          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                          placeholder="Tu apellido"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                        Correo electrónico
+                      </label>
                       <input
-                        type="text"
-                        value={formData.Name}
-                        onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
-                        className="px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white"
-                        placeholder="Nombre"
-                      />
-                      <input
-                        type="text"
-                        value={formData.Surname}
-                        onChange={(e) => setFormData({ ...formData, Surname: e.target.value })}
-                        className="px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white"
-                        placeholder="Apellido"
+                        type="email"
+                        value={formData.Email}
+                        onChange={(e) => setFormData({ ...formData, Email: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                        placeholder="tu@correo.com"
                       />
                     </div>
-                    <input
-                      type="email"
-                      value={formData.Email}
-                      onChange={(e) => setFormData({ ...formData, Email: e.target.value })}
-                      className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white"
-                      placeholder="Correo"
-                    />
-                    <input
-                      type="tel"
-                      value={formData.PhoneNumber}
-                      onChange={(e) => setFormData({ ...formData, PhoneNumber: e.target.value })}
-                      className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white"
-                      placeholder="Teléfono"
-                    />
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 disabled:from-gray-700 disabled:to-gray-800 text-white font-black py-3 rounded-xl"
-                    >
-                      {saving ? 'GUARDANDO...' : 'GUARDAR CAMBIOS'}
-                    </button>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                        Teléfono
+                      </label>
+                      <input
+                        type="tel"
+                        value={formData.PhoneNumber}
+                        onChange={(e) => setFormData({ ...formData, PhoneNumber: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                        placeholder="+591 7XXXXXXX"
+                      />
+                    </div>
+                    <div className="pt-1">
+                      <button
+                        type="submit"
+                        disabled={saving}
+                        className="px-6 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors text-sm"
+                      >
+                        {saving ? 'Guardando...' : 'Guardar cambios'}
+                      </button>
+                    </div>
                   </form>
                 </div>
+              )}
 
-                <div className="bg-gradient-to-br from-gray-900 to-black border-4 border-yellow-500 rounded-2xl p-8">
-                  <h2 className="text-2xl font-black text-yellow-400 mb-6">ÚLTIMAS ENTRADAS</h2>
-                  <div className="space-y-4">
+              {/* Tab: Tickets */}
+              {activeTab === 'tickets' && (
+                <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
+                  <div className="px-6 py-5 border-b border-gray-100 dark:border-white/5">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">Mis Tickets</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Tus entradas de cine compradas</p>
+                  </div>
+                  <div className="divide-y divide-gray-100 dark:divide-white/5">
                     {tickets.length === 0 ? (
-                      <p className="text-gray-400">Aún no tienes entradas pagadas.</p>
+                      <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-600">
+                        <svg className="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                        </svg>
+                        <p className="text-sm font-medium">Aún no tienes tickets</p>
+                        <Link href="/movies" className="mt-3 text-sm text-red-600 font-semibold hover:underline">
+                          Explorar películas →
+                        </Link>
+                      </div>
                     ) : (
-                      tickets.slice(0, 4).map((ticket) => {
+                      tickets.map((ticket) => {
                         const reservation = typeof ticket.ReservationID === 'object' ? ticket.ReservationID : null;
                         const session = reservation && typeof reservation.SessionID === 'object' ? reservation.SessionID : null;
                         const movie = session && typeof session.MovieID === 'object' ? session.MovieID : null;
                         const seat = typeof ticket.SeatID === 'object' ? ticket.SeatID : null;
 
                         return (
-                          <div key={ticket._id} className="bg-black/40 border border-yellow-500/20 rounded-xl p-4 flex items-center justify-between gap-4">
-                            <div>
-                              <p className="text-white font-bold">{movie?.MovieName || 'Película'}</p>
-                              <p className="text-gray-400 text-sm">
-                                Asiento {seat?.RowNumber}{seat?.SeatNumber} · {ticket.TicketCode.slice(-8)}
-                              </p>
+                          <div key={ticket._id} className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-gray-50 dark:hover:bg-white/3 transition-colors">
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                  {movie?.MovieName || 'Película'}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  Asiento {seat?.RowNumber}{seat?.SeatNumber} · #{ticket.TicketCode.slice(-8).toUpperCase()}
+                                </p>
+                              </div>
                             </div>
-                            <Link href={`/my-ticket/${ticket._id}`} className="text-yellow-400 font-bold hover:text-yellow-300">
+                            <Link
+                              href={`/my-ticket/${ticket._id}`}
+                              className="flex-shrink-0 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors"
+                            >
                               Ver ticket
                             </Link>
                           </div>
@@ -182,46 +304,93 @@ export default function AccountPage() {
                     )}
                   </div>
                 </div>
-              </div>
+              )}
 
-              <div className="bg-gradient-to-br from-gray-900 to-black border-4 border-emerald-500 rounded-2xl p-8">
-                <h2 className="text-2xl font-black text-yellow-400 mb-6">MIS RESERVAS</h2>
-                <div className="space-y-4">
-                  {reservations.length === 0 ? (
-                    <p className="text-gray-400">Todavía no realizaste ninguna reserva.</p>
-                  ) : (
-                    reservations.map((reservation) => {
-                      const session = typeof reservation.SessionID === 'object' ? reservation.SessionID : null;
-                      const movie = session && typeof session.MovieID === 'object' ? session.MovieID : null;
-                      const seatCount = reservation.SeatIDs?.length || 0;
+              {/* Tab: Reservations */}
+              {activeTab === 'reservations' && (
+                <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
+                  <div className="px-6 py-5 border-b border-gray-100 dark:border-white/5">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">Mis Reservas</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Historial completo de reservas</p>
+                  </div>
+                  <div className="divide-y divide-gray-100 dark:divide-white/5">
+                    {reservations.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-600">
+                        <svg className="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p className="text-sm font-medium">Aún no tienes reservas</p>
+                        <Link href="/movies" className="mt-3 text-sm text-red-600 font-semibold hover:underline">
+                          Ver cartelera →
+                        </Link>
+                      </div>
+                    ) : (
+                      reservations.map((reservation) => {
+                        const session = typeof reservation.SessionID === 'object' ? reservation.SessionID : null;
+                        const movie = session && typeof session.MovieID === 'object' ? session.MovieID : null;
+                        const seatCount = reservation.SeatIDs?.length || 0;
+                        const sessionAlreadyHappened = session
+                          ? new Date(session.SessionDateTime) <= new Date()
+                          : false;
+                        const canRate = reservation.Status === 'PAID' && sessionAlreadyHappened && !!movie;
 
-                      return (
-                        <div key={reservation._id} className="bg-black/40 border border-white/10 rounded-xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                          <div>
-                            <p className="text-white font-bold text-lg">{movie?.MovieName || 'Película'}</p>
-                            <p className="text-gray-400 text-sm">
-                              {session ? new Date(session.SessionDateTime).toLocaleString('es-ES') : 'Sin función'}
-                            </p>
-                            <p className="text-gray-500 text-sm">{seatCount} asiento(s) · Estado {reservation.Status}</p>
+                        return (
+                          <div key={reservation._id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-gray-50 dark:hover:bg-white/3 transition-colors">
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center flex-shrink-0">
+                                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                    {movie?.MovieName || 'Película'}
+                                  </p>
+                                  <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusStyles(reservation.Status)}`}>
+                                    {getStatusLabel(reservation.Status)}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                  {session ? new Date(session.SessionDateTime).toLocaleString('es-ES', {
+                                    weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                                  }) : 'Sin función'} · {seatCount} asiento{seatCount !== 1 ? 's' : ''}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 flex-shrink-0">
+                              {reservation.Status === 'PAID' && (
+                                <Link
+                                  href={`/confirmation/${reservation._id}`}
+                                  className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition-colors"
+                                >
+                                  Ver compra
+                                </Link>
+                              )}
+                              {canRate && (
+                                <Link
+                                  href={`/movies/${movie!._id}#valorar`}
+                                  className="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition-colors"
+                                >
+                                  ★ Valorar
+                                </Link>
+                              )}
+                              {movie && (
+                                <Link
+                                  href={`/movies/${movie._id}`}
+                                  className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors"
+                                >
+                                  Ver película
+                                </Link>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex flex-wrap gap-3">
-                            {reservation.Status === 'PAID' && (
-                              <Link href={`/confirmation/${reservation._id}`} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold">
-                                Ver compra
-                              </Link>
-                            )}
-                            {movie && (
-                              <Link href={`/movies/${movie._id}`} className="px-4 py-2 bg-yellow-500 text-black rounded-lg font-bold">
-                                Ver película
-                              </Link>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           )}
         </div>

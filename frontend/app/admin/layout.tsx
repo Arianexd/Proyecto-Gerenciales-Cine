@@ -32,7 +32,7 @@ export default function AdminLayout({
   const handleLogout = () => {
     clearSession();
     toast.success('Sesión cerrada correctamente');
-    router.push('/admin/login');
+    router.push('/account/login');
   };
 
   if (isLoginPage) {

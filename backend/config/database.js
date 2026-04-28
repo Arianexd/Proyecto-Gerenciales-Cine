@@ -14,7 +14,7 @@ function getMongoUri() {
     );
   }
 
-  if (mongoUri !== REQUIRED_MONGODB_URI) {
+  if (!mongoUri.includes('cluster0.ebkcypd.mongodb.net')) {
     throw new Error(
       `Invalid MONGODB_URI. This project is configured to use only ${REQUIRED_DB_TARGET}.`,
     );
@@ -25,7 +25,7 @@ function getMongoUri() {
 
 async function connectToDatabase() {
   const mongoUri = getMongoUri();
-  const connection = await mongoose.connect(mongoUri);
+  const connection = await mongoose.connect(mongoUri, { dbName: REQUIRED_DB_NAME });
 
   if (connection.connection.name !== REQUIRED_DB_NAME) {
     throw new Error(

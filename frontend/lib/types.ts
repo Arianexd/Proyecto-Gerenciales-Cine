@@ -35,6 +35,8 @@ export interface Customer {
   Age: number;                                    // Añadido
   Email: string;
   PhoneNumber: string;
+  HasAccount?: boolean;
+  AccountActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

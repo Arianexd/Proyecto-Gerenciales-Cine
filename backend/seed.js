@@ -96,9 +96,9 @@ const seedDatabase = async () => {
         CustomerID: customers[2]._id
       },
       {
-        Username: 'demo',
+        Username: 'admin',
         Email: 'admin@cinebook.local',
-        PasswordHash: await bcrypt.hash('demo', 10),
+        PasswordHash: await bcrypt.hash('admin', 10),
         Role: 'ADMIN'
       },
       {
@@ -484,7 +484,7 @@ const seedDatabase = async () => {
     console.log(`Reviews: ${reviews.length}`);
     console.log(`Snack categories: ${snackCategories.length}`);
     console.log(`Snack products: ${snackProducts.length}`);
-    console.log('Admin login: demo / demo');
+    console.log('Admin login: admin / admin');
     console.log('Cajero login: cajero / cajero');
     console.log('Customer login: ahmet / demo123');
 
