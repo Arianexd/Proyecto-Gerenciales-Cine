@@ -798,7 +798,6 @@ export default function PosPage() {
                     )}
                     onSeatHover={setHoveredSeat}
                     reservedSeats={soldSeatIds}
-                    showCategories={true}
                   />
                 </div>
               </div>

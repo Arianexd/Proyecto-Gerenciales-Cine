@@ -142,8 +142,8 @@ export default function SessionsPage() {
     }
   };
 
-  const formatDateTime = (dateTime: string) => {
-    const date = new Date(dateTime);
+  const formatDateTime = (dateTime: string | Date) => {
+    const date = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
     return date.toLocaleString('es-ES', {
       year: 'numeric',
       month: 'short',

@@ -42,21 +42,21 @@ export default function AdminNavigation({ user }: { user: AuthUser | null }) {
   };
 
   return (
-    <div className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex overflow-x-auto space-x-1">
+    <div className="glass-panel border-b border-cyan-500/10 shadow-[0_0_20px_rgba(71,191,255,0.05)]">
+      <div className="container mx-auto px-6">
+        <div className="flex overflow-x-auto space-x-2 py-2">
           {filteredItems.map((item) => (
             <Link
               key={item.path}
               href={item.path}
-              className={`flex items-center gap-2 px-5 py-4 whitespace-nowrap text-sm font-black transition-all border-b-4 ${
+              className={`admin-nav-item flex items-center gap-3 px-6 py-4 whitespace-nowrap text-sm font-bold transition-all rounded-2xl ${
                 isActive(item.path)
-                  ? 'border-orange-600 text-orange-600 bg-orange-50/50'
-                  : 'border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'active text-cyan-300 bg-slate-900/80 shadow-lg shadow-cyan-500/20'
+                  : 'text-slate-400 hover:text-cyan-300 hover:bg-slate-900/50'
               }`}
             >
-              <span>{item.icon}</span>
-              <span className="tracking-tighter uppercase">{item.name}</span>
+              <span className="text-lg">{item.icon}</span>
+              <span className="tracking-tight uppercase">{item.name}</span>
             </Link>
           ))}
         </div>

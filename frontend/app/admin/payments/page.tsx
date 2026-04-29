@@ -445,9 +445,9 @@ export default function PaymentsPage() {
                     reservations
                       .filter((r) => r.Status === 'CREATED' || r.Status === 'PAID')
                       .filter((r) => {
-                        const name = typeof r.CustomerID === 'object' ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : '';
-                        const ci = typeof r.CustomerID === 'object' ? (r.CustomerID.CI || '') : '';
-                        const movie = typeof r.SessionID === 'object' && typeof r.SessionID.MovieID === 'object' ? r.SessionID.MovieID.MovieName : '';
+                        const name = (r.CustomerID && typeof r.CustomerID === 'object') ? `${r.CustomerID.Name} ${r.CustomerID.Surname}` : '';
+                        const ci = (r.CustomerID && typeof r.CustomerID === 'object') ? (r.CustomerID.CI || '') : '';
+                        const movie = (r.SessionID && typeof r.SessionID === 'object' && r.SessionID.MovieID && typeof r.SessionID.MovieID === 'object') ? r.SessionID.MovieID.MovieName : '';
                         return (name + ci + movie).toLowerCase().includes(searchTerm.toLowerCase());
                       }).length === 0 && (
                       <div className="px-4 py-2 text-gray-500 text-sm">No se encontraron reservas</div>

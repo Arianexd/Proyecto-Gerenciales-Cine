@@ -40,7 +40,6 @@ export default function LoginPage() {
         router.push('/admin');
       } else {
         toast.success('Inicio de sesión exitoso.');
-        // Never send a customer to an admin route
         const destination = redirectTo.startsWith('/admin') ? '/account' : redirectTo;
         router.push(destination);
       }
@@ -56,143 +55,143 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4 transition-colors duration-300">
-      <div className="max-w-md w-full">
+    <div className="relative min-h-screen overflow-hidden bg-transparent text-slate-100">
+      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" />
 
-        {/* Theme toggle */}
-        {mounted && (
-          <div className="flex justify-end mb-4">
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
-              aria-label="Cambiar tema"
-            >
-              {theme === 'dark' ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-              )}
-            </button>
-          </div>
-        )}
-
-        {/* Logo + header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-5">
-            <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-              </svg>
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-4 py-12">
+        <div className="grid gap-10 lg:grid-cols-[1.35fr_0.9fr] items-center">
+          <section className="space-y-8">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/25 bg-slate-900/70 px-4 py-2 text-xs uppercase tracking-[0.3em] text-cyan-300 shadow-[0_0_40px_rgba(71,191,255,0.12)]">
+              Futurista · Minimalista · Tecnología
             </div>
-            <span className="text-2xl font-extrabold text-gray-900 dark:text-white">
-              Cine<span className="text-red-600">book</span>
-            </span>
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Iniciar sesión</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Accede a tu cuenta o al panel de administración</p>
+
+            <div className="space-y-4">
+              <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">
+                Bienvenido a <span className="text-cyan-300">Cinebook</span>
+              </h1>
+              <p className="max-w-xl text-base leading-8 text-slate-300/90">
+                Inicia sesión como administrador, cajero o cliente con un diseño oscuro y tecnológico.
+                El panel está optimizado para que cada rol tenga una experiencia elegante y minimalista.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="role-badge shadow-soft-shadow">
+                <p className="text-[0.68rem] font-semibold tracking-[0.25em] text-cyan-200">ADMINISTRADOR</p>
+                <p className="mt-2 text-xs text-slate-400">Control total del sistema y reservas.</p>
+              </div>
+              <div className="role-badge shadow-soft-shadow">
+                <p className="text-[0.68rem] font-semibold tracking-[0.25em] text-cyan-200">CAJERO</p>
+                <p className="mt-2 text-xs text-slate-400">Gestiona ventas y atención al cliente.</p>
+              </div>
+              <div className="role-badge shadow-soft-shadow">
+                <p className="text-[0.68rem] font-semibold tracking-[0.25em] text-cyan-200">USUARIO</p>
+                <p className="mt-2 text-xs text-slate-400">Reserva entradas y revisa tu historial.</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="relative overflow-hidden rounded-[2rem] border border-cyan-500/15 bg-slate-900/90 p-8 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+            <div className="absolute -inset-1 bg-gradient-to-br from-cyan-500/10 via-slate-900/0 to-violet-500/10 blur opacity-80" />
+            <div className="relative space-y-7">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.35em] text-cyan-300">Entrada segura</p>
+                  <h2 className="text-3xl font-black text-white">Accede a tu cuenta</h2>
+                </div>
+                {mounted && (
+                  <button
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-700/70 bg-slate-950/80 px-4 text-sm text-slate-100 shadow-[0_15px_30px_rgba(0,0,0,0.24)] transition hover:border-cyan-400/40"
+                    aria-label="Cambiar tema"
+                  >
+                    {theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+                  </button>
+                )}
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <label htmlFor="login-username" className="block text-sm font-semibold text-slate-300">
+                    Usuario o correo
+                  </label>
+                  <input
+                    id="login-username"
+                    type="text"
+                    required
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    className="w-full rounded-3xl border border-slate-700/80 bg-slate-950/95 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/15"
+                    placeholder="Ingresa tu usuario"
+                    autoComplete="username"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="login-password" className="block text-sm font-semibold text-slate-300">
+                    Contraseña
+                  </label>
+                  <input
+                    id="login-password"
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="w-full rounded-3xl border border-slate-700/80 bg-slate-950/95 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/15"
+                    placeholder="Ingresa tu contraseña"
+                    autoComplete="current-password"
+                  />
+                </div>
+
+                <button
+                  id="login-submit"
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-3xl btn-primary py-3 text-sm font-semibold shadow-lg shadow-cyan-500/15 transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+                </button>
+              </form>
+
+              <div className="rounded-3xl border border-slate-700/60 bg-slate-950/80 p-4 text-sm text-slate-400">
+                <p>¿No tienes cuenta?{' '}
+                  <Link href="/account/register" className="text-cyan-300 hover:text-cyan-100">
+                    Regístrate
+                  </Link>
+                </p>
+              </div>
+
+              <div className="grid gap-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Credenciales de demostración</p>
+                <button
+                  type="button"
+                  onClick={() => fillDemo('admin', 'admin')}
+                  className="rounded-3xl border border-cyan-500/20 bg-slate-950/85 px-4 py-3 text-left transition hover:border-cyan-400/40"
+                >
+                  <p className="text-sm font-semibold text-cyan-200">Administrador</p>
+                  <p className="mt-1 text-xs text-slate-400">admin / admin</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fillDemo('cajero', 'cajero')}
+                  className="rounded-3xl border border-cyan-500/20 bg-slate-950/85 px-4 py-3 text-left transition hover:border-cyan-400/40"
+                >
+                  <p className="text-sm font-semibold text-cyan-200">Cajero</p>
+                  <p className="mt-1 text-xs text-slate-400">cajero / cajero</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fillDemo('cliente', 'cliente')}
+                  className="rounded-3xl border border-cyan-500/20 bg-slate-950/85 px-4 py-3 text-left transition hover:border-cyan-400/40"
+                >
+                  <p className="text-sm font-semibold text-cyan-200">cliente / cliente</p>
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
 
-        {/* Card */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Usuario o correo
-              </label>
-              <input
-                id="login-username"
-                type="text"
-                required
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                placeholder="Ingresa tu usuario"
-                autoComplete="username"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Contraseña
-              </label>
-              <input
-                id="login-password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                placeholder="Ingresa tu contraseña"
-                autoComplete="current-password"
-              />
-            </div>
-
-            <button
-              id="login-submit"
-              type="submit"
-              disabled={loading}
-              className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 px-4 rounded-xl transition-colors"
-            >
-              {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-            </button>
-          </form>
-
-          <div className="mt-4 text-center">
-            <span className="text-sm text-gray-500 dark:text-gray-400">¿No tienes cuenta? </span>
-            <Link href="/account/register" className="text-sm text-red-600 font-semibold hover:underline">
-              Regístrate
-            </Link>
-          </div>
-
-          {/* Demo credentials */}
-          <div className="mt-6 pt-5 border-t border-gray-100 dark:border-white/5 space-y-2.5">
-            <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
-              Credenciales de demostración
-            </p>
-
-            <button
-              type="button"
-              onClick={() => fillDemo('admin', 'admin')}
-              className="w-full text-left p-3 bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/20 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-colors"
-            >
-              <p className="text-xs font-bold text-purple-700 dark:text-purple-400 mb-0.5">Administrador</p>
-              <p className="text-xs text-purple-600 dark:text-purple-500">
-                Usuario: <code className="bg-purple-100 dark:bg-purple-500/20 px-1 rounded">admin</code>{' '}
-                Contraseña: <code className="bg-purple-100 dark:bg-purple-500/20 px-1 rounded">admin</code>
-              </p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => fillDemo('cajero', 'cajero')}
-              className="w-full text-left p-3 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors"
-            >
-              <p className="text-xs font-bold text-blue-700 dark:text-blue-400 mb-0.5">Cajero</p>
-              <p className="text-xs text-blue-600 dark:text-blue-500">
-                Usuario: <code className="bg-blue-100 dark:bg-blue-500/20 px-1 rounded">cajero</code>{' '}
-                Contraseña: <code className="bg-blue-100 dark:bg-blue-500/20 px-1 rounded">cajero</code>
-              </p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => fillDemo('cliente', 'cliente')}
-              className="w-full text-left p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors"
-            >
-              <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400 mb-0.5">Cliente</p>
-              <p className="text-xs text-emerald-600 dark:text-emerald-500">
-                Usuario: <code className="bg-emerald-100 dark:bg-emerald-500/20 px-1 rounded">cliente</code>{' '}
-                Contraseña: <code className="bg-emerald-100 dark:bg-emerald-500/20 px-1 rounded">cliente</code>
-              </p>
-            </button>
-          </div>
-        </div>
-
-        <p className="text-center text-gray-400 dark:text-gray-600 text-xs mt-6">
+        <p className="mt-10 text-center text-xs uppercase tracking-[0.3em] text-slate-500">
           Proyecto SIS 226 · 2026
         </p>
       </div>

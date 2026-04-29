@@ -31,18 +31,18 @@ export default function PublicNavigation() {
   const isCustomer = session?.user.Role === 'CUSTOMER';
 
   return (
-    <header className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-white/5 sticky top-0 z-50 transition-colors duration-300">
+    <header className="glass-panel border-b border-cyan-500/10 sticky top-0 z-50 transition-all duration-300 shadow-[0_0_40px_rgba(71,191,255,0.08)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
               </svg>
             </div>
-            <span className="text-gray-900 dark:text-white font-bold text-xl tracking-tight">
-              Cine<span className="text-red-600">book</span>
+            <span className="text-white font-bold text-xl tracking-tight">
+              Cine<span className="text-cyan-300">book</span>
             </span>
           </Link>
 
@@ -69,7 +69,7 @@ export default function PublicNavigation() {
             ) : isCustomer ? (
               <>
                 <span className="text-sm text-gray-500 font-medium">
-                  Hola, <span className="text-gray-900 dark:text-white font-semibold">{getUserDisplayName(session.user)}</span>
+                  Hola, <span className="text-cyan-300 font-semibold">{getUserDisplayName(session.user)}</span>
                 </span>
                 <Link
                   href="/account"
@@ -153,7 +153,7 @@ export default function PublicNavigation() {
                 <Link href="/admin" className="block px-4 py-2.5 rounded-lg bg-red-600 text-white text-sm font-semibold text-center">
                   Panel {session?.user.Role === 'ADMIN' ? 'Admin' : 'Cajero'}
                 </Link>
-                <button onClick={handleLogout} className="w-full px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 text-sm font-medium border border-gray-200 dark:border-white/10 text-center">
+                <button onClick={handleLogout} className="w-full floating-btn px-4 py-2.5 rounded-2xl text-slate-300 text-sm font-medium border border-slate-700/60 text-center hover:border-cyan-400/40 transition-all">
                   Cerrar sesión
                 </button>
               </>
@@ -162,7 +162,7 @@ export default function PublicNavigation() {
                 <Link href="/account" className="block px-4 py-2.5 rounded-lg bg-gray-900 dark:bg-white dark:text-black text-white text-sm font-semibold text-center">
                   Mi cuenta
                 </Link>
-                <button onClick={handleLogout} className="w-full px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 text-sm font-medium border border-gray-200 dark:border-white/10">
+                <button onClick={handleLogout} className="w-full floating-btn px-4 py-2.5 rounded-2xl text-slate-300 text-sm font-medium border border-slate-700/60 hover:border-cyan-400/40 transition-all">
                   Cerrar sesión
                 </button>
               </>

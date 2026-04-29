@@ -41,24 +41,30 @@ export default function AdminLayout({
 
   return (
     <AdminProtectedRoute>
-      <div className="min-h-screen bg-gray-50" data-admin-panel>
-        <header className="bg-white shadow-md border-b border-gray-200">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center gap-2">
-                <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <span className="text-xl font-bold text-gray-900">Panel de Administración de Cine</span>
+      <div className="min-h-screen bg-transparent text-slate-100 grid-lines" data-admin-panel>
+        <header className="glass-panel border-b border-cyan-500/15 shadow-[0_0_40px_rgba(71,191,255,0.08)]">
+          <div className="container mx-auto px-6">
+            <div className="flex items-center justify-between h-20">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-xl font-black text-white tracking-tight">Panel de Administración</span>
+                  <p className="text-xs text-cyan-300/70 uppercase tracking-[0.3em]">Sistema Cinebook</p>
+                </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600">
-                  Bienvenido, <strong>{username}</strong>
-                </span>
+              <div className="flex items-center gap-6">
+                <div className="text-right">
+                  <p className="text-sm text-slate-300">Bienvenido,</p>
+                  <p className="text-sm font-semibold text-cyan-300">{username}</p>
+                </div>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
+                  className="floating-btn flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl hover:from-red-500 hover:to-red-600 transition-all text-sm font-semibold shadow-lg shadow-red-500/25"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -72,7 +78,7 @@ export default function AdminLayout({
 
         <AdminNavigation user={user} />
 
-        <main>{children}</main>
+        <main className="relative">{children}</main>
       </div>
     </AdminProtectedRoute>
   );

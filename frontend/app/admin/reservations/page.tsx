@@ -275,9 +275,9 @@ export default function ReservationsPage() {
     );
   };
 
-  const formatDateTime = (dateTime: string | null | undefined) => {
+  const formatDateTime = (dateTime: string | Date | null | undefined) => {
     if (!dateTime) return 'Sin fecha';
-    const date = new Date(dateTime);
+    const date = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
     return date.toLocaleString('es-ES', {
       year: 'numeric',
       month: 'short',
@@ -316,7 +316,7 @@ export default function ReservationsPage() {
     const q = globalSearch.toLowerCase();
     const customerName = getCustomerName(r.CustomerID).toLowerCase();
     const movieName = getMovieName(r.SessionID).toLowerCase();
-    const ci = typeof r.CustomerID === 'object' ? (r.CustomerID.CI || '').toLowerCase() : '';
+    const ci = (r.CustomerID && typeof r.CustomerID === 'object' && r.CustomerID.CI) ? r.CustomerID.CI.toLowerCase() : '';
     const matchesSearch = customerName.includes(q) || movieName.includes(q) || ci.includes(q);
 
     return matchesStatus && matchesSearch;
@@ -650,7 +650,6 @@ export default function ReservationsPage() {
                 onSeatClick={handleSeatClick}
                 onSeatHover={setHoveredSeat}
                 reservedSeats={reservedSeats}
-                showCategories={true}
               />
             </div>
           </div>

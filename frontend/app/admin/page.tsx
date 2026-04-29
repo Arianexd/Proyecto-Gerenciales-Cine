@@ -130,13 +130,13 @@ function StatCard({
   return (
     <Link
       href={href}
-      className={`bg-white rounded-xl shadow-md hover:shadow-lg transition-all p-6 border-l-4 border-${color}-500`}
+      className="floating-btn admin-card rounded-3xl p-6 border-l-4 border-cyan-500/50 hover:border-cyan-400 transition-all group"
     >
-      <div className="text-3xl mb-2">{icon}</div>
-      <div className={`text-3xl font-bold text-${color}-600 mb-1`}>
+      <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">{icon}</div>
+      <div className="text-3xl font-black text-cyan-300 mb-1">
         {loading ? '...' : value}
       </div>
-      <div className="text-sm text-gray-600 font-medium">{label}</div>
+      <div className="text-sm text-slate-400 font-medium uppercase tracking-wide">{label}</div>
     </Link>
   );
 }
@@ -213,33 +213,37 @@ function AdminFullDashboard({ stats, loading }: { stats: any; loading: boolean }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Panel de Administracion</h1>
-        <p className="text-gray-600">Bienvenido al sistema de gestion de cine</p>
+    <div className="container mx-auto px-6 py-12">
+      <div className="mb-12">
+        <h1 className="text-5xl font-black text-white mb-3 tracking-tight">Panel de Administración</h1>
+        <p className="text-slate-400 text-lg">Sistema de gestión avanzado para Cinebook</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
         {statCards.map((card) => (
           <StatCard key={card.href + card.label} {...card} loading={loading} />
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {managementCards.map((card) => (
           <div
             key={card.href}
-            className={`bg-gradient-to-br from-${card.color}-50 to-${card.color}-100 rounded-xl p-6 shadow-md`}
+            className="floating-btn admin-card rounded-3xl p-8 group hover:border-cyan-400/60 transition-all"
           >
-            <h3 className={`text-lg font-bold text-${card.color}-900 mb-2`}>
-              {card.icon} {card.title}
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{card.icon}</div>
+            <h3 className="text-xl font-bold text-white mb-3">
+              {card.title}
             </h3>
-            <p className={`text-${card.color}-700 text-sm mb-4`}>{card.desc}</p>
+            <p className="text-slate-400 text-sm mb-6 leading-relaxed">{card.desc}</p>
             <Link
               href={card.href}
-              className={`inline-block bg-${card.color}-600 hover:bg-${card.color}-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors`}
+              className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-2xl text-sm font-semibold shadow-lg shadow-cyan-500/25 hover:scale-105 transition-all"
             >
-              {card.label} →
+              {card.label}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </Link>
           </div>
         ))}
@@ -250,53 +254,78 @@ function AdminFullDashboard({ stats, loading }: { stats: any; loading: boolean }
 
 function CajeroDashboard({ stats, loading }: { stats: any; loading: boolean }) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Panel del Cajero</h1>
-        <p className="text-gray-600">Venta de boletos y snacks</p>
+    <div className="container mx-auto px-6 py-12">
+      <div className="mb-12">
+        <h1 className="text-5xl font-black text-white mb-3 tracking-tight">Panel del Cajero</h1>
+        <p className="text-slate-400 text-lg">Sistema de ventas y atención al cliente</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
         <StatCard icon="📋" label="Reservas" href="/admin/reservations" color="purple" value={stats.reservations} loading={loading} />
         <StatCard icon="💳" label="Pagos" href="/admin/payments" color="emerald" value={stats.payments} loading={loading} />
         <StatCard icon="🍿" label="Ventas Snacks" href="/admin/snacks" color="yellow" value={stats.snackSales} loading={loading} />
         <StatCard icon="⚠️" label="Stock Bajo" href="/admin/snacks" color="red" value={stats.lowStock} loading={loading} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Link href="/admin/snacks/sell" className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all text-white group">
-          <div className="text-5xl mb-4">🛒</div>
-          <h3 className="text-2xl font-bold mb-2">Vender Snacks</h3>
-          <p className="text-orange-100 text-sm">Abre la caja para vender snacks y bebidas rapidamente.</p>
-          <div className="mt-4 text-sm font-semibold group-hover:underline">Abrir caja →</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <Link href="/admin/snacks/sell" className="floating-btn admin-card rounded-3xl p-8 hover:border-orange-400/60 transition-all text-white group">
+          <div className="text-5xl mb-6 group-hover:scale-110 transition-transform">🛒</div>
+          <h3 className="text-2xl font-bold mb-3">Vender Snacks</h3>
+          <p className="text-slate-400 text-sm mb-6 leading-relaxed">Abre la caja para vender snacks y bebidas rápidamente.</p>
+          <div className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-2xl text-sm font-semibold shadow-lg shadow-cyan-500/25">
+            Abrir caja
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
         </Link>
 
-        <Link href="/admin/reservations" className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all text-white group">
-          <div className="text-5xl mb-4">📋</div>
-          <h3 className="text-2xl font-bold mb-2">Reservas</h3>
-          <p className="text-purple-100 text-sm">Gestiona y crea reservas de boletos para funciones.</p>
-          <div className="mt-4 text-sm font-semibold group-hover:underline">Ver reservas →</div>
+        <Link href="/admin/reservations" className="floating-btn admin-card rounded-3xl p-8 hover:border-purple-400/60 transition-all text-white group">
+          <div className="text-5xl mb-6 group-hover:scale-110 transition-transform">📋</div>
+          <h3 className="text-2xl font-bold mb-3">Reservas</h3>
+          <p className="text-slate-400 text-sm mb-6 leading-relaxed">Gestiona y crea reservas de boletos para funciones.</p>
+          <div className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-2xl text-sm font-semibold shadow-lg shadow-cyan-500/25">
+            Ver reservas
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
         </Link>
 
-        <Link href="/admin/payments" className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all text-white group">
-          <div className="text-5xl mb-4">💳</div>
-          <h3 className="text-2xl font-bold mb-2">Pagos</h3>
-          <p className="text-emerald-100 text-sm">Procesa y registra los pagos de reservas.</p>
-          <div className="mt-4 text-sm font-semibold group-hover:underline">Ver pagos →</div>
+        <Link href="/admin/payments" className="floating-btn admin-card rounded-3xl p-8 hover:border-emerald-400/60 transition-all text-white group">
+          <div className="text-5xl mb-6 group-hover:scale-110 transition-transform">💳</div>
+          <h3 className="text-2xl font-bold mb-3">Pagos</h3>
+          <p className="text-slate-400 text-sm mb-6 leading-relaxed">Procesa y registra los pagos de reservas.</p>
+          <div className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-2xl text-sm font-semibold shadow-lg shadow-cyan-500/25">
+            Ver pagos
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
         </Link>
 
-        <Link href="/admin/snacks" className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all text-white group">
-          <div className="text-5xl mb-4">🍿</div>
-          <h3 className="text-2xl font-bold mb-2">Inventario Snacks</h3>
-          <p className="text-yellow-100 text-sm">Consulta el inventario y las ventas de snacks.</p>
-          <div className="mt-4 text-sm font-semibold group-hover:underline">Ver inventario →</div>
+        <Link href="/admin/snacks" className="floating-btn admin-card rounded-3xl p-8 hover:border-yellow-400/60 transition-all text-white group">
+          <div className="text-5xl mb-6 group-hover:scale-110 transition-transform">🍿</div>
+          <h3 className="text-2xl font-bold mb-3">Inventario Snacks</h3>
+          <p className="text-slate-400 text-sm mb-6 leading-relaxed">Consulta el inventario y las ventas de snacks.</p>
+          <div className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-2xl text-sm font-semibold shadow-lg shadow-cyan-500/25">
+            Ver inventario
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
         </Link>
 
-        <Link href="/admin/customers" className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all text-white group">
-          <div className="text-5xl mb-4">👥</div>
-          <h3 className="text-2xl font-bold mb-2">Clientes</h3>
-          <p className="text-blue-100 text-sm">Consulta informacion de clientes registrados.</p>
-          <div className="mt-4 text-sm font-semibold group-hover:underline">Ver clientes →</div>
+        <Link href="/admin/customers" className="floating-btn admin-card rounded-3xl p-8 hover:border-blue-400/60 transition-all text-white group">
+          <div className="text-5xl mb-6 group-hover:scale-110 transition-transform">👥</div>
+          <h3 className="text-2xl font-bold mb-3">Clientes</h3>
+          <p className="text-slate-400 text-sm mb-6 leading-relaxed">Consulta información de clientes registrados.</p>
+          <div className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-2xl text-sm font-semibold shadow-lg shadow-cyan-500/25">
+            Ver clientes
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
         </Link>
       </div>
     </div>

@@ -29,8 +29,8 @@ export default function TicketDisplay({ ticket }: TicketDisplayProps) {
   const viewQuality = seatData?.ScreenViewInfo || 'Good';
   const acousticQuality = seatData?.AcousticProfile || 'Good';
 
-  const formatDateTime = (dateTime: string) => {
-    const date = new Date(dateTime);
+  const formatDateTime = (dateTime: string | Date) => {
+    const date = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
     return {
       date: date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }),
       time: date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),

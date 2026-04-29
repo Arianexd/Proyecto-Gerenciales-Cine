@@ -67,7 +67,7 @@ export default function CustomerRegisterPage() {
   return (
     <>
       <PublicNavigation />
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black py-16 px-4">
+      <div className="min-h-screen bg-transparent py-16 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
             <div className="inline-block p-5 rounded-full bg-gradient-to-br from-emerald-500 to-yellow-500 shadow-2xl shadow-emerald-500/30 mb-5 text-5xl">

@@ -73,8 +73,9 @@ export default function ReservationDetailPage() {
     }
   };
 
-  const formatDateTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleString('es-ES', {
+  const formatDateTime = (dateTime: string | Date) => {
+    const date = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
+    return date.toLocaleString('es-ES', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
