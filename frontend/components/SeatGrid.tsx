@@ -9,6 +9,7 @@ interface SeatGridProps {
   onSeatHover?: (seat: Seat | null) => void;
   reservedSeats?: string[];
   readOnly?: boolean;
+  showCategories?: boolean;
 }
 
 export default function SeatGrid({ 
@@ -17,7 +18,8 @@ export default function SeatGrid({
   onSeatClick,
   onSeatHover,
   reservedSeats = [],
-  readOnly = false
+  readOnly = false,
+  showCategories = true
 }: SeatGridProps) {
   
   // Group seats by row
