@@ -275,7 +275,7 @@ export default function ReservationsPage() {
     );
   };
 
-  const formatDateTime = (dateTime: string | null | undefined) => {
+  const formatDateTime = (dateTime: string | Date | null | undefined) => {
     if (!dateTime) return 'Sin fecha';
     const date = new Date(dateTime);
     return date.toLocaleString('es-ES', {

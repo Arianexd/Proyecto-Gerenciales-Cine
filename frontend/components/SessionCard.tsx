@@ -8,7 +8,7 @@ interface SessionCardProps {
 }
 
 export default function SessionCard({ session }: SessionCardProps) {
-  const formatDateTime = (dateTime: string) => {
+  const formatDateTime = (dateTime: string | Date) => {
     const date = new Date(dateTime);
     return {
       date: date.toLocaleDateString('es-ES', { weekday: 'short', month: 'short', day: 'numeric' }),

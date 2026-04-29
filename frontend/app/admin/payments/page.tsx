@@ -184,7 +184,7 @@ export default function PaymentsPage() {
     }
   };
 
-  const formatDateTime = (dateTime: string) => {
+  const formatDateTime = (dateTime: string | Date) => {
     return new Date(dateTime).toLocaleString('es-ES', {
       year: 'numeric',
       month: 'short',

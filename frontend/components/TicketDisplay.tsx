@@ -29,7 +29,7 @@ export default function TicketDisplay({ ticket }: TicketDisplayProps) {
   const viewQuality = seatData?.ScreenViewInfo || 'Good';
   const acousticQuality = seatData?.AcousticProfile || 'Good';
 
-  const formatDateTime = (dateTime: string) => {
+  const formatDateTime = (dateTime: string | Date) => {
     const date = new Date(dateTime);
     return {
       date: date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }),

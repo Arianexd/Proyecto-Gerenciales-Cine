@@ -142,7 +142,7 @@ export default function SessionsPage() {
     }
   };
 
-  const formatDateTime = (dateTime: string) => {
+  const formatDateTime = (dateTime: string | Date) => {
     const date = new Date(dateTime);
     return date.toLocaleString('es-ES', {
       year: 'numeric',
