@@ -66,75 +66,78 @@ export default function SeatGrid({
 
   return (
     <div className="w-full">
-      <div className="mb-8">
-        <div className="bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 text-white text-center py-3 rounded-t-3xl mx-auto max-w-2xl border border-gray-600 shadow-lg">
+      <div className="mb-6 sm:mb-8">
+        <div className="bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 text-white text-center text-xs sm:text-sm font-semibold tracking-widest py-2 sm:py-3 rounded-t-3xl mx-auto max-w-2xl border border-gray-600 shadow-lg">
           PANTALLA
         </div>
-        <div className="h-8 mx-auto max-w-2xl bg-gradient-to-b from-white/10 to-transparent rounded-b-[2rem] blur-[1px]"></div>
+        <div className="h-6 sm:h-8 mx-auto max-w-2xl bg-gradient-to-b from-gray-300/40 to-transparent rounded-b-[2rem] blur-[1px]"></div>
       </div>
 
-      <div className="space-y-2 bg-black/20 border border-gray-800 rounded-2xl p-4 md:p-6">
-        {sortedRows.map((row) => {
-          const rowSeats = seatsByRow[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
-          return (
-            <div key={row} className="flex items-center justify-center gap-2">
-              <div className="w-8 text-center font-bold text-gray-400">{row}</div>
-              
-              <div className="flex gap-1">
-                {rowSeats.map((seat) => {
-                  const isReserved = reservedSeats.includes(seat._id);
-                  const isSelected = selectedSeats.includes(seat._id);
-                  
-                  return (
-                    <button
-                      key={seat._id}
-                      onClick={() => handleSeatClick(seat)}
-                      onMouseEnter={() => onSeatHover && onSeatHover(seat)}
-                      onMouseLeave={() => onSeatHover && onSeatHover(null)}
-                      disabled={readOnly || isReserved}
-                      className={`
-                        w-9 h-9 md:w-10 md:h-10 rounded-lg border text-xs font-semibold
-                        transition-all duration-200 transform hover:scale-105
-                        ${getSeatColor(seat)}
-                        ${isReserved ? 'opacity-50' : ''}
-                      `}
-                      title={`Fila ${seat.RowNumber}, Asiento ${seat.SeatNumber}\nVista: ${seat.ScreenViewInfo}\nAcústica: ${seat.AcousticProfile}`}
-                    >
-                      {seat.SeatNumber}
-                    </button>
-                  );
-                })}
+      <div className="bg-black/20 border border-gray-800 rounded-2xl p-2 sm:p-4 md:p-6 overflow-x-auto">
+        <div className="space-y-1.5 sm:space-y-2 min-w-fit mx-auto">
+          {sortedRows.map((row) => {
+            const rowSeats = seatsByRow[row].sort((a, b) => a.SeatNumber - b.SeatNumber);
+            return (
+              <div key={row} className="flex items-center justify-center gap-1.5 sm:gap-2">
+                <div className="w-5 sm:w-8 text-center text-xs sm:text-sm font-bold text-gray-500 flex-shrink-0">{row}</div>
+
+                <div className="flex gap-0.5 sm:gap-1">
+                  {rowSeats.map((seat) => {
+                    const isReserved = reservedSeats.includes(seat._id);
+
+                    return (
+                      <button
+                        key={seat._id}
+                        onClick={() => handleSeatClick(seat)}
+                        onMouseEnter={() => onSeatHover && onSeatHover(seat)}
+                        onMouseLeave={() => onSeatHover && onSeatHover(null)}
+                        disabled={readOnly || isReserved}
+                        className={`
+                          w-6 h-6 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-md sm:rounded-lg border text-[10px] sm:text-xs font-semibold flex-shrink-0
+                          transition-all duration-200 transform sm:hover:scale-105 active:scale-95
+                          ${getSeatColor(seat)}
+                          ${isReserved ? 'opacity-50' : ''}
+                        `}
+                        title={`Fila ${seat.RowNumber}, Asiento ${seat.SeatNumber}\nVista: ${seat.ScreenViewInfo}\nAcústica: ${seat.AcousticProfile}`}
+                      >
+                        {seat.SeatNumber}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="w-5 sm:w-8 flex-shrink-0" />
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {/* Legend */}
-      <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+      <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 text-xs sm:text-sm">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-sky-500 rounded border border-sky-300/80"></div>
-          <span className="text-white">Vista Excelente</span>
+          <div className="w-4 h-4 sm:w-5 sm:h-5 bg-sky-500 rounded border border-sky-300/80 flex-shrink-0"></div>
+          <span className="text-gray-700">Vista Excelente</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-sky-400 rounded border border-sky-200/70"></div>
-          <span className="text-white">Vista Buena</span>
+          <div className="w-4 h-4 sm:w-5 sm:h-5 bg-sky-400 rounded border border-sky-200/70 flex-shrink-0"></div>
+          <span className="text-gray-700">Vista Buena</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-indigo-400 rounded border border-indigo-200/70"></div>
-          <span className="text-white">Vista Regular</span>
+          <div className="w-4 h-4 sm:w-5 sm:h-5 bg-indigo-400 rounded border border-indigo-200/70 flex-shrink-0"></div>
+          <span className="text-gray-700">Vista Regular</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-gray-500 rounded border border-gray-300/50"></div>
-          <span className="text-white">Vista Deficiente</span>
+          <div className="w-4 h-4 sm:w-5 sm:h-5 bg-gray-500 rounded border border-gray-300/50 flex-shrink-0"></div>
+          <span className="text-gray-700">Vista Deficiente</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-emerald-500 rounded border border-emerald-300"></div>
-          <span className="text-white">Seleccionado</span>
+          <div className="w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 rounded border border-emerald-300 flex-shrink-0"></div>
+          <span className="text-gray-700">Seleccionado</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-red-500/70 rounded border border-red-400/60 opacity-70"></div>
-          <span className="text-white">Reservado</span>
+          <div className="w-4 h-4 sm:w-5 sm:h-5 bg-red-500/70 rounded border border-red-400/60 opacity-70 flex-shrink-0"></div>
+          <span className="text-gray-700">Reservado</span>
         </div>
       </div>
     </div>

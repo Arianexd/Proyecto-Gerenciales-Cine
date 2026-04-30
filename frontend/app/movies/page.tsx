@@ -161,7 +161,7 @@ function MovieCard({ movie }: { movie: Movie }) {
       : 'Nuevo';
 
   return (
-    <Link href={`/movies/${movie._id}`} className="group block">
+    <Link href={`/movies/${movie._id}/sessions`} className="group block">
       <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
         {/* Poster */}
         <div className="relative aspect-[2/3] overflow-hidden bg-gray-100">

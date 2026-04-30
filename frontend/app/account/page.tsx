@@ -179,6 +179,30 @@ export default function AccountPage() {
             </div>
           ) : (
             <>
+              {/* Quick purchase CTA */}
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-600 to-red-700 p-6 md:p-8 mb-8 shadow-lg">
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                    <p className="text-red-100 text-xs font-bold tracking-widest uppercase mb-1">Compra rápida</p>
+                    <h2 className="text-2xl md:text-3xl font-black text-white mb-2">¿Listo para tu próxima función?</h2>
+                    <p className="text-red-50 text-sm md:text-base max-w-xl">
+                      Reserva tus entradas y añade snacks en un mismo pedido — recógelos al llegar al cine.
+                    </p>
+                  </div>
+                  <Link
+                    href="/movies"
+                    className="inline-flex items-center justify-center gap-2 bg-white text-red-700 hover:bg-red-50 font-bold px-6 py-3 rounded-xl shadow-md transition-colors whitespace-nowrap"
+                  >
+                    Comprar entradas y snacks
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                </div>
+                <div className="pointer-events-none absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-2xl" />
+                <div className="pointer-events-none absolute -left-6 -top-6 w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl" />
+              </div>
+
               {/* Stats row */}
               <div className="grid grid-cols-3 gap-4 mb-8">
                 <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-2xl p-5 shadow-sm">

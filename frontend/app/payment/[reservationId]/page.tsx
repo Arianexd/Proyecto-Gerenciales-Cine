@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import QRCode from "qrcode";
 import { meApi, reservationsApi } from "@/lib/api";
 import { Reservation } from "@/lib/types";
-import PaymentForm from "@/components/PaymentForm";
 import PublicNavigation from "@/components/PublicNavigation";
 import toast from "react-hot-toast";
 
@@ -17,12 +17,27 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
   useEffect(() => {
     if (reservationId) {
       fetchReservationData();
     }
   }, [reservationId]);
+
+  useEffect(() => {
+    if (!reservation) return;
+    const payload = JSON.stringify({
+      type: "CINEMABOOK_PAYMENT_DEMO",
+      reservationId,
+      amount: totalAmount,
+      currency: "BOB",
+      issuedAt: new Date().toISOString(),
+    });
+    QRCode.toDataURL(payload, { width: 320, margin: 1 })
+      .then(setQrDataUrl)
+      .catch(() => setQrDataUrl(""));
+  }, [reservation, reservationId, totalAmount]);
 
   const fetchReservationData = async () => {
     try {
@@ -36,46 +51,24 @@ export default function PaymentPage() {
         typeof reservationData.SessionID === "object"
           ? reservationData.SessionID.Price
           : 0;
-      const total = seatCount * sessionPrice;
-      setTotalAmount(total);
+      setTotalAmount(seatCount * sessionPrice);
     } catch (error) {
-      console.error("Failed to fetch reservation data:", error);
       toast.error("No se pudo cargar la información de la reserva");
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePaymentSubmit = async (paymentData: {
-    cardNumber: string;
-    cardholderName: string;
-    expiryDate: string;
-    cvv: string;
-  }) => {
+  const handleConfirmDemoPayment = async () => {
     setSubmitting(true);
-
     try {
-      await meApi.payReservation(reservationId, {
-        PaymentMethod: "Credit Card",
-        cardNumber: paymentData.cardNumber,
-        cardholderName: paymentData.cardholderName,
-        expiryDate: paymentData.expiryDate,
-        cvv: paymentData.cvv,
-      });
-
-      toast.success("Pago exitoso. Tus entradas fueron generadas.");
+      await meApi.payReservationByQr(reservationId);
+      toast.success("Pago de demostración registrado. Tus entradas fueron generadas.");
       router.push(`/confirmation/${reservationId}`);
     } catch (error: any) {
-      const details = error?.response?.data?.details;
       const message =
-        error?.response?.data?.error ||
-        "El pago falló. Por favor, inténtalo de nuevo.";
-      const detailsMessage = details ? Object.values(details).join(" | ") : "";
-      const fullMessage = detailsMessage
-        ? `${message}: ${detailsMessage}`
-        : message;
-      console.error("Payment error response:", error?.response?.data);
-      toast.error(fullMessage);
+        error?.response?.data?.error || "No se pudo registrar el pago de demostración.";
+      toast.error(message);
       setSubmitting(false);
     }
   };
@@ -84,13 +77,8 @@ export default function PaymentPage() {
     return (
       <>
         <PublicNavigation />
-        <div className="min-h-screen bg-black flex items-center justify-center">
-          <div className="relative">
-            <div className="w-24 h-24 border-8 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-4xl animate-pulse">💳</div>
-            </div>
-          </div>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="w-20 h-20 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
         </div>
       </>
     );
@@ -100,12 +88,9 @@ export default function PaymentPage() {
     return (
       <>
         <PublicNavigation />
-        <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-8xl mb-6">🎬</div>
-            <h2 className="text-3xl font-black text-white mb-4">
-              RESERVA NO ENCONTRADA
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">Reserva no encontrada</h2>
           </div>
         </div>
       </>
@@ -118,12 +103,6 @@ export default function PaymentPage() {
       ? reservation.SessionID.MovieID.MovieName
       : "Película";
 
-  const moviePoster =
-    typeof reservation.SessionID === "object" &&
-    typeof reservation.SessionID.MovieID === "object"
-      ? reservation.SessionID.MovieID.PosterURL
-      : "";
-
   const sessionDateTime =
     typeof reservation.SessionID === "object"
       ? reservation.SessionID.SessionDateTime
@@ -134,102 +113,85 @@ export default function PaymentPage() {
   return (
     <>
       <PublicNavigation />
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black py-8 md:py-12">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-8 md:mb-12">
-            <div className="inline-block relative mb-6">
-              <div className="absolute -inset-4 bg-gradient-to-r from-red-600 via-yellow-500 to-red-600 blur-2xl opacity-50 animate-pulse"></div>
-              <h1 className="relative text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-400 to-red-500 tracking-wider">
-                PAGO
-              </h1>
-            </div>
+      <div className="min-h-screen bg-gray-50 py-8 md:py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8 text-center">
+            <p className="text-red-600 text-xs font-bold tracking-widest uppercase mb-2">
+              Pago con QR · Modo demostración
+            </p>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">
+              Escanea para pagar
+            </h1>
+            <p className="text-gray-500 mt-2 text-sm md:text-base">
+              Esta es una pasarela simulada. Pulsa &ldquo;Confirmar pago&rdquo; para registrar
+              la reserva como pagada y generar tus entradas.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-yellow-500 p-4 md:p-8 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-3 bg-yellow-500 flex gap-1 px-1">
-                {[...Array(20)].map((_, i) => (
-                  <div key={i} className="flex-1 bg-black rounded-sm"></div>
-                ))}
-              </div>
-
-              <h2 className="text-2xl md:text-3xl font-black text-yellow-400 mb-6 mt-3 tracking-wider">
-                RESUMEN DEL PEDIDO
-              </h2>
-
-              <div className="flex flex-col sm:flex-row gap-4 md:gap-6 mb-8">
-                {moviePoster && (
-                  <div className="flex-shrink-0">
-                    <img
-                      src={moviePoster}
-                      alt={movieName}
-                      className="w-28 h-40 md:w-32 md:h-48 object-cover rounded-xl border-4 border-yellow-500 shadow-2xl"
-                    />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <h3 className="text-xl md:text-2xl font-black text-white mb-3">
-                    {movieName}
-                  </h3>
-                  <div className="space-y-2 text-gray-300">
-                    <p>
-                      {new Date(sessionDateTime).toLocaleDateString("es-ES", {
-                        weekday: "long",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                    <p>
-                      {new Date(sessionDateTime).toLocaleTimeString("es-ES", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Resumen del pedido</h2>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between border-b border-gray-100 pb-2">
+                  <span className="text-gray-500">Película</span>
+                  <span className="text-gray-900 font-semibold text-right">{movieName}</span>
                 </div>
-              </div>
-
-              <div className="bg-gray-800/50 rounded-xl p-4 md:p-6 border-2 border-gray-700 space-y-4">
-                <div className="flex justify-between items-center pb-3 border-b border-gray-700">
-                  <span className="text-gray-400 font-semibold">
-                    Asientos Seleccionados
-                  </span>
-                  <span className="text-white font-black text-lg md:text-xl">
-                    {seatCount}
+                <div className="flex justify-between border-b border-gray-100 pb-2">
+                  <span className="text-gray-500">Función</span>
+                  <span className="text-gray-900 font-semibold text-right">
+                    {new Date(sessionDateTime).toLocaleString("es-ES", {
+                      day: "2-digit",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </span>
                 </div>
-                <div className="flex justify-between items-center pb-3 border-b border-gray-700">
-                  <span className="text-gray-400 font-semibold">
-                    Precio por Asiento
-                  </span>
-                  <span className="text-white font-black text-lg md:text-xl">
-                    Bs 
-                    {seatCount > 0
-                      ? (totalAmount / seatCount).toFixed(2)
-                      : "0.00"}
-                  </span>
+                <div className="flex justify-between border-b border-gray-100 pb-2">
+                  <span className="text-gray-500">Asientos</span>
+                  <span className="text-gray-900 font-semibold">{seatCount}</span>
                 </div>
-                <div className="flex justify-between items-center pt-3 bg-gradient-to-r from-yellow-500/20 to-red-500/20 rounded-lg px-4 py-3 border-2 border-yellow-500/30">
-                  <span className="text-yellow-400 font-black text-xl md:text-2xl tracking-wider">
-                    TOTAL
-                  </span>
-                  <span className="text-yellow-400 font-black text-3xl md:text-4xl">
+                <div className="flex justify-between pt-3 border-t-2 border-gray-200">
+                  <span className="text-gray-900 font-bold">Total</span>
+                  <span className="text-red-600 font-extrabold text-2xl">
                     Bs {totalAmount.toFixed(2)}
                   </span>
                 </div>
               </div>
+              <div className="mt-6 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-800">
+                Esta es una pasarela de pago de prueba. No se procesa ningún cargo real.
+              </div>
             </div>
 
-            <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-red-600 p-4 md:p-8">
-              <h2 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-400 mb-6 tracking-wider">
-                DATOS DEL PAGO
-              </h2>
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 flex flex-col items-center">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Código QR de pago</h2>
+              <div className="rounded-2xl border-4 border-dashed border-red-200 p-4 bg-white">
+                {qrDataUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={qrDataUrl}
+                    alt="QR de pago de demostración"
+                    className="w-64 h-64 object-contain"
+                  />
+                ) : (
+                  <div className="w-64 h-64 flex items-center justify-center text-gray-400 text-sm">
+                    Generando QR...
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-4 text-center max-w-xs">
+                Escanea con cualquier app de banca móvil (demo). El pago se simulará al
+                confirmar abajo.
+              </p>
 
-              <PaymentForm
-                onSubmit={handlePaymentSubmit}
-                totalAmount={totalAmount}
-                isSubmitting={submitting}
-              />
+              <button
+                type="button"
+                onClick={handleConfirmDemoPayment}
+                disabled={submitting}
+                className="mt-6 w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors"
+              >
+                {submitting ? "Registrando pago..." : `Confirmar pago · Bs ${totalAmount.toFixed(2)}`}
+              </button>
             </div>
           </div>
         </div>

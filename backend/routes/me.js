@@ -6,6 +6,8 @@ const MovieSession = require("../models/MovieSession");
 const Payment = require("../models/Payment");
 const Reservation = require("../models/Reservation");
 const Seat = require("../models/Seat");
+const SnackProduct = require("../models/SnackProduct");
+const SnackSale = require("../models/SnackSale");
 const Ticket = require("../models/Ticket");
 const { requireAuth, requireCustomer } = require("../middleware/auth");
 const { buildTicketPayload } = require("../utils/tickets");
@@ -421,6 +423,111 @@ router.post("/reservations/:id/pay", async (req, res) => {
   }
 });
 
+router.post("/reservations/:id/pay-qr", async (req, res) => {
+  try {
+    const customer = ensureCustomer(req, res);
+    if (!customer) return;
+
+    const reservation = await getOwnedReservationOrNull(
+      req.params.id,
+      customer._id,
+    );
+    if (!reservation) {
+      return res.status(404).json({ error: "Reservation not found" });
+    }
+
+    if (reservation.Status === "PAID") {
+      return res
+        .status(400)
+        .json({ error: "This reservation has already been paid" });
+    }
+
+    if (!reservation.SeatIDs || reservation.SeatIDs.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "This reservation has no seats assigned" });
+    }
+
+    const seatIds = reservation.SeatIDs.map((seat) => seat._id);
+    const soldSeatIds = await findSoldSeatIdsForSession(
+      reservation.SessionID._id,
+      seatIds,
+      reservation._id,
+    );
+    if (soldSeatIds.length > 0) {
+      return res
+        .status(409)
+        .json({
+          error: "One or more seats are no longer available",
+          soldSeatIds,
+        });
+    }
+
+    const existingCompletedPayment = await Payment.findOne({
+      ReservationID: reservation._id,
+      PaymentStatus: "Completed",
+    });
+
+    if (existingCompletedPayment) {
+      return res
+        .status(400)
+        .json({
+          error: "A completed payment already exists for this reservation",
+        });
+    }
+
+    const amount = calculateReservationTotal(reservation);
+    const simulatedAuthorizationCode = `QR-${buildSimulatedAuthorizationCode()}`;
+
+    const payment = await Payment.create({
+      ReservationID: reservation._id,
+      PaymentMethod: "Online",
+      Amount: amount,
+      PaymentStatus: "Completed",
+      ProcessingTime: new Date(),
+      SimulatedAuthorizationCode: simulatedAuthorizationCode,
+    });
+
+    reservation.Status = "PAID";
+    await reservation.save();
+
+    const metadataBase = {
+      customer: `${reservation.CustomerID.Name} ${reservation.CustomerID.Surname}`,
+      movie: reservation.SessionID.MovieID.MovieName,
+      hall: reservation.SessionID.HallID.HallName,
+      sessionDateTime: reservation.SessionID.SessionDateTime,
+    };
+
+    const ticketsToInsert = [];
+    for (const seat of reservation.SeatIDs) {
+      ticketsToInsert.push(
+        await buildTicketPayload({
+          reservationId: reservation._id,
+          seatId: seat._id,
+          metadata: {
+            ...metadataBase,
+            seat: `${seat.RowNumber}${seat.SeatNumber}`,
+          },
+        }),
+      );
+    }
+
+    await Ticket.insertMany(ticketsToInsert);
+
+    const refreshedReservation = await getOwnedReservationOrNull(
+      reservation._id,
+      customer._id,
+    );
+
+    res.json({
+      reservation: refreshedReservation,
+      payment,
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get("/reservations/:id/tickets", async (req, res) => {
   const customer = ensureCustomer(req, res);
   if (!customer) return;
@@ -481,6 +588,69 @@ router.get("/tickets", async (req, res) => {
     .sort({ createdAt: -1 });
 
   res.json(tickets);
+});
+
+router.post("/snack-sales", async (req, res) => {
+  try {
+    const customer = ensureCustomer(req, res);
+    if (!customer) return;
+
+    const { Items, ReservationID, Notes } = req.body;
+
+    if (!Array.isArray(Items) || Items.length === 0) {
+      return res.status(400).json({ error: "At least one item is required" });
+    }
+
+    let total = 0;
+    const resolvedItems = [];
+
+    for (const item of Items) {
+      const product = await SnackProduct.findById(item.ProductID);
+      if (!product || !product.IsActive) {
+        return res
+          .status(404)
+          .json({ error: `Product not found: ${item.ProductID}` });
+      }
+      const quantity = Number(item.Quantity);
+      if (!Number.isInteger(quantity) || quantity < 1) {
+        return res
+          .status(400)
+          .json({ error: `Invalid quantity for ${product.Name}` });
+      }
+      if (product.Stock < quantity) {
+        return res
+          .status(400)
+          .json({ error: `Stock insuficiente para: ${product.Name}` });
+      }
+
+      resolvedItems.push({
+        ProductID: product._id,
+        ProductName: product.Name,
+        Quantity: quantity,
+        UnitPrice: product.SalePrice,
+      });
+
+      total += product.SalePrice * quantity;
+      product.Stock -= quantity;
+      await product.save();
+    }
+
+    const sale = await SnackSale.create({
+      Items: resolvedItems,
+      TotalAmount: parseFloat(total.toFixed(2)),
+      PaymentMethod: "Online",
+      Status: "COMPLETED",
+      SoldBy: req.user._id,
+      CustomerID: customer._id,
+      Notes: ReservationID
+        ? `Online order for reservation ${ReservationID}${Notes ? ` — ${Notes}` : ""}`
+        : Notes || "",
+    });
+
+    res.status(201).json(sale);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 router.get("/tickets/:id", async (req, res) => {

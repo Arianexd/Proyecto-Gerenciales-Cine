@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { meApi, sessionsApi, seatsApi } from '@/lib/api';
+import { meApi, sessionsApi, seatsApi, snackProductsApi } from '@/lib/api';
 import { getStoredSession } from '@/lib/auth';
 import { MovieSession, Seat } from '@/lib/types';
 import SeatGrid from '@/components/SeatGrid';
@@ -11,7 +11,18 @@ import SeatPreview from '@/components/SeatPreview';
 import PublicNavigation from '@/components/PublicNavigation';
 import toast from 'react-hot-toast';
 
-type CartItem = { product: any; quantity: number };
+type SnackCategory = { _id: string; Name: string };
+type SnackProduct = {
+  _id: string;
+  Name: string;
+  Description?: string;
+  Category: SnackCategory | string;
+  SalePrice: number;
+  Stock: number;
+  ImageURL?: string;
+  IsActive: boolean;
+};
+type CartItem = { product: SnackProduct; quantity: number };
 
 export default function BookingPage() {
   const params = useParams();
@@ -23,6 +34,7 @@ export default function BookingPage() {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [hoveredSeat, setHoveredSeat] = useState<Seat | null>(null);
   const [reservedSeats, setReservedSeats] = useState<string[]>([]);
+  const [snackProducts, setSnackProducts] = useState<SnackProduct[]>([]);
   const [snackCart, setSnackCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -30,6 +42,7 @@ export default function BookingPage() {
   const [accountChecked, setAccountChecked] = useState(false);
 
   const pendingSelectionKey = `pending_booking_${sessionId}`;
+  const pendingSnackKey = `pending_snacks_${sessionId}`;
 
   useEffect(() => {
     if (sessionId) {
@@ -40,9 +53,7 @@ export default function BookingPage() {
   }, [sessionId]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
+    if (typeof window === 'undefined') return;
 
     if (selectedSeats.length > 0) {
       window.localStorage.setItem(pendingSelectionKey, JSON.stringify(selectedSeats));
@@ -51,16 +62,20 @@ export default function BookingPage() {
     }
   }, [pendingSelectionKey, selectedSeats]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (snackCart.length > 0) {
+      const minimal = snackCart.map((i) => ({ id: i.product._id, q: i.quantity }));
+      window.localStorage.setItem(pendingSnackKey, JSON.stringify(minimal));
+    } else {
+      window.localStorage.removeItem(pendingSnackKey);
+    }
+  }, [pendingSnackKey, snackCart]);
+
   const restorePendingSeatSelection = () => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
+    if (typeof window === 'undefined') return;
     const stored = window.localStorage.getItem(pendingSelectionKey);
-    if (!stored) {
-      return;
-    }
-
+    if (!stored) return;
     try {
       setSelectedSeats(JSON.parse(stored));
     } catch {
@@ -70,13 +85,11 @@ export default function BookingPage() {
 
   const fetchCustomerProfile = async () => {
     const session = getStoredSession();
-
     if (!session || session.user.Role !== 'CUSTOMER') {
       setCustomerInfo(null);
       setAccountChecked(true);
       return;
     }
-
     try {
       const response = await meApi.getProfile();
       setCustomerInfo(response.data);
@@ -87,12 +100,40 @@ export default function BookingPage() {
     }
   };
 
+  const fetchSnackProducts = async () => {
+    try {
+      const response = await snackProductsApi.getAll({ active: true });
+      const products: SnackProduct[] = response.data.filter((p: SnackProduct) => p.IsActive && p.Stock > 0);
+      setSnackProducts(products);
+
+      if (typeof window !== 'undefined') {
+        const stored = window.localStorage.getItem(pendingSnackKey);
+        if (stored) {
+          try {
+            const parsed: { id: string; q: number }[] = JSON.parse(stored);
+            const restored: CartItem[] = [];
+            parsed.forEach(({ id, q }) => {
+              const product = products.find((p) => p._id === id);
+              if (product) restored.push({ product, quantity: Math.min(q, product.Stock) });
+            });
+            if (restored.length > 0) setSnackCart(restored);
+          } catch {
+            window.localStorage.removeItem(pendingSnackKey);
+          }
+        }
+      }
+    } catch {
+      // Snack catalog requires auth — silently skip if not logged in
+      setSnackProducts([]);
+    }
+  };
+
   const fetchSessionData = async () => {
     try {
       setLoading(true);
       const sessionRes = await sessionsApi.getById(sessionId);
       const sessionData = sessionRes.data;
-      
+
       const now = new Date();
       const sessionDate = new Date(sessionData.SessionDateTime);
       if (sessionDate < now) {
@@ -100,7 +141,7 @@ export default function BookingPage() {
         router.push('/movies');
         return;
       }
-      
+
       setSession(sessionData);
 
       const hallId = typeof sessionData.HallID === 'object' ? sessionData.HallID._id : sessionData.HallID;
@@ -112,6 +153,8 @@ export default function BookingPage() {
 
       setSeats(seatsRes.data);
       setReservedSeats(availabilityRes.data.soldSeatIds);
+
+      await fetchSnackProducts();
     } catch (error) {
       console.error('Failed to fetch session data:', error);
       toast.error('No se pudo cargar la información de la función');
@@ -122,17 +165,34 @@ export default function BookingPage() {
 
   const handleSeatClick = (seatId: string) => {
     setSelectedSeats((prev) =>
-      prev.includes(seatId)
-        ? prev.filter((id) => id !== seatId)
-        : [...prev, seatId]
+      prev.includes(seatId) ? prev.filter((id) => id !== seatId) : [...prev, seatId]
     );
   };
+
+  const updateSnackQuantity = (product: SnackProduct, delta: number) => {
+    setSnackCart((prev) => {
+      const existing = prev.find((i) => i.product._id === product._id);
+      if (!existing) {
+        if (delta <= 0) return prev;
+        return [...prev, { product, quantity: 1 }];
+      }
+      const newQty = existing.quantity + delta;
+      if (newQty <= 0) return prev.filter((i) => i.product._id !== product._id);
+      if (newQty > product.Stock) {
+        toast.error(`Stock disponible: ${product.Stock}`);
+        return prev;
+      }
+      return prev.map((i) => (i.product._id === product._id ? { ...i, quantity: newQty } : i));
+    });
+  };
+
+  const getCartQuantity = (productId: string) =>
+    snackCart.find((i) => i.product._id === productId)?.quantity || 0;
 
   const redirectToLogin = () => {
     if (selectedSeats.length > 0 && typeof window !== 'undefined') {
       window.localStorage.setItem(pendingSelectionKey, JSON.stringify(selectedSeats));
     }
-
     router.push(`/account/login?redirect=${encodeURIComponent(`/booking/${sessionId}`)}`);
   };
 
@@ -156,12 +216,30 @@ export default function BookingPage() {
         SeatIDs: selectedSeats,
       });
 
+      const reservationId = response.data._id;
+
+      if (snackCart.length > 0) {
+        try {
+          await meApi.createSnackSale({
+            ReservationID: reservationId,
+            Items: snackCart.map((i) => ({ ProductID: i.product._id, Quantity: i.quantity })),
+          });
+          if (typeof window !== 'undefined') {
+            window.localStorage.removeItem(pendingSnackKey);
+          }
+          setSnackCart([]);
+        } catch (snackError: any) {
+          const message = snackError?.response?.data?.error || 'No se pudo procesar los snacks';
+          toast.error(`Reserva creada, pero ${message.toLowerCase()}`);
+        }
+      }
+
       if (typeof window !== 'undefined') {
         window.localStorage.removeItem(pendingSelectionKey);
       }
 
       toast.success('Reserva creada. Ahora completa el pago.');
-      router.push(`/payment/${response.data._id}`);
+      router.push(`/payment/${reservationId}`);
     } catch (error: any) {
       const message = error?.response?.data?.error || 'No se pudo crear la reserva';
       toast.error(message);
@@ -177,12 +255,9 @@ export default function BookingPage() {
     return (
       <>
         <PublicNavigation />
-        <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="relative">
-            <div className="w-24 h-24 border-8 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-4xl animate-pulse">🎬</div>
-            </div>
+            <div className="w-20 h-20 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
           </div>
         </div>
       </>
@@ -193,10 +268,10 @@ export default function BookingPage() {
     return (
       <>
         <PublicNavigation />
-        <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-8xl mb-6">🎬</div>
-            <h2 className="text-3xl font-black text-white mb-4">FUNCIÓN NO ENCONTRADA</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">Función no encontrada</h2>
+            <Link href="/movies" className="text-red-600 font-semibold hover:underline">Ver cartelera</Link>
           </div>
         </div>
       </>
@@ -206,63 +281,48 @@ export default function BookingPage() {
   const movieName = typeof session.MovieID === 'object' ? session.MovieID.MovieName : 'Película';
   const hallName = typeof session.HallID === 'object' ? session.HallID.HallName : 'Sala';
   const hallCapacity = typeof session.HallID === 'object' ? session.HallID.Capacity : 100;
-  
+
   const ticketTotal = selectedSeats.length * session.Price;
-  const snackTotal = snackCart.reduce((sum, i) => sum + i.product.SalePrice * i.quantity, 0);
+  const snackTotal = snackCart.reduce((sum, i) => sum + (Number(i.product.SalePrice) || 0) * i.quantity, 0);
   const grandTotal = ticketTotal + snackTotal;
 
   return (
     <>
       <PublicNavigation />
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black py-6 md:py-8">
-        <div className="container mx-auto px-4">
-          <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-red-600 p-4 md:p-8 mb-6 md:mb-8 overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-3 bg-yellow-500 flex gap-1 px-1">
-              {[...Array(30)].map((_, i) => (
-                <div key={i} className="flex-1 bg-black rounded-sm"></div>
-              ))}
-            </div>
+      <div className="min-h-screen bg-gray-50 py-4 sm:py-6 md:py-10 pb-28 lg:pb-10">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
-            <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-400 to-red-500 mb-4 md:mb-6 mt-3 tracking-wide md:tracking-wider">
-              {movieName}
-            </h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-              <div className="bg-gray-800/50 rounded-lg px-4 py-3 border border-gray-700">
-                <span className="text-gray-400 text-sm block mb-1">SALA</span>
-                <span className="text-white font-black text-base md:text-lg">{hallName}</span>
+          {/* Header card */}
+          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-6 md:p-8 mb-4 sm:mb-6">
+            <p className="text-red-600 text-[11px] sm:text-xs font-bold tracking-widest uppercase mb-1">Reserva tu función</p>
+            <h1 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900 mb-4 sm:mb-5 line-clamp-2">{movieName}</h1>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+              <div className="bg-gray-50 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-100">
+                <span className="text-gray-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider block mb-0.5 sm:mb-1">Sala</span>
+                <span className="text-gray-900 font-bold text-sm sm:text-base">{hallName}</span>
               </div>
-              <div className="bg-gray-800/50 rounded-lg px-4 py-3 border border-gray-700">
-                <span className="text-gray-400 text-sm block mb-1">FECHA</span>
-                <span className="text-yellow-400 font-black text-base md:text-lg">{new Date(session.SessionDateTime).toLocaleDateString('es-ES')}</span>
+              <div className="bg-gray-50 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-100">
+                <span className="text-gray-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider block mb-0.5 sm:mb-1">Fecha</span>
+                <span className="text-gray-900 font-bold text-sm sm:text-base">{new Date(session.SessionDateTime).toLocaleDateString('es-ES')}</span>
               </div>
-              <div className="bg-gray-800/50 rounded-lg px-4 py-3 border border-gray-700">
-                <span className="text-gray-400 text-sm block mb-1">HORA</span>
-                <span className="text-yellow-400 font-black text-base md:text-lg">{new Date(session.SessionDateTime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+              <div className="bg-gray-50 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-100">
+                <span className="text-gray-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider block mb-0.5 sm:mb-1">Hora</span>
+                <span className="text-gray-900 font-bold text-sm sm:text-base">{new Date(session.SessionDateTime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
-              <div className="bg-gray-800/50 rounded-lg px-4 py-3 border border-gray-700">
-                <span className="text-gray-400 text-sm block mb-1">PRECIO/ASIENTO</span>
-                <span className="text-green-400 font-black text-base md:text-lg">Bs {session.Price}</span>
+              <div className="bg-gray-50 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-100">
+                <span className="text-gray-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider block mb-0.5 sm:mb-1">Precio</span>
+                <span className="text-emerald-600 font-bold text-sm sm:text-base">Bs {session.Price}</span>
               </div>
-            </div>
-
-            <div className="absolute bottom-0 left-0 right-0 h-3 bg-yellow-500 flex gap-1 px-1">
-              {[...Array(30)].map((_, i) => (
-                <div key={i} className="flex-1 bg-black rounded-sm"></div>
-              ))}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div className="lg:col-span-2 bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-gray-800 p-4 md:p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-400 mb-3 tracking-wider">
-                  SELECCIONA TUS ASIENTOS
-                </h2>
-                <div className="bg-yellow-500/10 border-2 border-yellow-500/30 rounded-lg p-4">
-                  <p className="text-yellow-400 font-semibold">
-                    Pasa el cursor sobre los asientos para previsualizar la vista de pantalla y la calidad acústica.
-                  </p>
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
+            {/* Seats */}
+            <div className="lg:col-span-2 bg-white border border-gray-100 rounded-2xl shadow-sm p-3 sm:p-5 md:p-6 order-1">
+              <div className="mb-4 sm:mb-5">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">Selecciona tus asientos</h2>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Pasa el cursor sobre los asientos para previsualizar la vista de pantalla y la calidad acústica.</p>
+                <p className="text-xs text-gray-500 sm:hidden">Toca un asiento para seleccionarlo. Desliza horizontalmente si la sala es ancha.</p>
               </div>
               <SeatGrid
                 seats={seats}
@@ -273,14 +333,13 @@ export default function BookingPage() {
               />
             </div>
 
-            <div className="space-y-6">
-              <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-purple-600 p-4 md:p-6">
-                <h3 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-4">
-                  VISTA PREVIA
-                </h3>
+            {/* Sidebar */}
+            <div className="space-y-4 sm:space-y-6 order-2">
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 md:p-6 hidden lg:block">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Vista previa</h3>
                 {hoveredSeat ? (
                   <div>
-                    <p className="text-gray-400 font-bold mb-4 text-center bg-gray-800 rounded-lg py-2">
+                    <p className="text-gray-700 font-semibold mb-3 text-center bg-gray-50 rounded-lg py-2 border border-gray-100">
                       Fila {hoveredSeat.RowNumber} • Asiento {hoveredSeat.SeatNumber}
                     </p>
                     <SeatPreview
@@ -289,60 +348,176 @@ export default function BookingPage() {
                       hallCapacity={hallCapacity}
                       seatRow={hoveredSeat.RowNumber}
                       seatNumber={hoveredSeat.SeatNumber}
-                      totalSeatsInRow={seats.filter((seat) => seat.RowNumber === hoveredSeat.RowNumber).length}
+                      totalSeatsInRow={seats.filter((s) => s.RowNumber === hoveredSeat.RowNumber).length}
                       category={hoveredSeat.Category}
                       priceModifier={hoveredSeat.PriceModifier}
                       sessionPrice={session.Price}
                     />
                   </div>
                 ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <p className="text-sm font-semibold">Pasa el cursor sobre un asiento</p>
+                  <div className="text-center py-10 text-gray-400">
+                    <p className="text-sm">Pasa el cursor sobre un asiento</p>
                   </div>
                 )}
               </div>
 
-              <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-yellow-500 p-4 md:p-6">
-                <h3 className="text-xl md:text-2xl font-black text-yellow-400 mb-4">RESUMEN DEL PEDIDO</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                    <span className="text-gray-400 font-semibold">Asientos Seleccionados</span>
-                    <span className="text-white font-black text-lg">{selectedSeats.length}</span>
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 md:p-6">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Resumen del pedido</h3>
+                {selectedSeats.length > 0 && (
+                  <div className="mb-3 pb-3 border-b border-gray-100">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">Asientos seleccionados</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedSeats.map((id) => {
+                        const s = seats.find((x) => x._id === id);
+                        if (!s) return null;
+                        return (
+                          <span key={id} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
+                            {s.RowNumber}{s.SeatNumber}
+                          </span>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                    <span className="text-gray-400 font-semibold">Precio por Asiento</span>
-                    <span className="text-white font-black text-lg">Bs {session.Price}</span>
+                )}
+                <div className="space-y-2.5 text-sm">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600">Asientos × {selectedSeats.length}</span>
+                    <span className="text-gray-900 font-semibold">Bs {ticketTotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between items-center py-3 bg-gradient-to-r from-yellow-500/20 to-red-500/20 rounded-lg px-4 border-2 border-yellow-500/30">
-                    <span className="text-yellow-400 font-black text-lg">TOTAL</span>
-                    <span className="text-yellow-400 font-black text-2xl md:text-3xl">Bs {grandTotal.toFixed(2)}</span>
+                  {snackCart.length > 0 && (
+                    <>
+                      {snackCart.map((item) => (
+                        <div key={item.product._id} className="flex justify-between items-center py-1.5 text-xs">
+                          <span className="text-gray-500">
+                            {item.product.Name} × {item.quantity}
+                          </span>
+                          <span className="text-gray-700">Bs {((Number(item.product.SalePrice) || 0) * item.quantity).toFixed(2)}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between items-center py-2 border-t border-gray-100">
+                        <span className="text-gray-600">Snacks</span>
+                        <span className="text-gray-900 font-semibold">Bs {snackTotal.toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex justify-between items-center pt-3 border-t-2 border-gray-200">
+                    <span className="text-gray-900 font-bold">Total</span>
+                    <span className="text-red-600 font-extrabold text-2xl">Bs {grandTotal.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-4 border-red-600 p-4 md:p-8">
-            <h2 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-400 mb-6 tracking-wider">
-              {customerInfo ? 'CONFIRMA TU COMPRA' : 'ACCESO REQUERIDO'}
+          {/* Snacks section */}
+          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 md:p-8 mb-4 sm:mb-6">
+            <div className="flex items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 flex-wrap">
+              <div>
+                <p className="text-red-600 text-[11px] sm:text-xs font-bold tracking-widest uppercase mb-1">Opcional</p>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Añade snacks a tu pedido</h2>
+                <p className="text-xs sm:text-sm text-gray-500 mt-1">Recoge tus snacks en el cine al presentar tu ticket.</p>
+              </div>
+              {snackCart.length > 0 && (
+                <div className="bg-red-50 text-red-700 text-sm font-semibold rounded-full px-4 py-2 border border-red-100">
+                  {snackCart.reduce((sum, i) => sum + i.quantity, 0)} producto(s) · Bs {snackTotal.toFixed(2)}
+                </div>
+              )}
+            </div>
+
+            {!customerInfo ? (
+              <div className="rounded-xl bg-gray-50 border border-gray-100 px-5 py-6 text-center">
+                <p className="text-sm text-gray-600">Inicia sesión como cliente para añadir snacks a tu compra.</p>
+              </div>
+            ) : snackProducts.length === 0 ? (
+              <div className="rounded-xl bg-gray-50 border border-gray-100 px-5 py-6 text-center">
+                <p className="text-sm text-gray-600">No hay snacks disponibles en este momento.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+                {snackProducts.map((product) => {
+                  const qty = getCartQuantity(product._id);
+                  return (
+                    <div
+                      key={product._id}
+                      className={`rounded-xl border p-2.5 sm:p-4 flex flex-col transition-all ${
+                        qty > 0 ? 'border-red-300 bg-red-50/40' : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="aspect-square w-full rounded-lg bg-gray-100 mb-3 flex items-center justify-center overflow-hidden">
+                        {product.ImageURL ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={product.ImageURL} alt={product.Name} className="w-full h-full object-cover" />
+                        ) : (
+                          <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14l-1.5 11a2 2 0 01-2 1.8h-7a2 2 0 01-2-1.8L5 8z M9 8V5a3 3 0 016 0v3" />
+                          </svg>
+                        )}
+                      </div>
+                      <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1">{product.Name}</h3>
+                      {product.Description && (
+                        <p className="text-xs text-gray-500 mb-2 line-clamp-2">{product.Description}</p>
+                      )}
+                      <div className="mt-auto flex items-center justify-between gap-2 pt-3">
+                        <span className="text-red-600 font-bold">Bs {(Number(product.SalePrice) || 0).toFixed(2)}</span>
+                        {qty === 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => updateSnackQuantity(product, 1)}
+                            className="px-3 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold transition-colors"
+                          >
+                            Añadir
+                          </button>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => updateSnackQuantity(product, -1)}
+                              className="w-7 h-7 rounded-lg border border-gray-200 text-gray-600 font-bold hover:bg-gray-50"
+                              aria-label="Quitar uno"
+                            >
+                              −
+                            </button>
+                            <span className="w-6 text-center text-sm font-semibold text-gray-900">{qty}</span>
+                            <button
+                              type="button"
+                              onClick={() => updateSnackQuantity(product, 1)}
+                              className="w-7 h-7 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold"
+                              aria-label="Añadir uno"
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Confirm card */}
+          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 md:p-8">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-5">
+              {customerInfo ? 'Confirma tu compra' : 'Acceso requerido'}
             </h2>
 
             {!accountChecked ? (
-              <p className="text-gray-400">Comprobando tu cuenta...</p>
+              <p className="text-gray-500">Comprobando tu cuenta...</p>
             ) : customerInfo ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-gray-800 border border-gray-700 rounded-xl p-4">
-                    <p className="text-yellow-400 text-xs font-black tracking-widest mb-1">CLIENTE</p>
-                    <p className="text-white font-bold">{customerInfo.Name} {customerInfo.Surname}</p>
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+                    <p className="text-gray-500 text-xs font-bold tracking-widest uppercase mb-1">Cliente</p>
+                    <p className="text-gray-900 font-semibold">{customerInfo.Name} {customerInfo.Surname}</p>
                   </div>
-                  <div className="bg-gray-800 border border-gray-700 rounded-xl p-4">
-                    <p className="text-yellow-400 text-xs font-black tracking-widest mb-1">CORREO</p>
-                    <p className="text-white font-bold">{customerInfo.Email}</p>
+                  <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+                    <p className="text-gray-500 text-xs font-bold tracking-widest uppercase mb-1">Correo</p>
+                    <p className="text-gray-900 font-semibold truncate">{customerInfo.Email}</p>
                   </div>
-                  <div className="bg-gray-800 border border-gray-700 rounded-xl p-4">
-                    <p className="text-yellow-400 text-xs font-black tracking-widest mb-1">TELÉFONO</p>
-                    <p className="text-white font-bold">{customerInfo.PhoneNumber}</p>
+                  <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+                    <p className="text-gray-500 text-xs font-bold tracking-widest uppercase mb-1">Teléfono</p>
+                    <p className="text-gray-900 font-semibold">{customerInfo.PhoneNumber}</p>
                   </div>
                 </div>
 
@@ -350,33 +525,64 @@ export default function BookingPage() {
                   type="button"
                   onClick={handleContinue}
                   disabled={submitting || selectedSeats.length === 0}
-                  className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 disabled:from-gray-700 disabled:to-gray-800 text-white font-black text-base md:text-xl py-4 md:py-5 rounded-xl transition-all duration-300 shadow-2xl shadow-red-500/50 disabled:shadow-none"
+                  className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold text-base md:text-lg py-4 rounded-xl transition-colors"
                 >
-                  {submitting ? 'PROCESANDO...' : 'CONTINUAR AL PAGO'}
+                  {submitting ? 'Procesando...' : `Continuar al pago · Bs ${grandTotal.toFixed(2)}`}
                 </button>
               </div>
             ) : (
               <div className="space-y-5">
-                <p className="text-gray-300 text-base md:text-lg">
-                  Para comprar entradas ahora necesitas iniciar sesión como cliente. Así podremos guardar tu historial de compras y habilitar tus valoraciones cuando hayas visto la película.
+                <p className="text-gray-600">
+                  Para comprar entradas y snacks necesitas iniciar sesión como cliente. Así podemos guardar tu historial y habilitar tus valoraciones.
                 </p>
-
-                <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     type="button"
                     onClick={redirectToLogin}
-                    className="px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-black"
+                    className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold"
                   >
-                    INICIAR SESIÓN
+                    Iniciar sesión
                   </button>
                   <Link
                     href={`/account/register?redirect=${encodeURIComponent(`/booking/${sessionId}`)}`}
-                    className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-black rounded-xl font-black"
+                    className="px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-bold text-center"
                   >
-                    CREAR CUENTA
+                    Crear cuenta
                   </Link>
                 </div>
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile sticky bottom bar */}
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] px-3 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))]">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 leading-none">
+                {selectedSeats.length} asiento{selectedSeats.length === 1 ? '' : 's'}
+                {snackCart.length > 0 ? ` · ${snackCart.reduce((s, i) => s + i.quantity, 0)} snack(s)` : ''}
+              </p>
+              <p className="text-red-600 font-extrabold text-lg leading-tight">Bs {grandTotal.toFixed(2)}</p>
+            </div>
+            {customerInfo ? (
+              <button
+                type="button"
+                onClick={handleContinue}
+                disabled={submitting || selectedSeats.length === 0}
+                className="flex-shrink-0 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors"
+              >
+                {submitting ? 'Procesando...' : 'Continuar'}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={redirectToLogin}
+                disabled={selectedSeats.length === 0}
+                className="flex-shrink-0 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors"
+              >
+                Iniciar sesión
+              </button>
             )}
           </div>
         </div>

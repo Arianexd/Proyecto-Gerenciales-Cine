@@ -134,10 +134,17 @@ export const meApi = {
       cvv: string;
     },
   ) => api.post(`/me/reservations/${id}/pay`, data),
+  payReservationByQr: (id: string) =>
+    api.post(`/me/reservations/${id}/pay-qr`),
   getReservationTickets: (id: string) =>
     api.get(`/me/reservations/${id}/tickets`),
   getTickets: () => api.get("/me/tickets"),
   getTicketById: (id: string) => api.get(`/me/tickets/${id}`),
+  createSnackSale: (data: {
+    Items: { ProductID: string; Quantity: number }[];
+    ReservationID?: string;
+    Notes?: string;
+  }) => api.post("/me/snack-sales", data),
 };
 
 export const reviewsApi = {

@@ -110,7 +110,7 @@ const seedDatabase = async () => {
     ]);
     console.log('Seeded users: 5');
 
-    // INSERT MOVIES (3 records with poster URLs and details)
+    // INSERT MOVIES (with poster URLs and details)
     const movies = await Movie.insertMany([
       {
         MovieName: 'Inception',
@@ -147,6 +147,66 @@ const seedDatabase = async () => {
         Cast: ['Matthew McConaughey', 'Anne Hathaway', 'Jessica Chastain', 'Michael Caine'],
         Rating: 8.6,
         TrailerURL: 'https://www.youtube.com/watch?v=zSWdZVtXT7E'
+      },
+      {
+        MovieName: 'Dune: Part Two',
+        Genre: 'Sci-Fi',
+        Duration: 166,
+        AgeLimit: 13,
+        Description: 'Paul Atreides unites with the Fremen to seek revenge against the conspirators who destroyed his family.',
+        PosterURL: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
+        Director: 'Denis Villeneuve',
+        Cast: ['Timothée Chalamet', 'Zendaya', 'Rebecca Ferguson', 'Javier Bardem'],
+        Rating: 8.5,
+        TrailerURL: 'https://www.youtube.com/watch?v=Way9Dexny3w'
+      },
+      {
+        MovieName: 'Oppenheimer',
+        Genre: 'Drama',
+        Duration: 180,
+        AgeLimit: 16,
+        Description: 'The story of J. Robert Oppenheimer and his role in the development of the atomic bomb.',
+        PosterURL: 'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',
+        Director: 'Christopher Nolan',
+        Cast: ['Cillian Murphy', 'Emily Blunt', 'Robert Downey Jr.', 'Matt Damon'],
+        Rating: 8.4,
+        TrailerURL: 'https://www.youtube.com/watch?v=uYPbbksJxIg'
+      },
+      {
+        MovieName: 'Spider-Man: Across the Spider-Verse',
+        Genre: 'Animation',
+        Duration: 140,
+        AgeLimit: 7,
+        Description: 'Miles Morales catapults across the Multiverse, where he encounters a team of Spider-People.',
+        PosterURL: 'https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg',
+        Director: 'Joaquim Dos Santos',
+        Cast: ['Shameik Moore', 'Hailee Steinfeld', 'Oscar Isaac', 'Jake Johnson'],
+        Rating: 8.7,
+        TrailerURL: 'https://www.youtube.com/watch?v=cqGjhVJWtEg'
+      },
+      {
+        MovieName: 'Barbie',
+        Genre: 'Comedy',
+        Duration: 114,
+        AgeLimit: 13,
+        Description: 'Barbie suffers a crisis that leads her to question her world and her existence.',
+        PosterURL: 'https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg',
+        Director: 'Greta Gerwig',
+        Cast: ['Margot Robbie', 'Ryan Gosling', 'America Ferrera', 'Kate McKinnon'],
+        Rating: 7.0,
+        TrailerURL: 'https://www.youtube.com/watch?v=pBk4NYhWNMM'
+      },
+      {
+        MovieName: 'The Batman',
+        Genre: 'Action',
+        Duration: 176,
+        AgeLimit: 13,
+        Description: 'When a sadistic serial killer begins murdering key political figures in Gotham, Batman is forced to investigate.',
+        PosterURL: 'https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg',
+        Director: 'Matt Reeves',
+        Cast: ['Robert Pattinson', 'Zoë Kravitz', 'Paul Dano', 'Colin Farrell'],
+        Rating: 7.8,
+        TrailerURL: 'https://www.youtube.com/watch?v=mqqft2x_Aa4'
       }
     ]);
     console.log('Seeded movies:', movies.length);
@@ -235,41 +295,68 @@ const seedDatabase = async () => {
         seat.SeatNumber === seatNumber
       );
 
-    // INSERT SESSIONS (4 records)
-    const sessions = await MovieSession.insertMany([
-      {
-        MovieID: movies[0]._id, // Inception
-        HallID: halls[0]._id, // Hall A
-        SessionDateTime: new Date('2025-12-20T14:00:00'),
-        Price: 50,
-        Language: 'English',
-        SubtitleInfo: 'Turkish'
-      },
-      {
-        MovieID: movies[1]._id, // The Dark Knight
-        HallID: halls[1]._id, // Hall B
-        SessionDateTime: new Date('2025-12-20T17:00:00'),
-        Price: 60,
-        Language: 'English',
-        SubtitleInfo: 'Turkish'
-      },
-      {
-        MovieID: movies[2]._id, // Interstellar
-        HallID: halls[0]._id, // Hall A
-        SessionDateTime: new Date('2025-12-20T20:00:00'),
-        Price: 55,
-        Language: 'English',
-        SubtitleInfo: 'None'
-      },
-      {
-        MovieID: movies[0]._id, // Inception
-        HallID: halls[2]._id, // Hall C
-        SessionDateTime: new Date('2025-12-21T15:00:00'),
-        Price: 45,
-        Language: 'Turkish',
-        SubtitleInfo: 'None'
-      }
-    ]);
+    // INSERT SESSIONS — generated dynamically across the next 7 days
+    // so the catalog always has future functions to choose from.
+    const baseDate = new Date();
+    baseDate.setHours(0, 0, 0, 0);
+    baseDate.setDate(baseDate.getDate() + 1); // start tomorrow
+
+    const buildSession = (dayOffset, hour, minute, movieIdx, hallIdx, price, language = 'Spanish', subtitle = 'None') => {
+      const dt = new Date(baseDate);
+      dt.setDate(dt.getDate() + dayOffset);
+      dt.setHours(hour, minute, 0, 0);
+      return {
+        MovieID: movies[movieIdx]._id,
+        HallID: halls[hallIdx]._id,
+        SessionDateTime: dt,
+        Price: price,
+        Language: language,
+        SubtitleInfo: subtitle
+      };
+    };
+
+    const sessionDefs = [];
+    // Day 0 (tomorrow) — first 4 entries kept aligned with the seeded reservations below
+    sessionDefs.push(buildSession(0, 14, 0, 0, 0, 50, 'English', 'Spanish')); // [0] Inception / Hall A
+    sessionDefs.push(buildSession(0, 17, 0, 1, 1, 60, 'English', 'Spanish')); // [1] Dark Knight / Hall B
+    sessionDefs.push(buildSession(0, 20, 0, 2, 0, 55, 'English', 'Spanish')); // [2] Interstellar / Hall A
+    sessionDefs.push(buildSession(1, 15, 0, 0, 2, 45, 'Spanish', 'None'));    // [3] Inception / Hall C
+    // Extra functions
+    sessionDefs.push(buildSession(0, 16, 30, 3, 2, 65, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(0, 19, 30, 4, 1, 70, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(0, 21, 0, 7, 2, 60, 'English', 'Spanish'));
+    // Day 1
+    sessionDefs.push(buildSession(1, 13, 0, 5, 0, 45, 'Spanish', 'None'));
+    sessionDefs.push(buildSession(1, 15, 30, 6, 1, 50, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(1, 16, 0, 0, 2, 50, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(1, 18, 0, 3, 0, 65, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(1, 19, 30, 4, 1, 70, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(1, 21, 30, 1, 2, 60, 'English', 'Spanish'));
+    // Day 2
+    sessionDefs.push(buildSession(2, 14, 0, 7, 0, 60, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(2, 16, 0, 2, 1, 55, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(2, 18, 30, 5, 2, 45, 'Spanish', 'None'));
+    sessionDefs.push(buildSession(2, 20, 0, 6, 0, 50, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(2, 21, 0, 0, 1, 50, 'English', 'Spanish'));
+    // Day 3
+    sessionDefs.push(buildSession(3, 15, 0, 4, 0, 70, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(3, 17, 30, 3, 1, 65, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(3, 19, 0, 1, 2, 60, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(3, 21, 0, 2, 0, 55, 'English', 'Spanish'));
+    // Day 4
+    sessionDefs.push(buildSession(4, 14, 30, 6, 0, 50, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(4, 17, 0, 7, 1, 60, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(4, 20, 0, 0, 2, 50, 'English', 'Spanish'));
+    // Day 5
+    sessionDefs.push(buildSession(5, 16, 0, 5, 0, 45, 'Spanish', 'None'));
+    sessionDefs.push(buildSession(5, 18, 30, 4, 1, 70, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(5, 21, 0, 3, 2, 65, 'English', 'Spanish'));
+    // Day 6
+    sessionDefs.push(buildSession(6, 15, 0, 1, 0, 60, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(6, 18, 0, 2, 1, 55, 'English', 'Spanish'));
+    sessionDefs.push(buildSession(6, 20, 30, 7, 2, 60, 'English', 'Spanish'));
+
+    const sessions = await MovieSession.insertMany(sessionDefs);
     console.log('Seeded sessions:', sessions.length);
 
     // INSERT RESERVATIONS (4 records)
@@ -447,27 +534,44 @@ const seedDatabase = async () => {
 
     const snackProducts = await SnackProduct.insertMany([
       // Bebidas
-      { Name: 'Coca-Cola 600ml', Description: 'Refresco clásico helado', Category: bebidas._id, Price: 45, Stock: 100, IsActive: true },
-      { Name: 'Agua Natural 600ml', Description: 'Agua purificada fría', Category: bebidas._id, Price: 25, Stock: 80, IsActive: true },
-      { Name: 'Jugo de Naranja', Description: 'Jugo natural 355ml', Category: bebidas._id, Price: 35, Stock: 60, IsActive: true },
-      { Name: 'Pepsi 600ml', Description: 'Refresco cola 600ml', Category: bebidas._id, Price: 40, Stock: 90, IsActive: true },
+      { Name: 'Coca-Cola 600ml', Description: 'Refresco clásico helado', Category: bebidas._id, SalePrice: 45, Stock: 100, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1561758033-d89a9ad46330?w=600&q=80' },
+      { Name: 'Agua Natural 600ml', Description: 'Agua purificada fría', Category: bebidas._id, SalePrice: 25, Stock: 80, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=600&q=80' },
+      { Name: 'Jugo de Naranja', Description: 'Jugo natural 355ml', Category: bebidas._id, SalePrice: 35, Stock: 60, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=600&q=80' },
+      { Name: 'Pepsi 600ml', Description: 'Refresco cola 600ml', Category: bebidas._id, SalePrice: 40, Stock: 90, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=600&q=80' },
       // Palomitas
-      { Name: 'Palomitas Chicas', Description: 'Palomitas de mantequilla tamaño chico', Category: palomitas._id, Price: 55, Stock: 50, IsActive: true },
-      { Name: 'Palomitas Medianas', Description: 'Palomitas de mantequilla tamaño mediano', Category: palomitas._id, Price: 75, Stock: 50, IsActive: true },
-      { Name: 'Palomitas Grandes', Description: 'Palomitas de mantequilla tamaño grande', Category: palomitas._id, Price: 95, Stock: 40, IsActive: true },
-      { Name: 'Palomitas Caramelo', Description: 'Palomitas dulces de caramelo', Category: palomitas._id, Price: 85, Stock: 30, IsActive: true },
+      { Name: 'Palomitas Chicas', Description: 'Palomitas de mantequilla tamaño chico', Category: palomitas._id, SalePrice: 55, Stock: 50, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=600&q=80' },
+      { Name: 'Palomitas Medianas', Description: 'Palomitas de mantequilla tamaño mediano', Category: palomitas._id, SalePrice: 75, Stock: 50, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?w=600&q=80' },
+      { Name: 'Palomitas Grandes', Description: 'Palomitas de mantequilla tamaño grande', Category: palomitas._id, SalePrice: 95, Stock: 40, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=600&q=80' },
+      { Name: 'Palomitas Caramelo', Description: 'Palomitas dulces de caramelo', Category: palomitas._id, SalePrice: 85, Stock: 30, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1571846268303-7b1eb2cb8c3e?w=600&q=80' },
       // Dulces
-      { Name: 'Chocolate M&Ms', Description: 'Chocolates de colores 200g', Category: dulces._id, Price: 50, Stock: 70, IsActive: true },
-      { Name: 'Gomitas Ositos', Description: 'Gomitas multicolor 150g', Category: dulces._id, Price: 35, Stock: 60, IsActive: true },
-      { Name: 'Snickers', Description: 'Barra de chocolate con cacahuate', Category: dulces._id, Price: 30, Stock: 80, IsActive: true },
+      { Name: 'Chocolate M&Ms', Description: 'Chocolates de colores 200g', Category: dulces._id, SalePrice: 50, Stock: 70, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1581798459219-318e76aecc7b?w=600&q=80' },
+      { Name: 'Gomitas Ositos', Description: 'Gomitas multicolor 150g', Category: dulces._id, SalePrice: 35, Stock: 60, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1582058091505-f87a2e55a40f?w=600&q=80' },
+      { Name: 'Snickers', Description: 'Barra de chocolate con cacahuate', Category: dulces._id, SalePrice: 30, Stock: 80, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1623941442420-9f95397ec6a5?w=600&q=80' },
       // Nachos
-      { Name: 'Nachos con Queso', Description: 'Nachos con salsa de queso caliente', Category: nachos._id, Price: 75, Stock: 40, IsActive: true },
-      { Name: 'Papas Fritas', Description: 'Papas fritas crujientes saladas', Category: nachos._id, Price: 45, Stock: 50, IsActive: true },
-      { Name: 'Hot Dogs', Description: 'Salchicha en pan con salsas', Category: nachos._id, Price: 65, Stock: 35, IsActive: true },
+      { Name: 'Nachos con Queso', Description: 'Nachos con salsa de queso caliente', Category: nachos._id, SalePrice: 75, Stock: 40, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1582169296194-e4d644c48063?w=600&q=80' },
+      { Name: 'Papas Fritas', Description: 'Papas fritas crujientes saladas', Category: nachos._id, SalePrice: 45, Stock: 50, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600&q=80' },
+      { Name: 'Hot Dogs', Description: 'Salchicha en pan con salsas', Category: nachos._id, SalePrice: 65, Stock: 35, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1612392062798-2cc2cdcae9b9?w=600&q=80' },
       // Combos
-      { Name: 'Combo Pareja', Description: 'Palomitas grandes + 2 refrescos medianos', Category: combos._id, Price: 160, Stock: 25, IsActive: true },
-      { Name: 'Combo Familiar', Description: 'Palomitas XL + 4 refrescos + nachos', Category: combos._id, Price: 280, Stock: 20, IsActive: true },
-      { Name: 'Combo Personal', Description: 'Palomitas medianas + refresco', Category: combos._id, Price: 110, Stock: 30, IsActive: true }
+      { Name: 'Combo Pareja', Description: 'Palomitas grandes + 2 refrescos medianos', Category: combos._id, SalePrice: 160, Stock: 25, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1585647347384-2593bc35786b?w=600&q=80' },
+      { Name: 'Combo Familiar', Description: 'Palomitas XL + 4 refrescos + nachos', Category: combos._id, SalePrice: 280, Stock: 20, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1627843240167-b1f9440fc173?w=600&q=80' },
+      { Name: 'Combo Personal', Description: 'Palomitas medianas + refresco', Category: combos._id, SalePrice: 110, Stock: 30, IsActive: true,
+        ImageURL: 'https://images.unsplash.com/photo-1626423642369-9eaeb723be3a?w=600&q=80' }
     ]);
     console.log('Seeded snack products:', snackProducts.length);
 
