@@ -316,7 +316,7 @@ export default function ReservationsPage() {
     const q = globalSearch.toLowerCase();
     const customerName = getCustomerName(r.CustomerID).toLowerCase();
     const movieName = getMovieName(r.SessionID).toLowerCase();
-    const ci = typeof r.CustomerID === 'object' ? (r.CustomerID.CI || '').toLowerCase() : '';
+    const ci = r.CustomerID && typeof r.CustomerID === 'object' ? (r.CustomerID.CI || '').toLowerCase() : '';
     const matchesSearch = customerName.includes(q) || movieName.includes(q) || ci.includes(q);
 
     return matchesStatus && matchesSearch;
