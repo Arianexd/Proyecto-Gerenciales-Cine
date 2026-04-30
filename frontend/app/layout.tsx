@@ -11,7 +11,8 @@ export const metadata: Metadata = {
   description:
     "Sistema avanzado de reserva de entradas de cine con tecnología de previsualización de asientos",
   icons: {
-    icon: "/cinema.png",
+    icon: "/cinema_v2.webp",
+    apple: "/cinema_v2.webp",
   },
 };
 
