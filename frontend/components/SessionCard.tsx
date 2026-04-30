@@ -46,7 +46,7 @@ export default function SessionCard({ session }: SessionCardProps) {
             <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-0.5">{date}</p>
           </div>
           <div className="text-right">
-            <p className="text-xl font-extrabold text-red-600">${session.Price}</p>
+            <p className="text-xl font-extrabold text-red-600">Bs {Number(session.Price ?? 0).toFixed(2)}</p>
             <p className="text-xs text-gray-400">por entrada</p>
           </div>
 

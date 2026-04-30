@@ -44,6 +44,17 @@ export default function BookingPage() {
   const pendingSelectionKey = `pending_booking_${sessionId}`;
   const pendingSnackKey = `pending_snacks_${sessionId}`;
 
+  const categoryEmoji = (name?: string) => {
+    if (!name) return '🍫';
+    const n = name.toLowerCase();
+    if (n.includes('bebida')) return '🥤';
+    if (n.includes('palomita')) return '🍿';
+    if (n.includes('dulce')) return '🍬';
+    if (n.includes('nacho') || n.includes('snack')) return '🌮';
+    if (n.includes('combo')) return '🎁';
+    return '🍫';
+  };
+
   useEffect(() => {
     if (sessionId) {
       fetchSessionData();
@@ -443,15 +454,10 @@ export default function BookingPage() {
                         qty > 0 ? 'border-red-300 bg-red-50/40' : 'border-gray-200 bg-white hover:border-gray-300'
                       }`}
                     >
-                      <div className="aspect-square w-full rounded-lg bg-gray-100 mb-3 flex items-center justify-center overflow-hidden">
-                        {product.ImageURL ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={product.ImageURL} alt={product.Name} className="w-full h-full object-cover" />
-                        ) : (
-                          <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14l-1.5 11a2 2 0 01-2 1.8h-7a2 2 0 01-2-1.8L5 8z M9 8V5a3 3 0 016 0v3" />
-                          </svg>
-                        )}
+                      <div className="aspect-square w-full rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 mb-3 flex items-center justify-center overflow-hidden">
+                        <span className="text-5xl sm:text-6xl" role="img" aria-label={product.Name}>
+                          {categoryEmoji(typeof product.Category === 'string' ? undefined : product.Category?.Name)}
+                        </span>
                       </div>
                       <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1">{product.Name}</h3>
                       {product.Description && (
